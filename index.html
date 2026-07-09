@@ -264,7 +264,7 @@ flowchart LR
 </section>
 <section id="demo">
   <div class="eyebrow">Live Demo · To-be UI</div>
-  <h2><span class="zh">情境重演:㩒一個 S 編號,現場睇行為</span><span class="en">Scenario replay: press an S-code, watch the behaviour</span></h2>
+  <h2><span class="zh">情境重演:㩒一個情境編號,現場睇行為</span><span class="en">Scenario replay: press a scenario number, watch the behaviour</span></h2>
   <p><span class="zh">實線掣 = 已確認情境;<b>虛線掣 = 待答問題</b> — 重演後會以彈窗直接展示嗰條待答問題。亦可用下方「事件」掣自由操作。</span><span class="en">Solid buttons = confirmed scenarios; <b>dashed = open question</b> — replaying a gap pops up the open question. You can also drive freely with the "Events" bar.</span></p>
   
 <div class="scgrp"><span class="zh">加(Add)</span><span class="en">Add</span></div><div class="scbar" data-g="add"></div>
@@ -563,7 +563,7 @@ function buildTable(){var tb=document.getElementById("sctb");if(!tb)return;tb.in
  tr.innerHTML="<td><b>"+s.id+"</b></td><td>"+T(s.st[0],s.st[1])+"</td><td>"+T(s.ev[0],s.ev[1])+"</td><td class='"+cls+"'>"+T(s.ex[0],s.ex[1])+"</td><td>"+(s.tag==="ok"?"<span class='tag ok'>"+T("已確認","Confirmed")+"</span>":s.tag==="tbc"?"<span class='tag tbc'>"+T("待拍板","TBC")+"</span>":"<span class='tag gap'>GAP</span>")+"</td>";
  tb.appendChild(tr);});}
 buildTable();
-reset(2);log("初始:2 張系統卡,聲明「是」— 揀一個 S 編號開始","Initial: 2 detected cards, declared Yes — pick an S-code to start");
+reset(2);log("初始:2 張系統卡,聲明「是」— 揀一個情境編號開始","Initial: 2 detected cards, declared Yes — pick a scenario number to start");
 
 try{renderNTable();renderQTable();linkifyStatusCells();treeCheck();}catch(e){console.warn("model render:",e);}
 </script>
