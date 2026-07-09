@@ -985,9 +985,9 @@ document.getElementById("tv-c").onclick=function(){document.getElementById("tv")
     var msg=document.getElementById("addq-msg");
     if(!text){msg.textContent="Please enter question text / 請輸入問題";return;}
     // next code = Q + (hardcoded count + existing extra count + 1)
-    var base=(typeof Q!=="undefined")?Q.length:6;
-    var next=base+(window._sbExtra?window._sbExtra.length:0)+1;
-    var code="Q"+next;
+    var maxn=(typeof Q!=="undefined")?Q.length:6;
+    (window._sbExtra||[]).forEach(function(x){var m=/^Q(\d+)$/.exec(x.code);if(m){var n=parseInt(m[1],10);if(n>maxn)maxn=n;}});
+    var code="Q"+(maxn+1);
     msg.textContent="Saving...";
     sbInsert({code:code,question:text,rows:rows,status:status}).then(function(res){
       if(res){
