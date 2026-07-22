@@ -180,7 +180,7 @@ h3{font-size:15px;margin:18px 0 8px}
       <li><b>三種 case(banner):</b>
         <br>A 單筆 &nbsp;<code style="font-family:var(--mono)">Σ single &lt; maxSinglePremium</code>
         <br>B 每月 &nbsp;<code style="font-family:var(--mono)">Σ monthly &lt; maxMonthlyPremium</code>(保持月供)
-        <br>C 混合 &nbsp;<code style="font-family:var(--mono)">Σ single + Σ(monthly × pt × 12) &lt; maxSinglePremium</code>(全部換算 one-off,pt = 整組最大)</li>
+        <br>C 混合 &nbsp;<code style="font-family:var(--mono)">Σ single + Σ(monthly × 自己pt × 12) &lt; maxSinglePremium</code>(換算用逐張自己 pt;上限公式 pt = 組最大)</li>
       <li><b>B vs C 差異屬有意設計(OQ2 已 close):</b> B 把所有嘢拉成<b>每月</b>比 maxMonthly;C 把所有嘢拉成<b>一筆過</b>比 maxSingle。同一張月費保單兩者計法不同係正常。</li>
       <li><b>上限公式(Case A / B 圖):</b>
         <br><code style="font-family:var(--mono);font-size:11px">maxSingle = ndi≤0 ? (nla − mog×12×pt)×capA% : nla×capA%</code>
@@ -193,7 +193,7 @@ h3{font-size:15px;margin:18px 0 8px}
   <div class="info-panel open">
     <h3>❓ 待確認 / Open questions</h3>
     <ul>
-      <li><span class="qn">OQ1</span><b>已收窄:</b>換算 / 計上限用嘅 <code style="font-family:var(--mono)">pt = 整組所有保單(當前 + 搜尋)之最大 pay term</code>;全單筆(無 pt)= Case A,公式內 pt=1。仍待最後 spec 落實:auto-searched 保單 pay term 之欄位來源。</li>
+      <li><span class="qn">OQ1</span><b>已收窄:</b><b>換算</b>用<b>逐張自己 pt</b>(短年期保單唔會被長年期拉扯);<b>上限公式</b>(maxSingle/maxMonthly)個 pt 用<b>組最大</b>;全單筆無 pt = Case A、pt=1。仍待 spec 落實:auto-searched 保單 pay term 欄位來源。</li>
       <li><span class="qn">OQ2</span><b>超標行為未定</b>:硬性攔截或警告後可繼續?是否有 escalation / Second-Checker / IO?錯誤訊息文字(中/英)及顯示位置?(demo verdict 暫用 placeholder)</li>
       <li><span class="qn">OQ3</span><b>邊界 / 失敗處理未定</b>:CP 空/0/負/非整數;FX 匯率來源、日期、四捨五入、先轉抑或先加之次序;缺金額;同一保單同時手動加入及搜尋所得(去重);客戶搜尋失敗/離線;check 何時重跑。以上暫記 TBD。</li>
     </ul>
@@ -263,7 +263,7 @@ function renderMaxCalc(){
 var SCDESC={
   single:"每張保單均為<b>單筆(整付)保費</b>。總數 = 所有單筆金額相加(轉 HKD),再與<b>單筆上限</b>比較。最直接。",
   monthly:"每張均為<b>供款保單(regular)</b>,可以係月/季/半年/年繳。各自<b>換算成每月值</b>(年÷12、半年÷6、季÷3、月照用)後<b>相加(保持每月)</b>,與<b>maxMonthlyPremium</b>比較。",
-  mixed:"單筆 + 供款混合。每張供款先換成<b>每月值</b>,再 <b>× pt × 12</b> 變一筆過,加上單筆,與<b>maxSinglePremium</b>比較。<code>pt = 整組最大 pay term</code>。"
+  mixed:"單筆 + 供款混合。每張供款先換成<b>每月值</b>,再 <b>× 自己 pt × 12</b> 變一筆過,加上單筆,與<b>maxSinglePremium</b>比較(上限公式 pt 用組最大)。"
 };
 var MAXLABEL={
   single:"上限 Max (HKD)",
@@ -272,7 +272,7 @@ var MAXLABEL={
 };
 var CALLOUT={
   monthly:'例:<code>年繳 $12,000</code> 換算成 <code>$1,000/月</code>;<code>季繳 $6,000</code> 換算成 <code>$2,000/月</code>。相加後與<b>每月上限</b>比較。',
-  mixed:'同一張 <code>半年繳 $6,000</code>(→ $1,000/月)、pt=2 的保單:Monthly-only 當作 <code>$1,000/月</code>;Mixed 須換算為 <code>$1,000 × pt × 12</code>(pt = 整組最大),變一筆過與<b>單筆上限</b>比較。<b>同一張,兩個 case 計法不同</b> — 有意設計。'
+  mixed:'同一張 <code>半年繳 $6,000</code>(→ $1,000/月)、pt=2:Monthly-only 當 <code>$1,000/月</code>;Mixed 換算為 <code>$1,000 × 自己pt(2) × 12</code>,變一筆過與<b>單筆上限</b>比較。<b>同一張,兩個 case 計法不同</b> — 有意設計。'
 };
 
 function seed(){
@@ -370,21 +370,21 @@ function calc(){
     lines.push('<div class="line total"><span class="lbl">Σ monthlyPremium (保持月供)</span><span class="val">'+HKD(total)+' /月</span></div>');
     verdict(total,MAX,"maxMonthlyPremium");
   }
-  else{ // mixed -> everything to one-off; regular uses monthlyValue × pt(group max) × 12
+  else{ // mixed -> everything to one-off; regular uses monthlyValue × own pt × 12
     var singleTotal=0, monthlyTotal=0;
-    lines.push('<div class="line sub">pt = max pay term of all = '+pt+' 年 (整組共用)</div>');
+    lines.push('<div class="line sub">換算用逐張自己 pt · 上限公式 pt = group max = '+pt+' 年</div>');
     used.forEach(function(p){
       if(p.type==="regular"){
         var mv=monthlyValue(p);
-        var whole=mv*pt*12;
+        var whole=mv*p.pt*12;
         monthlyTotal+=whole;
-        lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' 供款 #'+p.id+': '+HKD(mv)+'/月 × '+pt+' × 12</span><span class="val">'+HKD(whole)+'</span></div>');
+        lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' 供款 #'+p.id+': '+HKD(mv)+'/月 × '+p.pt+' × 12</span><span class="val">'+HKD(whole)+'</span></div>');
       }else{
         singleTotal+=p.amount;
         lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' 單筆 #'+p.id+'</span><span class="val">'+HKD(p.amount)+'</span></div>');
       }
     });
-    lines.push('<div class="line"><span class="lbl">Σ (monthly × pt × 12)</span><span class="val">'+HKD(monthlyTotal)+'</span></div>');
+    lines.push('<div class="line"><span class="lbl">Σ (monthly × 自己pt × 12)</span><span class="val">'+HKD(monthlyTotal)+'</span></div>');
     lines.push('<div class="line"><span class="lbl">Σ singlePremium</span><span class="val">'+HKD(singleTotal)+'</span></div>');
     lines.push('<div class="line total"><span class="lbl">Final total (one-off)</span><span class="val">'+HKD(singleTotal+monthlyTotal)+'</span></div>');
     verdict(singleTotal+monthlyTotal,MAX,"maxSinglePremium");
