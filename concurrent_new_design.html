@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Concurrent Submission — New Design (Draft)</title>
+<style>
+:root{
+  --red:#E4032E; --red-dk:#C8102E;
+  --grn:#0F5A4E; --grn-dk:#0B3B34; --grn-sel:#2E7D4F; --grn-bg:#F2F9F4;
+  --amb:#B26F14; --amb-bg:#FFF8E6; --amb-line:#EBD9AE;
+  --ink:#1F2A28; --mut:#5C6B67; --mut2:#8A968F;
+  --line:#E5E9E7; --panel:#F7F9F8; --white:#fff;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial,system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#EDF1F0;color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55}
+body[data-lang="zh"] .en{display:none}
+body[data-lang="en"] .zh{display:none}
+
+/* ---------- page chrome ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar h1{margin:0;font-size:15px;font-weight:800;color:var(--grn-dk);letter-spacing:.2px}
+.draft{background:var(--amb-bg);border:1.5px dashed var(--amb);color:var(--amb);
+  font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:.4px}
+.spacer{flex:1}
+.langtog{display:flex;border:1.5px solid var(--grn);border-radius:999px;overflow:hidden}
+.langtog button{border:0;background:transparent;color:var(--grn);font-family:var(--sans);
+  font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer}
+.langtog button[aria-pressed="true"]{background:var(--grn);color:#fff}
+
+.wrap{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;padding:20px;align-items:start;max-width:1500px;margin:0 auto}
+@media(max-width:1080px){.wrap{grid-template-columns:1fr}}
+
+/* ---------- control rail ---------- */
+.rail{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.rail h2{margin:0 0 4px;font-size:12px;font-weight:800;letter-spacing:.6px;color:var(--mut2);text-transform:uppercase}
+.rail .hint{margin:0 0 14px;font-size:11.5px;color:var(--mut)}
+.grp{margin-bottom:16px}
+.grp>label{display:block;font-size:11px;font-weight:800;color:var(--mut2);letter-spacing:.5px;margin-bottom:7px;text-transform:uppercase}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1;min-width:56px;border:1.5px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:9px;padding:7px 6px;font-family:var(--sans);font-size:12.5px;font-weight:700;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--grn);background:var(--grn);color:#fff}
+.sitbtn{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sitbtn button{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 6px;
+  font-family:var(--sans);font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;text-align:left;line-height:1.3}
+.sitbtn button:hover{border-color:var(--grn)}
+.sitbtn button small{display:block;font-weight:500;color:var(--mut);font-size:10.5px;margin-top:2px}
+.rail .reset{width:100%;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px;
+  font-family:var(--sans);font-size:12.5px;font-weight:700;cursor:pointer;color:var(--mut)}
+
+.verdict{border-radius:14px;padding:16px;border:2px solid var(--line);background:var(--panel)}
+.verdict .eyebrow2{font-size:10px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--mut2);margin-bottom:9px}
+.verdict .status{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;line-height:1.15}
+.verdict .status .ic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:16px;flex-shrink:0}
+.verdict .sit{margin-top:8px;font-size:12.5px;font-weight:700;color:var(--mut)}
+.verdict.pass{background:var(--grn-bg);border-color:var(--grn-sel)}
+.verdict.pass .status{color:var(--grn-dk)}
+.verdict.pass .ic{background:var(--grn-sel)}
+.verdict.block{background:#FCEBEB;border-color:var(--red-dk)}
+.verdict.block .status{color:var(--red-dk)}
+.verdict.block .ic{background:var(--red-dk)}
+.verdict.idle .status{color:var(--mut)}
+.verdict.idle .ic{background:var(--mut2)}
+.verdict .need{margin:9px 0 0;padding-left:18px;font-size:12px}
+.verdict .need li{margin:3px 0}
+
+/* ---------- ipad ---------- */
+.stage{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ipad{background:#1A1A1A;border-radius:26px;padding:12px;box-shadow:0 18px 44px rgba(11,59,52,.22)}
+.screen{background:#fff;border-radius:16px;overflow:hidden}
+.navrow{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--mut)}
+.navrow .ttl{flex:1;text-align:center;font-weight:700;color:var(--ink)}
+.dots{display:flex;gap:8px;align-items:center;color:var(--mut2)}
+.dots i{width:13px;height:13px;border:1.4px solid var(--mut2);border-radius:3px;display:inline-block}
+.dots .live{width:9px;height:9px;border-radius:50%;background:#00A85A;border:0}
+
+.pane{display:grid;grid-template-columns:216px minmax(0,1fr)}
+@media(max-width:720px){.pane{grid-template-columns:1fr}}
+.side{border-right:1px solid var(--line);padding:12px 0;background:#fff;min-height:560px}
+.side .it{display:flex;align-items:center;gap:7px;padding:7px 14px;font-size:12.5px;color:var(--ink);cursor:default}
+.side .it .tick{margin-left:auto;color:var(--grn-sel);font-weight:800;font-size:12px}
+.side .it .warn{margin-left:auto;color:var(--amb);font-weight:800;font-size:12px}
+.side .sub{padding-left:28px;font-size:12px;color:var(--mut)}
+.side .grouphd{font-weight:700}
+.side .cur{background:#FDF2F4;border-left:3px solid var(--red);font-weight:800;color:var(--red);padding-left:11px}
+.side .subcur{background:#FDF2F4;border-left:3px solid var(--red);font-weight:800;color:var(--red);padding-left:25px}
+.side .off{color:#BFC9C5}
+
+.content{padding:18px 22px 26px;min-width:0}
+.h1{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800;color:var(--ink);margin:0 0 16px}
+.h1::before{content:"";width:4px;height:22px;background:var(--grn);border-radius:2px}
+.h2{display:flex;align-items:center;gap:9px;font-size:15.5px;font-weight:800;color:var(--ink);margin:0 0 10px}
+.h2::before{content:"";width:3px;height:17px;background:var(--grn);border-radius:2px}
+.h3{font-size:14px;font-weight:800;margin:22px 0 8px}
+.lede{margin:0 0 13px;font-size:13px;color:var(--ink)}
+.foot{margin:10px 0 0;font-size:11px;color:var(--mut2);line-height:1.55}
+
+/* choice rows */
+.choice{display:block;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:9px;
+  cursor:pointer;background:#fff;transition:border-color .12s,background .12s}
+.choice:hover{border-color:#BCCFC9}
+.choice.on{border-color:var(--grn-sel);background:var(--grn-bg)}
+.choice input{margin:0 10px 0 0;accent-color:var(--grn-sel);vertical-align:middle}
+.choice .txt{display:inline-block;vertical-align:middle;width:calc(100% - 30px);font-size:12.5px;line-height:1.45}
+
+/* banners */
+.banner{border-radius:9px;padding:10px 13px;font-size:11.8px;line-height:1.5;margin:12px 0;
+  background:var(--amb-bg);border:1px solid var(--amb-line);color:#7A4E0B}
+.banner b{color:var(--amb)}
+
+/* AC18 table */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:9px;margin:10px 0 4px}
+table.ac18{border-collapse:collapse;width:100%;font-size:11.5px;min-width:660px}
+table.ac18 th{background:var(--panel);text-align:left;font-weight:700;color:var(--mut);
+  padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.ac18 td{padding:8px 10px;border-bottom:1px solid var(--line);color:var(--ink);white-space:nowrap}
+table.ac18 tr:last-child td{border-bottom:0}
+.readonly{font-size:11px;color:var(--mut2);margin:6px 0 0}
+
+/* quotation box */
+.qbox{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:13px 15px;margin:6px 0 4px}
+.qbox .qt{font-size:13.5px;font-weight:800;margin-bottom:9px}
+.qgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:560px){.qgrid{grid-template-columns:1fr}}
+.qgrid .k{font-size:10.5px;color:var(--mut2);margin-bottom:2px}
+.qgrid .v{font-size:12.5px;font-weight:700}
+
+/* policy cards */
+.pcard{border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;cursor:pointer;background:#fff}
+.pcard.on{border-color:var(--grn-sel);background:var(--grn-bg)}
+.pcard .row1{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.pcard .badge{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--grn-sel)}
+.pcard .badge .bx{width:15px;height:15px;border:1.6px solid var(--mut2);border-radius:3px;display:grid;place-items:center;font-size:10px;color:transparent}
+.pcard.on .badge .bx{background:var(--grn-sel);border-color:var(--grn-sel);color:#fff}
+.pcard:not(.on) .badge{color:var(--mut)}
+.pcard .ref{margin-left:auto;font-size:10.5px;color:var(--mut2);background:var(--panel);border-radius:999px;padding:3px 9px}
+.pcard .k{font-size:10.5px;color:var(--mut2)}
+.pcard .nm{font-size:13px;font-weight:800;margin:1px 0 8px}
+.pcard .pd{font-size:12.5px;font-weight:700;margin:1px 0 7px}
+.pcard .meta{display:flex;gap:18px;flex-wrap:wrap;font-size:11.5px}
+.pcard .meta span b{font-weight:800}
+.pcard .meta .lbl{color:var(--mut2);margin-right:4px}
+
+.addwrap{margin-top:14px}
+.addwrap .q{font-size:12.5px;font-weight:800}
+.addwrap .n{font-size:11px;color:var(--mut);margin:4px 0 9px;line-height:1.5}
+.addbtn{background:#fff;border:1.5px solid var(--red);color:var(--red);border-radius:999px;
+  padding:7px 17px;font-family:var(--sans);font-size:12.5px;font-weight:800;cursor:pointer}
+.addbtn:hover{background:#FDF2F4}
+
+/* reason blocks */
+.reason{border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin:16px 0 0;background:#fff}
+.reason.req{border-color:var(--amb-line);background:#FFFDF7}
+.reason .rq{font-size:12.5px;font-weight:800;margin-bottom:3px}
+.reason .tag{font-size:10.5px;font-weight:800;color:var(--amb);letter-spacing:.3px;margin-bottom:9px}
+.opt{display:block;border:1.4px solid var(--line);border-radius:9px;padding:9px 12px;margin-bottom:7px;cursor:pointer;font-size:12.3px;background:#fff}
+.opt:hover{border-color:#BCCFC9}
+.opt.on{border-color:var(--grn-sel);background:var(--grn-bg)}
+.opt input{margin:0 9px 0 0;accent-color:var(--grn-sel);vertical-align:middle}
+.opt .t{display:inline-block;vertical-align:middle;width:calc(100% - 28px);line-height:1.4}
+.othbox{width:100%;margin-top:2px;border:1.4px solid var(--line);border-radius:8px;padding:8px 10px;
+  font-family:var(--sans);font-size:12.3px;color:var(--ink)}
+.othbox:focus{outline:2px solid var(--grn);outline-offset:1px}
+.othbox.bad{border-color:var(--red-dk);background:#FFF6F7}
+
+/* AC19 */
+.afford{border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin:18px 0 0;background:var(--panel)}
+.afford .at{font-size:13px;font-weight:800;margin-bottom:9px}
+.arow{display:flex;justify-content:space-between;gap:12px;font-size:12.3px;padding:4px 0}
+.arow .v{font-weight:800}
+.arow.out{border-top:1px dashed var(--amb-line);margin-top:6px;padding-top:8px;color:var(--amb)}
+.arow.ok{border-top:1px dashed var(--line);margin-top:6px;padding-top:8px;color:var(--grn-sel)}
+
+/* AC19 aggregate: affordability inputs + per-policy controls */
+.affin{border:1px solid var(--line);border-radius:9px;background:#fff;padding:11px 12px;margin:4px 0 12px}
+.affin-hd{font-size:11px;font-weight:800;color:var(--mut2);margin-bottom:9px;text-transform:uppercase;letter-spacing:.4px}
+.affgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media(max-width:640px){.affgrid{grid-template-columns:repeat(2,1fr)}}
+.affgrid label{display:flex;flex-direction:column;gap:3px;font-size:9.5px;color:var(--mut);font-weight:700;min-width:0}
+.affgrid input{width:100%;min-width:0;border:1.4px solid var(--line);border-radius:6px;padding:6px 7px;font-family:var(--mono);font-size:12px;background:#fff}
+.affgrid input:focus{outline:none;border-color:var(--grn)}
+.affout{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink)}
+.affout b{font-family:var(--mono);color:var(--ink)}
+.aggrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin-bottom:7px;background:#fff;font-size:11.5px}
+.aggrow .anm{font-weight:700;flex:1;min-width:110px}
+.aggrow .cur-b{background:#FDF2F4;color:var(--red);border-radius:999px;padding:1px 7px;font-size:9.5px;font-weight:800;margin-right:5px}
+.aggrow label{font-size:9.5px;color:var(--mut2);font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.aggrow select,.aggrow input{border:1.4px solid var(--line);border-radius:6px;padding:4px 6px;font-family:var(--sans);font-size:11.5px;background:#fff}
+.aggrow input.ptin{width:50px;font-family:var(--mono)}
+.aggrow .conv{color:var(--mut);font-family:var(--mono);font-size:10.5px;margin-left:auto}
+.arow .md{font-weight:800}
+
+/* inline manual policy card (added via + Add Policy) */
+.mcard{border:1.5px solid var(--red-dk);border-radius:11px;padding:13px 15px;margin-bottom:10px;background:#fff}
+.mcard .mtop{display:flex;align-items:center;margin-bottom:9px}
+.mcard .mtitle{font-size:13px;font-weight:800;color:var(--ink)}
+.mcard .mdel{margin-left:auto;background:none;border:0;color:var(--red);font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;padding:2px 4px}
+.mcard .mdel:hover{text-decoration:underline}
+.mcard .mlabel{font-size:11px;color:var(--mut2);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px}
+.mcard .mmode{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mcard .mopt{display:flex;align-items:center;gap:9px;border:1.5px solid var(--line);border-radius:9px;padding:11px 13px;cursor:pointer;font-size:12.8px;font-weight:600;background:#fff}
+.mcard .mopt:hover{border-color:#BCCFC9}
+.mcard .mopt.on{border-color:var(--grn-sel);background:var(--grn-bg)}
+.mcard .mopt input{accent-color:var(--grn-sel);margin:0}
+.mcard .mhint{color:var(--red);font-size:11.5px;font-weight:600;margin-top:9px}
+.mcard .mfields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:11px}
+.mcard .mfields.one{grid-template-columns:minmax(0,1fr)}
+@media(max-width:620px){.mcard .mfields{grid-template-columns:1fr}}
+.mcard .mfields label{display:flex;flex-direction:column;gap:4px;font-size:10.5px;color:var(--mut);font-weight:700;min-width:0}
+.mcard .mfields input,.mcard .mfields select{width:100%;box-sizing:border-box;border:1.4px solid var(--line);border-radius:7px;padding:8px 9px;font-size:13px;background:#fff;font-family:var(--sans);min-width:0}
+.mcard .mfields input{font-family:var(--mono)}
+.mcard .mfields input:focus,.mcard .mfields select:focus{outline:none;border-color:var(--grn-sel)}
+.mcard .mconv{font-size:11px;color:var(--mut);font-family:var(--mono);margin-top:8px}
+
+/* rail dev panel for aggregate check */
+.railpanel{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.railpanel h2{margin:0 0 4px;font-size:12px;font-weight:800;letter-spacing:.6px;color:var(--mut2);text-transform:uppercase}
+.railpanel .hint{margin:0 0 12px;font-size:11px;color:var(--mut)}
+.railpanel .affgrid{grid-template-columns:1fr 1fr}
+.railpanel .affout{font-size:11px;line-height:1.7}
+.railpanel .aggrow{gap:6px;padding:7px 8px}
+.railpanel .aggrow .anm{min-width:100%;margin-bottom:2px}
+.railpanel .aggrow .conv{margin-left:0;flex-basis:100%}
+.railpanel .arow{font-size:11.5px}
+.railpanel .arow{flex-direction:column;align-items:flex-start;gap:2px}
+.railpanel .arow .v{text-align:left}
+.railpanel .readonly{font-size:10px;line-height:1.5}
+
+/* aggregate result — verdict-style status box */
+.aggverdict{border-radius:12px;padding:13px 14px;border:2px solid var(--line);background:var(--panel);margin:12px 0 4px}
+.aggverdict .eyebrow2{font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--mut2);margin-bottom:7px}
+.aggverdict .status{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;line-height:1.15}
+.aggverdict .status .ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:14px;flex-shrink:0}
+.aggverdict .avdetail{margin-top:9px;font-size:11.5px;line-height:1.65;color:var(--ink)}
+.aggverdict .avdetail .dl{color:var(--mut2);font-weight:700;margin-right:4px}
+.aggverdict .avdetail .cmp{font-family:var(--mono);font-size:11.5px;margin-top:3px;padding-top:5px;border-top:1px dashed var(--line)}
+.aggverdict.pass{background:var(--grn-bg);border-color:var(--grn-sel)}
+.aggverdict.pass .status{color:var(--grn-dk)} .aggverdict.pass .ic{background:var(--grn-sel)}
+.aggverdict.block{background:#FCEBEB;border-color:var(--red-dk)}
+.aggverdict.block .status{color:var(--red-dk)} .aggverdict.block .ic{background:var(--red-dk)}
+.aggverdict.idle .status{color:var(--mut)} .aggverdict.idle .ic{background:var(--mut2)}
+
+/* iPad Total section */
+.totalsec{margin-top:18px}
+.totgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:560px){.totgrid{grid-template-columns:1fr}}
+.totcard{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#fff}
+.totcard .tk{font-size:13px;font-weight:800;color:var(--ink);border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:9px}
+.totcard .tccur{font-size:10.5px;color:var(--mut2);margin-bottom:2px}
+.totcard .tcval{font-size:14px;font-weight:800;color:var(--ink)}
+.fxbox{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff;font-size:12px;color:var(--ink)}
+.fxbox .fxh{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.fxbox .fxi{color:#2E9AA8;font-size:14px}
+.fxbox .fxrows{color:var(--mut);line-height:1.7;margin-bottom:10px}
+.fxbox .fxh2{margin-bottom:2px}
+.fxbox .fxd{color:var(--mut);margin-bottom:10px}
+.fxbox .fxnote{margin:0;font-size:11.5px;color:var(--mut);line-height:1.5}
+.mockfoot{margin:14px 0 0;font-size:11px;color:var(--mut2);font-style:italic}
+
+.saverow{margin-top:22px}
+.save{width:100%;background:var(--red);color:#fff;border:0;border-radius:999px;padding:12px;
+  font-family:var(--sans);font-size:14px;font-weight:800;letter-spacing:.4px;cursor:pointer}
+.save:hover{background:var(--red-dk)}
+
+/* log */
+.log{background:var(--grn-dk);color:#CFE3DD;border-radius:12px;padding:11px 15px;font-family:var(--mono);font-size:11.5px;line-height:1.6}
+.log b{color:#fff}
+
+/* open questions */
+.oq{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.oq h2{margin:0 0 4px;font-size:13px;font-weight:800;color:var(--grn-dk)}
+.oq p{margin:0 0 10px;font-size:11.5px;color:var(--mut)}
+.oq ol{margin:0;padding-left:18px;font-size:12.2px;color:var(--ink)}
+.oq li{margin:5px 0}
+/* ===== passcode gate ===== */
+html.locked{overflow:hidden}
+html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select:none}
+#pwgate{position:fixed;inset:0;z-index:99999;background:var(--grn-dk);display:flex;align-items:center;justify-content:center;font-family:var(--sans)}
+#pwgate .box{background:#fff;border-radius:16px;padding:34px 32px;width:320px;max-width:88vw;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}
+#pwgate h3{margin:0 0 6px;color:var(--grn-dk);font-family:Georgia,serif;font-size:20px}
+#pwgate p{margin:0 0 18px;color:var(--mut);font-size:13px}
+#pwgate input{width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid var(--line);border-radius:8px;font-size:15px;font-family:var(--mono);text-align:center;letter-spacing:.15em;outline:none}
+#pwgate input:focus{border-color:var(--grn-sel)}
+#pwgate button{margin-top:14px;width:100%;padding:11px;border:none;border-radius:8px;background:var(--grn-sel);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--mono)}
+#pwgate button:hover{background:var(--grn)}
+#pwgate .err{color:var(--red);font-size:12.5px;margin-top:10px;min-height:16px}
+</style>
+</head>
+<body data-lang="en">
+<div id="pwgate">
+  <div class="box">
+    <h3>Concurrent Submission</h3>
+    <p><span class="zh">請輸入密碼以檢視</span><span class="en">Enter password to view</span></p>
+    <input id="pwin" type="password" autocomplete="off" autofocus placeholder="••••••••" />
+    <button id="pwok" type="button">OK</button>
+    <div class="err" id="pwerr"></div>
+  </div>
+</div>
+<script id="gatejs">
+(function(){
+  document.documentElement.classList.add("locked");
+  function H(s){var x=5381;for(var i=0;i<s.length;i++){x=((x<<5)+x+s.charCodeAt(i))>>>0;}return x;}
+  var TARGET=938407430;
+  function tryOpen(){
+    var v=document.getElementById("pwin").value;
+    if(H(v)===TARGET){
+      var g=document.getElementById("pwgate");if(g)g.remove();
+      document.documentElement.classList.remove("locked");
+    }else{
+      document.getElementById("pwerr").textContent="密碼錯誤,請重試 · Wrong password";
+      var i=document.getElementById("pwin");i.value="";i.focus();
+    }
+  }
+  document.addEventListener("DOMContentLoaded",function(){
+    var ok=document.getElementById("pwok"),inp=document.getElementById("pwin");
+    if(ok)ok.addEventListener("click",tryOpen);
+    if(inp)inp.addEventListener("keydown",function(e){if(e.key==="Enter")tryOpen();});
+    if(inp)inp.focus();
+  });
+})();
+</script>
+
+<div class="topbar">
+  <h1><span class="zh">一併投保呈交 — 新設計</span><span class="en">Concurrent Submission — New Design</span></h1>
+  <span class="draft">DRAFT · <span class="zh">全部待確認</span><span class="en">NOTHING CONFIRMED</span></span>
+  <span class="spacer"></span>
+  <div class="langtog">
+    <button id="lz" aria-pressed="false">中</button>
+    <button id="le" aria-pressed="true">EN</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ================= control rail ================= -->
+  <aside class="rail">
+    <h2><span class="zh">示範控制</span><span class="en">Demo controls</span></h2>
+    <p class="hint"><span class="zh">此面板模擬系統的背景資料,並非畫面本身的一部分。</span><span class="en">This panel fakes the system's own data. It is not part of the screen.</span></p>
+
+    <div class="grp">
+      <label><span class="zh">系統偵測到其他保單</span><span class="en">Other policies detected</span></label>
+      <div class="seg" id="detseg">
+        <button data-det="0" aria-pressed="false">0</button>
+        <button data-det="2" aria-pressed="true">2</button>
+        <button data-det="3" aria-pressed="false">3</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <label><span class="zh">跳至情況</span><span class="en">Jump to situation</span></label>
+      <div class="sitbtn">
+        <button data-sit="1">1<small><span class="zh">A · 只有本案</span><span class="en">A · this case only</span></small></button>
+        <button data-sit="2">2<small><span class="zh">A · 偵測到多張</span><span class="en">A · multiple found</span></small></button>
+        <button data-sit="3">3<small><span class="zh">B · 部分剔選</span><span class="en">B · some selected</span></small></button>
+        <button data-sit="4">4<small><span class="zh">B · 只有本案</span><span class="en">B · this case only</span></small></button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <button class="reset" id="rst"><span class="zh">重設</span><span class="en">Reset</span></button>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <!-- ===== Aggregate max check (dev control panel) ===== -->
+    <div class="railpanel" id="ac19">
+      <h2><span class="zh">總保費上限檢查</span><span class="en">Aggregate max check</span></h2>
+      <p class="hint"><span class="zh">背景檢查,不會在 iPad 畫面顯示,並隨 iPad 的選取即時計算。</span><span class="en">Backend check, not shown on the iPad screen. Follows the selection on the iPad live.</span></p>
+
+      <div class="affin">
+        <div class="affin-hd"><span class="zh">供款能力輸入 → 上限</span><span class="en">Affordability → Max</span></div>
+        <div class="affgrid">
+          <label>netLiquidAssets<input id="af_nla" type="number" value="800000"></label>
+          <label>netDisposableIncome<input id="af_ndi" type="number" value="100000"></label>
+          <label>monthlyOutGoing<input id="af_mog" type="number" value="5000"></label>
+          <label>cappedDI %<input id="af_cdi" type="number" value="50"></label>
+          <label>cappedA %<input id="af_ca" type="number" value="50"></label>
+        </div>
+        <div class="affout">pt <span class="zh">(組最大)</span><span class="en">(group max)</span>: <b id="aff_pt">—</b><br>maxSingle: <b id="aff_ms">—</b><br>maxMonthly: <b id="aff_mm">—</b></div>
+      </div>
+
+      <div id="aggrows"></div>
+
+      <div class="aggverdict idle" id="a19out"></div>
+      <p class="readonly"><span class="zh">類型/頻率/pt 為背景資料,可在此即時調整。換算採用各保單自身的 pt;上限公式的 pt 採用組內最大值。strict &lt;。</span><span class="en">Type/freq/pt are backend fields, edit here. Conversion uses each policy's own pt; the max formula uses group-max pt. Strict &lt;.</span></p>
+    </div>
+  </aside>
+
+  <!-- ================= stage ================= -->
+  <div class="stage">
+
+    <div class="ipad"><div class="screen">
+      <div class="navrow">
+        <span>&lsaquo; <span class="zh">返回</span><span class="en">Back</span></span>
+        <span class="ttl">Create New Application</span>
+        <span class="dots"><i></i><i></i><i></i><span class="live"></span></span>
+      </div>
+
+      <div class="pane">
+        <!-- sidebar per new design -->
+        <nav class="side">
+          <div class="it"><span>Life Proposed / Proposer</span><span class="tick">&#10003;</span></div>
+          <div class="it"><span>Specific Product Needs</span><span class="tick">&#10003;</span></div>
+          <div class="it"><span>Financial Needs Analysis</span><span class="tick">&#10003;</span></div>
+          <div class="it sub"><span>Financial Need Analysis</span><span class="tick">&#10003;</span></div>
+          <div class="it sub"><span>Proposer's Financial Info</span><span class="tick">&#10003;</span></div>
+          <div class="it sub"><span>Payment ratio</span><span class="tick">&#10003;</span></div>
+          <div class="it sub"><span>Life Proposed's Financial Info</span><span class="tick">&#10003;</span></div>
+          <div class="it sub"><span>Evaluation, Recommendation &amp; Product Selection</span><span class="tick">&#10003;</span></div>
+          <div class="it"><span>Quotation</span><span class="tick">&#10003;</span></div>
+          <div class="it cur grouphd"><span>Application Details</span></div>
+          <div class="it subcur"><span>Concurrent Submission</span></div>
+          <div class="it sub"><span>Basic Info</span><span class="warn">&#9888;</span></div>
+          <div class="it sub"><span>Extended Part</span><span class="warn">&#9888;</span></div>
+          <div class="it sub"><span>Other Info</span><span class="tick">&#10003;</span></div>
+          <div class="it"><span>Health Details</span></div>
+          <div class="it sub"><span>Health Declaration Video</span><span class="tick">&#10003;</span></div>
+          <div class="it sub off"><span>Life Proposed's Insurance Details</span></div>
+        </nav>
+
+        <!-- main content -->
+        <main class="content">
+          <div class="h1">Concurrent Submission</div>
+          <div class="h2"><span class="zh">一併投保呈交的客戶聲明</span><span class="en">Customer Declaration on Concurrent Submission</span></div>
+
+          <p class="lede">
+            <span class="zh">此部分僅適用於客戶於同日簽署多份保險申請的情況。完成本申請後,客戶會否於同日簽署下一份保險申請?</span>
+            <span class="en">This section applies only where the client signs multiple insurance applications on the same day. After completing this insurance application, will the client sign the next insurance application on the same day?</span>
+          </p>
+
+          <label class="choice" id="chA">
+            <input type="radio" name="opt" value="A"/>
+            <span class="txt">
+              <span class="zh">沒有其他一併投保申請 / 本申請並非客戶一併投保呈交的最後一份</span>
+              <span class="en">No further concurrent application / this is not last application of concurrent submission of client</span>
+            </span>
+          </label>
+
+          <label class="choice" id="chB">
+            <input type="radio" name="opt" value="B"/>
+            <span class="txt">
+              <span class="zh">本申請為客戶一併投保呈交的最後一份</span>
+              <span class="en">Last application of concurrent submission for client</span>
+            </span>
+          </label>
+
+          <p class="foot">
+            <span class="zh">一併投保呈交的定義:客戶於同日向同一銷售人員購買多份保單(不論產品相同或不同)。一併投保呈交只計算基本計劃。</span>
+            <span class="en">Concurrent Submission is defined as: when a customer purchases multiple policies on the same day from the same sales staff (regardless of same or different products). Concurrent submission only counts for basic plan.</span>
+          </p>
+
+          <!-- ===== Current policy quotation: always visible ===== -->
+          <div class="qbox" id="quotebox">
+            <div class="qt"><span class="zh">本保單報價</span><span class="en">Current Policy Quotation</span></div>
+            <div class="qgrid">
+              <div><div class="k">Product</div><div class="v">ENCASH — Prudential Enhanced Cash Hospital Income Savings Insurance</div></div>
+              <div><div class="k">Pay Term</div><div class="v">5 / @100</div></div>
+              <div><div class="k">Sum Assured</div><div class="v">USD 100,000.00</div></div>
+            </div>
+          </div>
+
+          <!-- ===== Option A + detected: AC18 read-only table ===== -->
+          <section id="secA" hidden>
+            <div class="banner">
+              <b><span class="zh">重要提示:</span><span class="en">Important Reminder:</span></b>
+              <span class="zh">請確保已選取所有適用的一併投保申請,否則同日簽署的所有保險申請均需重做。</span>
+              <span class="en">Please ensure that all applicable concurrent applications are selected. Otherwise, all insurance applications signed on the same day will need to be reworked.</span>
+            </div>
+
+            <div class="tblwrap">
+              <table class="ac18">
+                <thead><tr>
+                  <th>PO Name</th><th>LP Name</th><th>Product Name</th>
+                  <th>Premium</th><th>Pay Term</th><th>App Ref</th><th>SI Generation Date/Time</th>
+                </tr></thead>
+                <tbody id="ac18body"></tbody>
+              </table>
+            </div>
+            <p class="readonly"><span class="zh">此表僅供閱覽,不可選取。</span><span class="en">This table is read-only. Rows cannot be de-selected here.</span></p>
+          </section>
+
+          <!-- ===== Option B: detected selectable cards ===== -->
+          <section id="secB" hidden>
+            <div class="h2"><span class="zh">一併投保保單顯示區</span><span class="en">Concurrent Policy Display Section</span></div>
+            <p class="lede" style="font-size:12.3px">
+              <span class="zh">請選取所有由同一客戶、於同日、經同一銷售人員簽署的一併投保申請。</span>
+              <span class="en">Please select all applicable concurrent applications signed by the same client on the same day from the same sales staff.</span>
+            </p>
+
+            <div class="banner" id="countBanner"></div>
+
+            <div id="cards"></div>
+          </section>
+
+          <!-- ===== Manual policies + Add Policy: always visible ===== -->
+          <div id="manualwrap">
+            <div id="manualcards"></div>
+            <div class="addwrap">
+              <div class="q"><span class="zh">找不到所需的保單?</span><span class="en">Can't find the required policy?</span></div>
+              <p class="n">
+                <span class="zh">如所需的同日申請未在上方顯示,請在此手動加入。提示:客戶於同日簽署的所有保險申請都必須在此加入,否則同日簽署的保險申請將需要重做。</span>
+                <span class="en">If the required same-day application is not displayed above, please manually add it here. Reminder: all insurance applications signed by the client on the same day must be manually added here. Otherwise, insurance applications signed on the same day will need to be reworked.</span>
+              </p>
+              <button class="addbtn" id="addp">+ <span class="zh">增加保單</span><span class="en">Add Policy</span></button>
+            </div>
+          </div>
+
+          <!-- ===== AC11 generic reason ===== -->
+          <section class="reason req" id="ac11" hidden>
+            <div class="rq">
+              <span class="zh">本人/吾等 (投保人/保單持有人) 確認於同日投保多份保單以作:</span>
+              <span class="en">I/We, (the Proposer/Policyowner) confirm multiple insurance application on the same day for:</span>
+            </div>
+            <div class="tag">AC11 · <span class="zh">必填</span><span class="en">MANDATORY</span></div>
+            <label class="opt" data-a11="needs">
+              <input type="checkbox"/>
+              <span class="t">
+                <span class="zh">不同的保險需要,以及為日後傳承規劃的變更提供靈活性</span>
+                <span class="en">different insurance needs and flexibility for future change in legacy planning</span>
+              </span>
+            </label>
+            <label class="opt" data-a11="other">
+              <input type="checkbox"/>
+              <span class="t"><span class="zh">其他原因,請註明:</span><span class="en">Other reasons, please specific:</span></span>
+            </label>
+            <input class="othbox" id="a11oth" hidden placeholder=""/>
+          </section>
+
+          <!-- ===== AC7.2 de-select reason ===== -->
+          <section class="reason req" id="ac72" hidden>
+            <div class="rq"><span class="zh">取消選取交易的原因</span><span class="en">Reasons for de-select the transaction</span></div>
+            <div class="tag">AC7.2 · <span class="zh">必填</span><span class="en">MANDATORY</span></div>
+            <label class="opt" data-a72="pending">
+              <input type="checkbox"/>
+              <span class="t"><span class="zh">待客戶進一步考慮</span><span class="en">Pending client's further consideration</span></span>
+            </label>
+            <label class="opt" data-a72="redundant">
+              <input type="checkbox"/>
+              <span class="t"><span class="zh">有待刪除的未完成個案</span><span class="en">Redundant case</span></span>
+            </label>
+          </section>
+
+          <!-- ===== Total (always shown) ===== -->
+          <section class="totalsec" id="totalsec">
+            <div class="h1" style="margin-top:8px">Total</div>
+            <div class="totgrid">
+              <div class="totcard">
+                <div class="tk">Monthly Premium (HKD)</div>
+                <div class="tccur">HKD</div>
+                <div class="tcval" id="totMonthly">0.00</div>
+              </div>
+              <div class="totcard">
+                <div class="tk">Single Premium (HKD)</div>
+                <div class="tccur">HKD</div>
+                <div class="tcval" id="totSingle">0.00</div>
+              </div>
+            </div>
+            <div class="fxbox">
+              <div class="fxh"><span class="fxi">&#9432;</span> <b>Exchange Rate:</b></div>
+              <div class="fxrows">
+                <div>USD/HKD : 7.803548</div>
+                <div>AUD/HKD : 5.103225</div>
+                <div>SGD/HKD : 5.812366</div>
+              </div>
+              <div class="fxh2"><b>Last Updated Date:</b></div>
+              <div class="fxd">28-May-2026</div>
+              <p class="fxnote">This reference exchange rate is only used to calculate total premium aggregation for display purpose.</p>
+            </div>
+            <p class="mockfoot">Mock up for discussion only - sample premium and exchange rate values used for preview.</p>
+          </section>
+
+          <div class="saverow"><button class="save" id="save">SAVE</button></div>
+        </main>
+      </div>
+    </div></div>
+
+    <div class="log" id="log"></div>
+
+    <div class="oq">
+      <h2><span class="zh">此原型的已知未定項</span><span class="en">Open questions in this prototype</span></h2>
+      <p><span class="zh">以下項目尚未有 AC 或未經確認,目前的做法僅屬假設。</span><span class="en">No AC covers these yet. What the prototype does today is an assumption, not a decision.</span></p>
+      <ol>
+        <li><span class="zh">全部選取時,AC11 問題應完全隱藏,還是顯示但非必填?此處採用「隱藏」。</span><span class="en">When all policies are selected, is the AC11 question hidden or shown as non-mandatory? This prototype hides it.</span></li>
+        <li><span class="zh">部分選取時 AC11 與 AC7.2 兩項均為必填;需確認兩者為獨立控件,而非合併為一項。</span><span class="en">On partial selection both AC11 and AC7.2 are mandatory. Confirm they are two separate controls, not one merged question.</span></li>
+        <li><span class="zh">情況 4(選 B 但只有本案)假設無須填寫任何內容,直接通過。</span><span class="en">Situation 4 (option B with only this case) is assumed to pass with nothing to fill.</span></li>
+        <li><span class="zh">在選 A 時所作的決定,於其後選 B 的申請會否保留?</span><span class="en">Do decisions made under option A carry over to the later application that picks option B?</span></li>
+        <li><span class="zh">AC7.2 選項二:中文「有待刪除的未完成個案」與英文 Redundant case 意思不一致。</span><span class="en">AC7.2 option 2: the TC wording (incomplete case pending deletion) does not match the EN "Redundant case".</span></li>
+        <li><span class="zh">AC17 只在產生 PDF 一刻檢查;本原型只涵蓋 SAVE 這一關,未包含產生 PDF 那一關。</span><span class="en">AC17 runs at Gen-PDF. This prototype only covers the SAVE gate, not the Gen-PDF gate.</span></li>
+        <li><span class="zh">AC19 目前只在選項 B 顯示;AC 並未說明是否只限某一選項。若選項 A 亦須顯示,計算應否包括唯讀表內的保單?</span><span class="en">AC19 currently shows only under option B. The AC does not say it is limited to one option. If it must also show under option A, should the total include the policies in the read-only table?</span></li>
+      </ol>
+    </div>
+
+  </div>
+</div>
+
+<script>
+"use strict";
+var FX_MAP = {HKD:1, USD:7.803548, AUD:5.103225, SGD:5.812366};
+var FX_UPDATED = "28-May-2026";
+
+var POLICIES = [
+  {ref:"APP-20260717-001", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"PRUHealth VHIS Plan",
+   cur:"HKD", prem:18800.00, term:"20 Years", si:"17/07/2026 10:45", type:"regular", freq:"yearly", pt:20},
+  {ref:"APP-20260717-002", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"ENCASH Saving Plan",
+   cur:"USD", prem:7825.82, term:"5 / @100", si:"17/07/2026 11:34", type:"regular", freq:"yearly", pt:5},
+  {ref:"APP-20260717-003", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"PRULife Protector",
+   cur:"HKD", prem:12960.00, term:"10 Years", si:"17/07/2026 12:05", type:"regular", freq:"yearly", pt:10}
+];
+
+/* current application (this case) — its own premium counts in the aggregate */
+var CURRENT = {ref:"__cur__", prod:"ENCASH — Prudential Enhanced Cash Hospital Income Savings",
+  cur:"USD", prem:5000.00, term:"5 / @100", type:"regular", freq:"yearly", pt:5};
+
+var FREQ_MONTHS = {monthly:1, quarterly:3, halfyearly:6, yearly:12};
+var FREQ_LBL = {monthly:"Monthly", quarterly:"Quarterly", halfyearly:"Half-yearly", yearly:"Yearly"};
+
+var st = { opt:null, det:2, sel:{}, a11:{}, a11oth:"", a72:{},
+           aff:{nla:800000, ndi:100000, mog:5000, cdi:50, ca:50}, pm:{},
+           manual:[], mseq:0 };
+
+function $(id){ return document.getElementById(id); }
+function money(n){ return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function hkd(p){ return p.prem * (FX_MAP[p.cur] || 1); }
+function live(){ return POLICIES.slice(0, st.det); }
+function isZh(){ return document.body.dataset.lang === "zh"; }
+function T(z,e){ return isZh() ? z : e; }
+
+/* ---------- situation + gate ---------- */
+function situation(){
+  if(!st.opt) return null;
+  if(st.opt === "A") return st.det === 0 ? "1" : "2";
+  return st.det === 0 ? "4" : "3";
+}
+function selCount(){ return live().filter(function(p){ return st.sel[p.ref]; }).length; }
+function allSelected(){ return st.det > 0 && selCount() === st.det; }
+function a11Filled(){
+  var any = st.a11.needs || st.a11.other;
+  if(!any) return false;
+  if(st.a11.other && !st.a11oth.trim()) return false;
+  return true;
+}
+function a72Filled(){ return !!(st.a72.pending || st.a72.redundant); }
+
+function gate(){
+  var s = situation(), need = [];
+  if(s === null) return {s:null, ok:false, need:[T("請先選擇一個選項","Choose an option first")]};
+  if(s === "1")  return {s:s, ok:true, need:[]};
+  if(s === "4") return {s:s, ok:true, need:[]};
+  if(s === "2"){
+    if(!a72Filled()) need.push(T("AC7.2 取消選取交易的原因","AC7.2 de-select reason"));
+    return {s:s, ok:need.length === 0, need:need};
+  }
+  /* s === "3" (covers all-selected case too) */
+  if(allSelected()) return {s:s, ok:true, need:[]};
+  if(selCount() === 0) need.push(T("最少選取一張保單","Select at least one policy"));
+  if(!a11Filled()) need.push(T("AC11 一併投保原因","AC11 generic reason"));
+  if(!a72Filled()) need.push(T("AC7.2 取消選取交易的原因","AC7.2 de-select reason"));
+  return {s:s, ok:need.length === 0, need:need};
+}
+
+/* ---------- render ---------- */
+function renderAc18(){
+  var b = $("ac18body"); b.innerHTML = "";
+  live().forEach(function(p){
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + p.po + "</td><td>" + p.lp + "</td><td>" + p.prod + "</td>" +
+      "<td>" + p.cur + " " + money(p.prem) + "</td><td>" + p.term + "</td>" +
+      "<td>" + p.ref + "</td><td>" + p.si + "</td>";
+    b.appendChild(tr);
+  });
+}
+
+function renderCards(){
+  var wrap = $("cards"); wrap.innerHTML = "";
+  live().forEach(function(p){
+    var on = !!st.sel[p.ref];
+    var d = document.createElement("div");
+    d.className = "pcard" + (on ? " on" : "");
+    d.innerHTML =
+      '<div class="row1"><span class="badge"><span class="bx">&#10003;</span>' +
+        '<span>' + (on ? T("已選取","Selected") : T("未選取","Not selected")) + '</span></span>' +
+        '<span class="ref">Ref No ' + p.ref + '</span></div>' +
+      '<div class="k">Life Proposed / Proposer</div>' +
+      '<div class="nm">' + p.lp + " / " + p.po + '</div>' +
+      '<div class="k">Product Description</div>' +
+      '<div class="pd">' + p.prod + '</div>' +
+      '<div class="meta">' +
+        '<span><span class="lbl">Premium</span><b>' + p.cur + " " + money(p.prem) + '</b></span>' +
+        '<span><span class="lbl">Pay Term</span><b>' + p.term + '</b></span>' +
+        '<span><span class="lbl">SI Generated</span><b>' + p.si + '</b></span>' +
+      '</div>';
+    d.addEventListener("click", function(){ st.sel[p.ref] = !st.sel[p.ref]; render(); });
+    wrap.appendChild(d);
+  });
+}
+
+function renderManualCards(){
+  var wrap = $("manualcards"); if(!wrap) return; wrap.innerHTML = "";
+  st.manual.forEach(function(m, idx){
+    var d = document.createElement("div");
+    d.className = "mcard";
+    var isMon = m.mode === "monthly", isSin = m.mode === "single";
+    var html =
+      '<div class="mtop"><div class="mtitle">' + T("保單 ","Policy ") + (idx + 1) + '</div>' +
+        '<button class="mdel" data-mid="' + m.id + '">' + T("刪除","Delete") + '</button></div>' +
+      '<div class="mlabel">' + T("付款模式","Payment mode") + '</div>' +
+      '<div class="mmode">' +
+        '<label class="mopt' + (isMon ? " on" : "") + '"><input type="radio" name="mode-' + m.id + '" value="monthly" data-mid="' + m.id + '"' + (isMon ? " checked" : "") + '> ' + T("定期供款 Regular","Regular") + '</label>' +
+        '<label class="mopt' + (isSin ? " on" : "") + '"><input type="radio" name="mode-' + m.id + '" value="single" data-mid="' + m.id + '"' + (isSin ? " checked" : "") + '> ' + T("整付保費 Single","Single") + '</label>' +
+      '</div>';
+    if(isMon){
+      html += '<div class="mfields">' +
+        '<label>' + T("每期金額 (HKD)","Amount/period (HKD)") + '<input class="m-amt" type="number" data-mid="' + m.id + '" value="' + (m.amt || "") + '"></label>' +
+        '<label>' + T("頻率 Freq","Frequency") + '<select class="m-freq" data-mid="' + m.id + '">' + freqOpts(m.freq) + '</select></label>' +
+        '<label>pt<input class="m-pt" type="number" data-mid="' + m.id + '" value="' + (m.pt || "") + '"></label>' +
+      '</div>';
+    } else if(isSin){
+      html += '<div class="mfields one">' +
+        '<label>' + T("金額 (HKD)","Amount (HKD)") + '<input class="m-amt" type="number" data-mid="' + m.id + '" value="' + (m.amt || "") + '"></label>' +
+      '</div>';
+    } else {
+      html += '<div class="mhint">' + T("請選擇付款模式","Please select a payment mode") + '</div>';
+    }
+    d.innerHTML = html;
+    wrap.appendChild(d);
+  });
+  // wire manual card controls
+  wrap.querySelectorAll('.mdel').forEach(function(b){ b.addEventListener("click", function(e){ e.stopPropagation();
+    var id = +this.dataset.mid; st.manual = st.manual.filter(function(x){ return x.id !== id; }); render(); }); });
+  wrap.querySelectorAll('input[type="radio"][data-mid]').forEach(function(r){ r.addEventListener("change", function(){
+    var m = mById(+this.dataset.mid); if(m){ m.mode = this.value; if(m.mode==="monthly" && !m.pt) m.pt = 10; } render(); }); });
+  wrap.querySelectorAll('.m-freq').forEach(function(s){ s.addEventListener("change", function(){
+    var m = mById(+this.dataset.mid); if(m) m.freq = this.value; renderAfford(); renderTotal(); }); });
+  wrap.querySelectorAll('.m-amt').forEach(function(i){ i.addEventListener("input", function(){
+    var m = mById(+this.dataset.mid); if(m) m.amt = parseFloat(this.value) || 0; renderAfford(); renderTotal(); }); });
+  wrap.querySelectorAll('.m-pt').forEach(function(i){ i.addEventListener("input", function(){
+    var m = mById(+this.dataset.mid); if(m) m.pt = parseFloat(this.value) || 0; renderAfford(); renderTotal(); }); });
+}
+function mById(id){ return st.manual.filter(function(x){ return x.id === id; })[0]; }
+
+function renderBanner(){
+  var n = selCount();
+  $("countBanner").innerHTML = "<b>" + n + " " + T("份申請已選取。","applications selected.") + "</b> " +
+    T("請確保已選取所有適用的一併投保申請,以免需要重做。",
+      "Please ensure all applicable concurrent applications are selected to avoid rework.");
+}
+
+function num(id){ return parseFloat($(id).value) || 0; }
+function pmOf(p){ var o = st.pm[p.ref] || {}; return {
+  type: o.type != null ? o.type : p.type,
+  freq: o.freq != null ? o.freq : p.freq,
+  pt:   o.pt   != null ? o.pt   : p.pt }; }
+function setPM(ref,k,v){ if(!st.pm[ref]) st.pm[ref] = {}; st.pm[ref][k] = v; }
+
+// aggregate list = current application + selected detected policies
+function aggList(){
+  var arr = [CURRENT];
+  live().forEach(function(p){ if(st.sel[p.ref]) arr.push(p); });
+  var out = arr.map(function(p){ var m = pmOf(p); return {
+    ref:p.ref, isCur:p.ref === "__cur__", prod:p.prod, amt:hkd(p),
+    type:m.type, freq:m.freq, pt:m.pt }; });
+  // append manual policies (added on-screen via + Add Policy) once a mode is chosen
+  st.manual.forEach(function(m){
+    if(!m.mode) return;                       // incomplete card contributes nothing yet
+    out.push({ ref:"m" + m.id, isCur:false, manual:true,
+      prod: T("手動保單","Manual policy"),
+      amt: m.amt || 0,                        // manual amounts entered directly in HKD
+      type: m.mode === "monthly" ? "regular" : "single",
+      freq: m.freq, pt: m.pt });
+  });
+  return out;
+}
+function monthlyVal(x){ return x.amt / (FREQ_MONTHS[x.freq] || 1); }
+function grpPt(list){ var pts = list.filter(function(x){ return x.type === "regular" && x.pt; }).map(function(x){ return x.pt; }); return pts.length ? Math.max.apply(null, pts) : 1; }
+function maxSingleF(a,pt){ if(a.nla < 0) return 0; var r = (a.ndi <= 0) ? (a.nla - a.mog*12*pt)*a.ca/100 : a.nla*a.ca/100; return Math.max(Math.round(r),0); }
+function maxMonthlyF(a,pt){ if(pt <= 0) return 0; var r = (a.ndi <= 0) ? ((a.nla - a.mog*12*pt)*a.ca/100)/pt/12 : (a.ndi*a.cdi/100 + a.nla*a.ca/100)/pt/12; return Math.max(Math.round(r),0); }
+function shortProd(s){ return s.length > 30 ? s.slice(0,29) + "…" : s; }
+function freqOpts(cur){ return ["monthly","quarterly","halfyearly","yearly"].map(function(f){ return '<option value="'+f+'"'+(cur===f?" selected":"")+">"+FREQ_LBL[f]+"</option>"; }).join(""); }
+
+function renderAfford(){
+  var list = aggList(), box = $("aggrows"); box.innerHTML = "";
+  list.forEach(function(x){
+    var reg = x.type === "regular";
+    var conv = reg ? ("→ " + T("每月","monthly") + " HKD " + money(monthlyVal(x)))
+                   : (T("單筆","one-off") + " HKD " + money(x.amt));
+    var row = document.createElement("div"); row.className = "aggrow";
+    row.innerHTML =
+      '<span class="anm">' + (x.isCur ? '<span class="cur-b">' + T("本申請保單","Current policy") + "</span>" : shortProd(x.prod)) + "</span>" +
+      "<label>" + T("類型","Type") + ' <select class="pm-type" data-ref="' + x.ref + '">' +
+        '<option value="single"' + (!reg?" selected":"") + ">" + T("單筆","Single") + "</option>" +
+        '<option value="regular"' + (reg?" selected":"") + ">" + T("供款","Regular") + "</option></select></label>" +
+      (reg ? "<label>" + T("頻率","Freq") + ' <select class="pm-freq" data-ref="' + x.ref + '">' + freqOpts(x.freq) + "</select></label>" : "") +
+      (reg ? '<label>pt <input class="ptin" type="number" data-ref="' + x.ref + '" value="' + x.pt + '"></label>' : "") +
+      '<span class="conv">' + conv + "</span>";
+    box.appendChild(row);
+  });
+  box.querySelectorAll(".pm-type").forEach(function(s){ s.addEventListener("change", function(){ setPM(this.dataset.ref,"type",this.value); renderAfford(); }); });
+  box.querySelectorAll(".pm-freq").forEach(function(s){ s.addEventListener("change", function(){ setPM(this.dataset.ref,"freq",this.value); renderAfford(); }); });
+  box.querySelectorAll(".ptin").forEach(function(i){ i.addEventListener("input", function(){ setPM(this.dataset.ref,"pt",parseFloat(this.value)||0); computeAfford(); renderTotal(); }); });
+  computeAfford();
+  renderTotal();
+}
+
+function computeAfford(){
+  var a = {nla:num("af_nla"), ndi:num("af_ndi"), mog:num("af_mog"), cdi:num("af_cdi"), ca:num("af_ca")};
+  var list = aggList(), pt = grpPt(list);
+  var mS = maxSingleF(a,pt), mM = maxMonthlyF(a,pt);
+  $("aff_pt").textContent = pt + " yr";
+  $("aff_ms").textContent = "HKD " + money(mS);
+  $("aff_mm").textContent = "HKD " + money(mM);
+
+  var hasS = list.some(function(x){ return x.type === "single"; });
+  var hasR = list.some(function(x){ return x.type === "regular"; });
+  var mode, total, limit, limName;
+  if(hasS && !hasR){
+    mode = "A"; total = list.reduce(function(s,x){ return s + x.amt; }, 0); limit = mS; limName = "maxSingle";
+  } else if(!hasS && hasR){
+    mode = "B"; total = list.reduce(function(s,x){ return s + monthlyVal(x); }, 0); limit = mM; limName = "maxMonthly";
+  } else {
+    mode = "C";
+    var one = list.filter(function(x){ return x.type === "regular"; }).reduce(function(s,x){ return s + monthlyVal(x)*x.pt*12; }, 0);
+    var sg  = list.filter(function(x){ return x.type === "single"; }).reduce(function(s,x){ return s + x.amt; }, 0);
+    total = sg + one; limit = mS; limName = "maxSingle";
+  }
+  var modeTxt = mode + (mode==="A"?T(" · 全單筆"," · all single"):mode==="B"?T(" · 全供款"," · all regular"):T(" · 混合"," · mixed"));
+  var totalTxt = "HKD " + money(total) + (mode==="B" ? " /" + T("月","mth") : "");
+
+  var pass = total < limit;                       // strict <
+  var sym = total < limit ? " < " : (total > limit ? " > " : " = ");
+  var box = $("a19out");
+  box.className = "aggverdict " + (pass ? "pass" : "block");
+  box.innerHTML =
+    '<div class="eyebrow2">' + T("上限檢查","Affordability max check") + '</div>' +
+    '<div class="status"><span class="ic">' + (pass ? "&#10003;" : "&#10007;") + '</span>' +
+      (pass ? T("在可負擔範圍內","Within max") : T("超出上限","Over maximum")) + '</div>' +
+    '<div class="avdetail">' +
+      '<div><span class="dl">' + T("模式","Mode") + '</span> ' + modeTxt + '</div>' +
+      '<div><span class="dl">' + T("總額","Total") + '</span> ' + totalTxt + '</div>' +
+      '<div class="cmp">' + "HKD " + money(total) + sym + "HKD " + money(limit) + " (" + limName + ")</div>" +
+    '</div>';
+}
+
+/* iPad Total section — per-policy, no cross-policy pt sharing */
+function renderTotal(){
+  var list = aggList();
+  // Monthly = Σ each policy's monthly value (regular: amt/freqMonths ; single: amt/12, pt=1)
+  var monthly = list.reduce(function(s,x){
+    return s + (x.type === "regular" ? monthlyVal(x) : x.amt/12);
+  }, 0);
+  // Single (lump sum) = Σ each policy one-off (regular: monthlyValue × own pt × 12 ; single: amt)
+  var single = list.reduce(function(s,x){
+    return s + (x.type === "regular" ? monthlyVal(x)*x.pt*12 : x.amt);
+  }, 0);
+  $("totMonthly").textContent = money(monthly);
+  $("totSingle").textContent = money(single);
+}
+
+function renderVerdict(){
+  var g = gate(), v = $("verdict");
+  var eb = '<div class="eyebrow2">' + T("最終結果","Final result") + '</div>';
+  if(g.s === null){
+    v.className = "verdict idle";
+    v.innerHTML = eb +
+      '<div class="status"><span class="ic">&#9675;</span>' + T("未開始","Not started") + '</div>' +
+      '<div class="sit">' + T("請在畫面選擇一個聲明選項。","Pick a declaration option on the screen.") + '</div>';
+    return;
+  }
+  var names = {"1":T("情況 1 · A · 只有本案","Situation 1 · A · this case only"),
+               "2":T("情況 2 · A · 偵測到多張","Situation 2 · A · multiple detected"),
+               "3":T("情況 3 · B · 多張","Situation 3 · B · multiple"),
+               "4":T("情況 4 · B · 只有本案","Situation 4 · B · this case only")};
+  v.className = "verdict " + (g.ok ? "pass" : "block");
+  var icon = g.ok ? "&#10003;" : "&#10007;";
+  var head = g.ok ? T("可以儲存","Ready to save") : T("未能儲存","Cannot save");
+  var html = eb +
+    '<div class="status"><span class="ic">' + icon + '</span>' + head + '</div>' +
+    '<div class="sit">' + names[g.s] + '</div>';
+  if(!g.ok && g.need.length){
+    html += '<div class="sit" style="margin-top:9px">' + T("尚欠:","Outstanding:") + '</div><ul class="need">';
+    g.need.forEach(function(n){ html += "<li>" + n + "</li>"; });
+    html += "</ul>";
+  } else {
+    html += '<div class="sit" style="margin-top:6px;color:var(--grn-sel)">' + T("沒有未填的必填項。","Nothing outstanding.") + '</div>';
+  }
+  v.innerHTML = html;
+}
+
+function render(){
+  var s = situation();
+
+  $("chA").classList.toggle("on", st.opt === "A");
+  $("chB").classList.toggle("on", st.opt === "B");
+  $("chA").querySelector("input").checked = st.opt === "A";
+  $("chB").querySelector("input").checked = st.opt === "B";
+
+  $("secA").hidden = (s !== "2");
+  $("secB").hidden = (st.opt !== "B");
+
+  var partial = (s === "3" && !allSelected());
+  $("ac11").hidden = !partial;
+  $("ac72").hidden = !(s === "2" || partial);
+
+  document.querySelectorAll("#ac11 .opt").forEach(function(l){
+    var k = l.getAttribute("data-a11"), on = !!st.a11[k];
+    l.classList.toggle("on", on); l.querySelector("input").checked = on;
+  });
+  var oth = $("a11oth");
+  oth.hidden = !st.a11.other;
+  oth.placeholder = T("請註明其他原因","Please specify the other reason");
+  oth.classList.toggle("bad", !!st.a11.other && !st.a11oth.trim());
+
+  document.querySelectorAll("#ac72 .opt").forEach(function(l){
+    var k = l.getAttribute("data-a72"), on = !!st.a72[k];
+    l.classList.toggle("on", on); l.querySelector("input").checked = on;
+  });
+
+  if(s === "2") renderAc18();
+  if(st.opt === "B"){ renderCards(); renderBanner(); }
+  renderManualCards();   // manual cards + Add Policy — always available
+  renderAfford();   // rail dev panel — always live
+  renderTotal();    // iPad Total section — always shown
+
+  document.querySelectorAll("#detseg button").forEach(function(b){
+    b.setAttribute("aria-pressed", String(+b.getAttribute("data-det") === st.det));
+  });
+
+  renderVerdict();
+}
+
+function log(z,e){
+  $("log").innerHTML = "<b>&gt;</b> " + T(z,e);
+}
+
+/* ---------- events ---------- */
+$("chA").addEventListener("change", function(){ st.opt = "A"; render(); });
+$("chB").addEventListener("change", function(){ st.opt = "B"; render(); });
+
+document.querySelectorAll("#ac11 .opt").forEach(function(l){
+  l.addEventListener("click", function(ev){
+    ev.preventDefault();
+    var k = l.getAttribute("data-a11");
+    st.a11[k] = !st.a11[k];
+    if(k === "other" && !st.a11.other) st.a11oth = "";
+    render();
+  });
+});
+$("a11oth").addEventListener("input", function(){ st.a11oth = this.value; renderVerdict(); this.classList.toggle("bad", !this.value.trim()); });
+
+document.querySelectorAll("#ac72 .opt").forEach(function(l){
+  l.addEventListener("click", function(ev){
+    ev.preventDefault();
+    var k = l.getAttribute("data-a72");
+    st.a72[k] = !st.a72[k];
+    render();
+  });
+});
+
+document.querySelectorAll("#detseg button").forEach(function(b){
+  b.addEventListener("click", function(){
+    st.det = +b.getAttribute("data-det");
+    st.sel = {};
+    render();
+    log("系統偵測改為 " + st.det + " 張其他保單。", "System now detects " + st.det + " other policies.");
+  });
+});
+
+document.querySelectorAll(".sitbtn button").forEach(function(b){
+  b.addEventListener("click", function(){
+    var s = b.getAttribute("data-sit");
+    st.a11 = {}; st.a11oth = ""; st.a72 = {}; st.sel = {}; st.manual = [];
+    if(s === "1"){ st.opt = "A"; st.det = 0; }
+    if(s === "2"){ st.opt = "A"; st.det = 2; }
+    if(s === "3"){ st.opt = "B"; st.det = 3; st.sel[POLICIES[0].ref] = true; st.sel[POLICIES[1].ref] = true; }
+    if(s === "4"){ st.opt = "B"; st.det = 0; }
+    render();
+    var g = gate();
+    log("已跳到情況 " + s + "。" + (g.ok ? "現時可以儲存。" : "現時未能儲存。"),
+        "Jumped to situation " + s + ". " + (g.ok ? "Currently ready to save." : "Currently blocked."));
+  });
+});
+
+$("addp").addEventListener("click", function(){
+  st.manual.push({ id:++st.mseq, mode:null, amt:0, freq:"monthly", pt:10 });
+  render();
+  log("已在畫面加入一張保單,請選擇付款模式。",
+      "Added a policy on screen — please select a payment mode.");
+});
+
+$("save").addEventListener("click", function(){
+  var g = gate();
+  if(g.ok){
+    log("已儲存。情況 " + (g.s || "-") + " 通過 SAVE 這一關。產生 PDF 那一關(AC17)未包含於此原型。",
+        "Saved. Situation " + (g.s || "-") + " passes the SAVE gate. The Gen-PDF gate (AC17) is not part of this prototype.");
+  } else {
+    log("未能儲存 — 尚欠:" + g.need.join("、"), "Cannot save — outstanding: " + g.need.join(", "));
+  }
+  render();
+});
+
+$("rst").addEventListener("click", function(){
+  st = { opt:null, det:2, sel:{}, a11:{}, a11oth:"", a72:{},
+         aff:{nla:800000, ndi:100000, mog:5000, cdi:50, ca:50}, pm:{},
+         manual:[], mseq:0 };
+  $("af_nla").value=800000; $("af_ndi").value=100000; $("af_mog").value=5000; $("af_cdi").value=50; $("af_ca").value=50;
+  render();
+  log("已重設。", "Reset.");
+});
+
+// AC19 affordability inputs -> live recompute (no full re-render, keep focus)
+["af_nla","af_ndi","af_mog","af_cdi","af_ca"].forEach(function(id){
+  $(id).addEventListener("input", computeAfford);
+});
+
+function setLang(l){
+  document.body.dataset.lang = l;
+  $("lz").setAttribute("aria-pressed", String(l === "zh"));
+  $("le").setAttribute("aria-pressed", String(l === "en"));
+  render();
+}
+$("lz").addEventListener("click", function(){ setLang("zh"); });
+$("le").addEventListener("click", function(){ setLang("en"); });
+
+render();
+log("原型已載入 — 全部行為屬草稿,未經確認。", "Prototype loaded — every behaviour here is draft, not confirmed.");
+</script>
+</body>
+</html>
