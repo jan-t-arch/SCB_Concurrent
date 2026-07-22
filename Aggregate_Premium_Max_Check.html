@@ -51,12 +51,19 @@ h3{font-size:15px;margin:18px 0 8px}
 .fld{display:flex;flex-direction:column;gap:2px}
 .fld label{font-size:10px;color:var(--muted)}
 .fld input{width:110px;border:1.5px solid var(--line);border-radius:6px;padding:5px 7px;font-family:var(--mono);font-size:12.5px}
-.fld input:focus{outline:none;border-color:var(--green)}
+.fld select{border:1.5px solid var(--line);border-radius:6px;padding:5px 7px;font-family:var(--sans);font-size:12px;background:#fff}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--green)}
 .fld.cp input{width:74px}
 .selchk{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted)}
 
+/* affordability grid */
+.affgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.affgrid .fld input{width:100%;font-family:var(--mono);font-size:12.5px}
+.calc .brk{color:var(--muted);font-size:11.5px;padding:3px 0 0}
+.calc .maxtotal{margin-top:6px;padding-top:8px;border-top:2px solid var(--green);font-size:14px;font-weight:800;color:var(--green)}
+
 /* max input */
-.maxrow{display:flex;align-items:center;gap:10px;margin:4px 0 0}
+.maxrow{display:flex;align-items:center;gap:10px;margin:8px 0 0}
 .maxrow label{font-size:12.5px;color:var(--muted)}
 .maxrow input{width:150px;border:1.5px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:13px}
 
@@ -136,12 +143,21 @@ h3{font-size:15px;margin:18px 0 8px}
       </div>
 
       <div class="panel" style="margin-top:14px">
-        <h3 style="margin-top:0">上限(可編輯) / Maximum (editable)</h3>
-        <div class="maxrow">
-          <label id="maxLabel">最高單筆保費 Max single premium (HKD)</label>
+        <h3 style="margin-top:0">供款能力上限 / Max premium (affordability)</h3>
+        <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px">依已確認公式(見下)即場計出上限,直接餵入右方 verdict。<code style="font-family:var(--mono);background:var(--green-tint);padding:1px 5px;border-radius:4px;font-size:11px">cappedDI% / cappedA%</code> = 用戶 range 取 Max 後,再按客戶標籤 cap 至 30/50。</p>
+        <div class="affgrid">
+          <div class="fld"><label>netLiquidAssets (HKD)</label><input type="number" id="af_nla" value="800000"></div>
+          <div class="fld"><label>netDisposableIncome (HKD)</label><input type="number" id="af_ndi" value="100000"></div>
+          <div class="fld"><label>monthlyOutGoing (HKD)</label><input type="number" id="af_mog" value="5000"></div>
+          <div class="fld"><label>cappedDI %</label><input type="number" id="af_cdi" value="50"></div>
+          <div class="fld"><label>cappedA %</label><input type="number" id="af_ca" value="50"></div>
+        </div>
+        <div class="calc" id="maxcalc" style="margin-top:12px"></div>
+        <label class="selchk" style="margin-top:10px"><input type="checkbox" id="ovChk"> 手動覆寫上限 override (for boundary testing)</label>
+        <div class="maxrow" id="ovRow" style="display:none">
+          <label id="maxLabel">上限 Max (HKD)</label>
           <input type="number" id="maxInput" value="1000000">
         </div>
-        <p style="font-size:11.5px;color:var(--muted);margin:8px 0 0">此上限為<b>可編輯 sample</b>,方便測試 boundary。實際限額(可能與 VC / Super VC 規則相關)待確認。</p>
       </div>
     </div>
 
@@ -157,12 +173,19 @@ h3{font-size:15px;margin:18px 0 8px}
 
   <!-- confirmed assumptions -->
   <div class="info-panel confirmed">
-    <h3>✓ 已確認假設 / Confirmed assumptions</h3>
+    <h3>✓ 已確認 / Confirmed</h3>
     <ul>
-      <li>所有金額<b>轉為 HKD</b> 後才加總。</li>
-      <li><b>當前申請自身保費計入</b>總數。</li>
-      <li>手動加入、系統搜尋、當前申請<b>同屬一個客戶</b>(client-level 加總 / 供款能力式檢查)。</li>
-      <li>上限採用<b>嚴格大於</b>:總數 &gt; 上限 才算超標(等於上限 = 未超)。<span class="qn">(待最後確認)</span></li>
+      <li>所有金額<b>轉為 HKD</b> 後才加總;<b>當前申請自身保費計入</b>;手動 / 系統搜尋 / 當前申請<b>同屬一客戶</b>(client-level 檢查)。</li>
+      <li><b>嚴格小於 strict <code style="font-family:var(--mono)">&lt;</code></b>:總數 &lt; 上限 = Pass;<b>等於上限 = Fail</b>(唔係 pass)。</li>
+      <li><b>三種 case(banner):</b>
+        <br>A 單筆 &nbsp;<code style="font-family:var(--mono)">Σ single &lt; maxSinglePremium</code>
+        <br>B 每月 &nbsp;<code style="font-family:var(--mono)">Σ monthly &lt; maxMonthlyPremium</code>(保持月供)
+        <br>C 混合 &nbsp;<code style="font-family:var(--mono)">Σ single + Σ(monthly × pt × 12) &lt; maxSinglePremium</code>(全部換算 one-off,pt = 整組最大)</li>
+      <li><b>B vs C 差異屬有意設計(OQ2 已 close):</b> B 把所有嘢拉成<b>每月</b>比 maxMonthly;C 把所有嘢拉成<b>一筆過</b>比 maxSingle。同一張月費保單兩者計法不同係正常。</li>
+      <li><b>上限公式(Case A / B 圖):</b>
+        <br><code style="font-family:var(--mono);font-size:11px">maxSingle = ndi≤0 ? (nla − mog×12×pt)×capA% : nla×capA%</code>
+        <br><code style="font-family:var(--mono);font-size:11px">maxMonthly = ndi≤0 ? ((nla − mog×12×pt)×capA%)/pt/12 : (ndi×capDI% + nla×capA%)/pt/12</code>
+        <br>結果四捨五入、clamp 至 0;single 於 nla&lt;0 時回 0。mixed 之上限<b>不計 disposable income</b>(只用資產)。</li>
     </ul>
   </div>
 
@@ -170,10 +193,9 @@ h3{font-size:15px;margin:18px 0 8px}
   <div class="info-panel open">
     <h3>❓ 待確認 / Open questions</h3>
     <ul>
-      <li><span class="qn">OQ1</span>系統搜尋月費保單的供款期(CP)來源:spec 採用<b>當前 quotation basic plan premium term</b>。待確認:應否每張搜尋所得的保單採用<b>自身</b>的 premium term(有則用),無則 fallback 至當前 quotation term?</li>
-      <li><span class="qn">OQ2</span>同一張月費保單,Monthly-only(原值)與 Mixed(× CP × 12)<b>計法不同</b>。暫假設 TRUE,待確認此差異為有意設計,且 Mixed 係與<b>單筆上限</b>比較(而非另一混合上限)。</li>
-      <li><span class="qn">OQ3</span><b>超標行為未定</b>:硬性攔截或警告後可繼續?是否有 escalation / Second-Checker / IO?錯誤訊息文字(中/英)及顯示位置?(demo verdict 暫用 placeholder)</li>
-      <li><span class="qn">OQ4</span><b>邊界 / 失敗處理未定</b>:CP 空/0/負/非整數;FX 匯率來源、日期、四捨五入、先轉抑或先加之次序;缺金額;同一保單同時手動加入及搜尋所得(去重);客戶搜尋失敗/離線;check 何時重跑。以上暫記 TBD。</li>
+      <li><span class="qn">OQ1</span><b>已收窄:</b>換算 / 計上限用嘅 <code style="font-family:var(--mono)">pt = 整組所有保單(當前 + 搜尋)之最大 pay term</code>;全單筆(無 pt)= Case A,公式內 pt=1。仍待最後 spec 落實:auto-searched 保單 pay term 之欄位來源。</li>
+      <li><span class="qn">OQ2</span><b>超標行為未定</b>:硬性攔截或警告後可繼續?是否有 escalation / Second-Checker / IO?錯誤訊息文字(中/英)及顯示位置?(demo verdict 暫用 placeholder)</li>
+      <li><span class="qn">OQ3</span><b>邊界 / 失敗處理未定</b>:CP 空/0/負/非整數;FX 匯率來源、日期、四捨五入、先轉抑或先加之次序;缺金額;同一保單同時手動加入及搜尋所得(去重);客戶搜尋失敗/離線;check 何時重跑。以上暫記 TBD。</li>
     </ul>
   </div>
 
@@ -184,40 +206,91 @@ h3{font-size:15px;margin:18px 0 8px}
 var HKD=function(n){return "HKD "+(Math.round(n)).toLocaleString();};
 var state={
   sc:"single",
-  max:1000000,
+  max:1000000,          // manual override value
+  override:false,
+  aff:{nla:800000,ndi:100000,mog:5000,cdi:50,ca:50},
   policies:[]
 };
 var uid=1;
 
+var FREQ_MONTHS={monthly:1,quarterly:3,halfyearly:6,yearly:12};
+var FREQ_LABEL={monthly:"月繳 Monthly",quarterly:"季繳 Quarterly",halfyearly:"半年繳 Half-yearly",yearly:"年繳 Yearly"};
+function monthlyValue(p){ return p.amount / (FREQ_MONTHS[p.freq]||1); }   // per-period amount -> monthly
+
+// pt = max pay term across all included regular policies; none -> Case A -> pt = 1
+function groupPt(){
+  var pts=state.policies.filter(included).filter(function(p){return p.type==="regular"&&p.pt;}).map(function(p){return p.pt;});
+  return pts.length?Math.max.apply(null,pts):1;
+}
+
+/* ===== confirmed max-premium formulas (from Case A / B diagrams) ===== */
+function calcMaxSingle(a,pt){
+  if(a.nla<0) return 0;
+  var raw = (a.ndi<=0) ? (a.nla - a.mog*12*pt)*a.ca/100 : a.nla*a.ca/100;
+  return Math.max(Math.round(raw),0);
+}
+function calcMaxMonthly(a,pt){
+  if(pt<=0) return 0;
+  var raw = (a.ndi<=0)
+    ? ((a.nla - a.mog*12*pt)*a.ca/100)/pt/12
+    : (a.ndi*a.cdi/100 + a.nla*a.ca/100)/pt/12;
+  return Math.max(Math.round(raw),0);
+}
+// scenario -> which max feeds the verdict
+function computedMax(){ var pt=groupPt(); return state.sc==="monthly" ? calcMaxMonthly(state.aff,pt) : calcMaxSingle(state.aff,pt); }
+function currentMax(){ return state.override ? state.max : computedMax(); }
+
+function renderMaxCalc(){
+  var a=state.aff, pt=groupPt(), box=document.getElementById("maxcalc"), L=[];
+  var mono=state.sc==="monthly";
+  L.push('<div class="brk">pt = max pay term of all policies = <b>'+pt+'</b> 年'+(state.sc==="single"?' (全單筆 → Case A, pt=1)':'')+'</div>');
+  var branch = a.ndi<=0 ? "netDisposableIncome ≤ 0 → 扣 outgoing / asset-based"
+                        : "netDisposableIncome > 0 → "+(mono?"income + assets":"assets only");
+  L.push('<div class="brk">分支 branch: '+branch+'</div>');
+  if(mono){
+    if(a.ndi<=0) L.push('<div class="brk">((nla − mog×12×pt) × cappedA%) ÷ pt ÷ 12</div>');
+    else L.push('<div class="brk">(ndi × cappedDI% + nla × cappedA%) ÷ pt ÷ 12</div>');
+    L.push('<div class="line maxtotal"><span class="lbl">maxMonthlyPremium</span><span class="val">'+HKD(calcMaxMonthly(a,pt))+' /月</span></div>');
+  }else{
+    if(a.ndi<=0) L.push('<div class="brk">(nla − mog×12×pt) × cappedA%</div>');
+    else L.push('<div class="brk">nla × cappedA%</div>');
+    L.push('<div class="line maxtotal"><span class="lbl">maxSinglePremium</span><span class="val">'+HKD(calcMaxSingle(a,pt))+'</span></div>');
+  }
+  if(state.override) L.push('<div class="brk" style="color:var(--amber)">⚠ 手動覆寫生效,verdict 用 '+HKD(state.max)+'</div>');
+  box.innerHTML=L.join("");
+}
+
 var SCDESC={
   single:"每張保單均為<b>單筆(整付)保費</b>。總數 = 所有單筆金額相加(轉 HKD),再與<b>單筆上限</b>比較。最直接。",
-  monthly:"每張保單均為<b>每月保費</b>。月費<b>直接相加(保持每月數值,不乘出全期)</b>,與<b>每月上限</b>比較(上限採用最大供款期對應者)。",
-  mixed:"單筆 + 每月混合。每張月費須<b>換算成整個供款期總額(CP × 金額 × 12)</b>,加上單筆,再與<b>單筆上限</b>比較。"
+  monthly:"每張均為<b>供款保單(regular)</b>,可以係月/季/半年/年繳。各自<b>換算成每月值</b>(年÷12、半年÷6、季÷3、月照用)後<b>相加(保持每月)</b>,與<b>maxMonthlyPremium</b>比較。",
+  mixed:"單筆 + 供款混合。每張供款先換成<b>每月值</b>,再 <b>× pt × 12</b> 變一筆過,加上單筆,與<b>maxSinglePremium</b>比較。<code>pt = 整組最大 pay term</code>。"
 };
 var MAXLABEL={
-  single:"最高單筆保費 Max single premium (HKD)",
-  monthly:"最高每月保費 Max monthly premium (HKD)",
-  mixed:"最高單筆保費 Max single premium (HKD)"
+  single:"上限 Max (HKD)",
+  monthly:"上限 Max (HKD)",
+  mixed:"上限 Max (HKD)"
 };
 var CALLOUT={
-  monthly:'月費保單在此<b>以每月數值計算</b>。例如 <code>$1,000/月</code> 即當作 <code>$1,000</code>,與<b>每月上限</b>比較。',
-  mixed:'同一張 <code>$1,000/月</code>、供款期 10 年的保單,在 Mixed 須換算為 <code>10 × 1,000 × 12 = $120,000</code>(整個供款期),與<b>單筆上限</b>比較。<b>同一張保單,Monthly-only 當作 $1,000,Mixed 當作 $120,000</b> — 這是最反直覺之處。'
+  monthly:'例:<code>年繳 $12,000</code> 換算成 <code>$1,000/月</code>;<code>季繳 $6,000</code> 換算成 <code>$2,000/月</code>。相加後與<b>每月上限</b>比較。',
+  mixed:'同一張 <code>半年繳 $6,000</code>(→ $1,000/月)、pt=2 的保單:Monthly-only 當作 <code>$1,000/月</code>;Mixed 須換算為 <code>$1,000 × pt × 12</code>(pt = 整組最大),變一筆過與<b>單筆上限</b>比較。<b>同一張,兩個 case 計法不同</b> — 有意設計。'
 };
 
 function seed(){
-  // preset sample policies per scenario
+  // preset sample policies per scenario. type: 'single' | 'regular'; freq per-period; amount = per-period payment
   state.policies=[];
   if(state.sc==="single"){
-    state.policies.push({id:uid++,src:"manual",amount:400000,cp:null,sel:true});
-    state.policies.push({id:uid++,src:"auto",amount:350000,cp:null,sel:true});
-    state.policies.push({id:uid++,src:"auto",amount:300000,cp:null,sel:false});
+    state.policies.push({id:uid++,src:"manual",type:"single",amount:400000,freq:null,pt:null,sel:true});
+    state.policies.push({id:uid++,src:"auto",  type:"single",amount:350000,freq:null,pt:null,sel:true});
+    state.policies.push({id:uid++,src:"auto",  type:"single",amount:300000,freq:null,pt:null,sel:false});
   }else if(state.sc==="monthly"){
-    state.policies.push({id:uid++,src:"manual",amount:8000,cp:15,sel:true});
-    state.policies.push({id:uid++,src:"auto",amount:5000,cp:10,sel:true});
+    state.policies.push({id:uid++,src:"manual",type:"regular",amount:12000,freq:"yearly",    pt:1, sel:true});
+    state.policies.push({id:uid++,src:"auto",  type:"regular",amount:6000, freq:"halfyearly",pt:2, sel:true});
+    state.policies.push({id:uid++,src:"auto",  type:"regular",amount:6000, freq:"quarterly", pt:4, sel:true});
+    state.policies.push({id:uid++,src:"manual",type:"regular",amount:3000, freq:"monthly",   pt:12,sel:true});
   }else{
-    state.policies.push({id:uid++,src:"manual",amount:120000,cp:null,sel:true}); // single
-    state.policies.push({id:uid++,src:"manual",amount:1000,cp:10,sel:true});      // monthly
-    state.policies.push({id:uid++,src:"auto",amount:2000,cp:20,sel:true});        // monthly
+    state.policies.push({id:uid++,src:"manual",type:"single", amount:300000,freq:null,        pt:null,sel:true});
+    state.policies.push({id:uid++,src:"manual",type:"regular",amount:6000,  freq:"halfyearly",pt:2,   sel:true});
+    state.policies.push({id:uid++,src:"auto",  type:"regular",amount:6000,  freq:"quarterly", pt:4,   sel:true});
   }
 }
 
@@ -230,93 +303,109 @@ function renderPolicies(){
     var d=document.createElement("div");d.className="pol";
     var srcTxt=p.src==="manual"?"手動 Manual":"系統搜尋 Auto";
     var srcCls=p.src==="manual"?"src-manual":"src-auto";
-    // in mixed, each policy can be single or monthly -> use cp presence: cp!=null => monthly
-    var showCP=isMonthlyScenario() || (isMixed() && p.cp!==null);
-    var typeTag = isMixed()? (p.cp!==null?' · <b>月費 Monthly</b>':' · <b>單筆 Single</b>') : '';
+    var isReg=p.type==="regular";
+    var typeTag = isMixed()? (isReg?' · <b>供款 Regular</b>':' · <b>單筆 Single</b>') : '';
     var html='<div class="pol-top"><span class="srcbadge '+srcCls+'">'+srcTxt+'</span>'+
       '<span style="font-size:11.5px;color:var(--muted)">保單 #'+p.id+typeTag+'</span>';
+    if(isMixed()){
+      html+='<select class="ptype" data-id="'+p.id+'" style="margin-left:8px;font-size:11px;border:1.5px solid var(--line);border-radius:6px;padding:3px 5px">'+
+        '<option value="single" '+(!isReg?"selected":"")+'>單筆 Single</option>'+
+        '<option value="regular" '+(isReg?"selected":"")+'>供款 Regular</option></select>';
+    }
     if(p.src==="auto"){
       html+='<label class="selchk" style="margin-left:8px"><input type="checkbox" data-id="'+p.id+'" class="sel" '+(p.sel?"checked":"")+'> 已選 selected</label>';
     }
     html+='<button class="pol-del" data-id="'+p.id+'" title="刪除">✕</button></div>';
-    html+='<div class="pol-fields"><div class="fld"><label>金額 Amount (HKD)</label><input type="number" class="amt" data-id="'+p.id+'" value="'+p.amount+'"></div>';
-    if(showCP){
-      html+='<div class="fld cp"><label>供款期 CP (年 yr)</label><input type="number" class="cp" data-id="'+p.id+'" value="'+(p.cp||"")+'"></div>';
+    var amtLabel = isReg? "每期金額 Amount/period (HKD)" : "單筆金額 Amount (HKD)";
+    html+='<div class="pol-fields"><div class="fld"><label>'+amtLabel+'</label><input type="number" class="amt" data-id="'+p.id+'" value="'+p.amount+'"></div>';
+    if(isReg){
+      html+='<div class="fld"><label>繳費頻率 Frequency</label><select class="freq" data-id="'+p.id+'">';
+      ["monthly","quarterly","halfyearly","yearly"].forEach(function(f){
+        html+='<option value="'+f+'" '+(p.freq===f?"selected":"")+'>'+FREQ_LABEL[f]+'</option>';
+      });
+      html+='</select></div>';
+      html+='<div class="fld cp"><label>pay term / pt (年 yr)</label><input type="number" class="pt" data-id="'+p.id+'" value="'+(p.pt||"")+'"></div>';
+      var mv=monthlyValue(p);
+      html+='<div class="fld" style="justify-content:flex-end"><label>= 每月值 monthly</label><div style="font-family:var(--mono);font-size:12.5px;padding:5px 0;font-weight:700">'+HKD(mv)+' /月</div></div>';
     }
     html+='</div>';
     d.innerHTML=html;
     box.appendChild(d);
   });
   // wire
-  box.querySelectorAll(".amt").forEach(function(i){i.addEventListener("input",function(){var p=find(this.dataset.id);p.amount=parseFloat(this.value)||0;calc();});});
-  box.querySelectorAll(".cp").forEach(function(i){i.addEventListener("input",function(){var p=find(this.dataset.id);p.cp=this.value===""?null:parseFloat(this.value);calc();});});
-  box.querySelectorAll(".sel").forEach(function(i){i.addEventListener("change",function(){var p=find(this.dataset.id);p.sel=this.checked;calc();});});
+  box.querySelectorAll(".amt").forEach(function(i){i.addEventListener("input",function(){var p=find(this.dataset.id);p.amount=parseFloat(this.value)||0;calc();renderPolicies();});});
+  box.querySelectorAll(".pt").forEach(function(i){i.addEventListener("input",function(){var p=find(this.dataset.id);p.pt=this.value===""?null:parseFloat(this.value);calc();});});
+  box.querySelectorAll(".freq").forEach(function(s){s.addEventListener("change",function(){var p=find(this.dataset.id);p.freq=this.value;renderPolicies();calc();});});
+  box.querySelectorAll(".ptype").forEach(function(s){s.addEventListener("change",function(){var p=find(this.dataset.id);p.type=this.value;if(p.type==="regular"&&!p.freq){p.freq="monthly";p.pt=p.pt||10;}renderPolicies();calc();});});
+  box.querySelectorAll(".sel").forEach(function(i){i.addEventListener("change",function(){var p=find(this.dataset.id);p.sel=this.checked;renderPolicies();calc();});});
   box.querySelectorAll(".pol-del").forEach(function(b){b.addEventListener("click",function(){state.policies=state.policies.filter(function(x){return x.id!=this.dataset.id;}.bind(this));renderPolicies();calc();});});
 }
 function find(id){return state.policies.filter(function(x){return x.id==id;})[0];}
 function included(p){return p.src==="manual"||p.sel;}
 
 function calc(){
+  renderMaxCalc();
   var box=document.getElementById("calc");
   var lines=[];
   var used=state.policies.filter(included);
+  var MAX=currentMax();
+  var pt=groupPt();
 
   if(state.sc==="single"){
     var total=0;
     used.forEach(function(p){
       total+=p.amount;
-      lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' 保單 #'+p.id+'</span><span class="val">'+HKD(p.amount)+'</span></div>');
+      lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' 單筆 #'+p.id+'</span><span class="val">'+HKD(p.amount)+'</span></div>');
     });
-    lines.push('<div class="line total"><span class="lbl">總單筆保費 Total single</span><span class="val">'+HKD(total)+'</span></div>');
-    verdict(total,state.max,"單筆上限 Max single");
+    lines.push('<div class="line total"><span class="lbl">Σ singlePremium</span><span class="val">'+HKD(total)+'</span></div>');
+    verdict(total,MAX,"maxSinglePremium");
   }
   else if(state.sc==="monthly"){
-    var total=0;var cps=[];
+    var total=0;
     used.forEach(function(p){
-      total+=p.amount;
-      if(p.cp!=null)cps.push(p.cp);
-      lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' 保單 #'+p.id+' (每月)</span><span class="val">'+HKD(p.amount)+' /月</span></div>');
+      var mv=monthlyValue(p);
+      total+=mv;
+      lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' #'+p.id+' · '+FREQ_LABEL[p.freq]+' '+HKD(p.amount)+' → 每月</span><span class="val">'+HKD(mv)+' /月</span></div>');
     });
-    lines.push('<div class="line total"><span class="lbl">總每月保費 Total monthly (直接相加)</span><span class="val">'+HKD(total)+' /月</span></div>');
-    var maxcp=cps.length?Math.max.apply(null,cps):0;
-    lines.push('<div class="line"><span class="lbl">最大供款期 Max CP</span><span class="val">'+maxcp+' 年</span></div>');
-    lines.push('<div class="line sub">↑ 上限採用最大 CP 對應的每月上限比較</div>');
-    verdict(total,state.max,"每月上限 Max monthly (@ max CP)");
+    lines.push('<div class="line total"><span class="lbl">Σ monthlyPremium (保持月供)</span><span class="val">'+HKD(total)+' /月</span></div>');
+    verdict(total,MAX,"maxMonthlyPremium");
   }
-  else{ // mixed
+  else{ // mixed -> everything to one-off; regular uses monthlyValue × pt(group max) × 12
     var singleTotal=0, monthlyTotal=0;
+    lines.push('<div class="line sub">pt = max pay term of all = '+pt+' 年 (整組共用)</div>');
     used.forEach(function(p){
-      if(p.cp!=null){ // monthly -> CP × amount × 12
-        var whole=p.cp*p.amount*12;
+      if(p.type==="regular"){
+        var mv=monthlyValue(p);
+        var whole=mv*pt*12;
         monthlyTotal+=whole;
-        lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' 月費 #'+p.id+': '+p.cp+' × '+HKD(p.amount)+' × 12</span><span class="val">'+HKD(whole)+'</span></div>');
-      }else{ // single
+        lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' 供款 #'+p.id+': '+HKD(mv)+'/月 × '+pt+' × 12</span><span class="val">'+HKD(whole)+'</span></div>');
+      }else{
         singleTotal+=p.amount;
         lines.push('<div class="line"><span class="lbl">'+(p.src==="manual"?"手動":"系統")+' 單筆 #'+p.id+'</span><span class="val">'+HKD(p.amount)+'</span></div>');
       }
     });
-    lines.push('<div class="line"><span class="lbl">總每月(換算整期) Total monthly</span><span class="val">'+HKD(monthlyTotal)+'</span></div>');
-    lines.push('<div class="line"><span class="lbl">總單筆 Total single</span><span class="val">'+HKD(singleTotal)+'</span></div>');
-    lines.push('<div class="line total"><span class="lbl">最終總保費 Final total</span><span class="val">'+HKD(singleTotal+monthlyTotal)+'</span></div>');
-    verdict(singleTotal+monthlyTotal,state.max,"單筆上限 Max single");
+    lines.push('<div class="line"><span class="lbl">Σ (monthly × pt × 12)</span><span class="val">'+HKD(monthlyTotal)+'</span></div>');
+    lines.push('<div class="line"><span class="lbl">Σ singlePremium</span><span class="val">'+HKD(singleTotal)+'</span></div>');
+    lines.push('<div class="line total"><span class="lbl">Final total (one-off)</span><span class="val">'+HKD(singleTotal+monthlyTotal)+'</span></div>');
+    verdict(singleTotal+monthlyTotal,MAX,"maxSinglePremium");
   }
   box.innerHTML=lines.join("");
 }
 
 function verdict(total,max,maxlabel){
   var el=document.getElementById("verdict");
-  var exceed=total>max;
-  el.className="verdict "+(exceed?"exceed":"within");
-  el.innerHTML=(exceed?"⛔ 超出上限 Exceeds":"✓ 未超上限 Within limit")+
-    ' <span class="cmp">'+HKD(total)+(exceed?" > ":" ≤ ")+HKD(max)+'</span>'+
-    (exceed?' <span style="font-size:11px;font-weight:600">(行為 TBD / OQ3)</span>':'');
+  var pass = total < max;                 // strict < : 等於上限 = fail
+  var sym = total < max ? " < " : (total > max ? " > " : " = ");
+  el.className="verdict "+(pass?"within":"exceed");
+  el.innerHTML=(pass?"✓ 通過 Pass (within limit)":"⛔ 超出上限 Fail (not &lt; max)")+
+    ' <span class="cmp">'+HKD(total)+sym+HKD(max)+' <span style="opacity:.7">('+maxlabel+')</span></span>'+
+    (!pass?' <span style="font-size:11px;font-weight:600">(超標行為 TBD / OQ2)</span>':'');
 }
 
 function switchSc(sc){
   state.sc=sc;
   document.querySelectorAll(".seg").forEach(function(s){s.classList.toggle("on",s.dataset.sc===sc);});
   document.getElementById("scdesc").innerHTML=SCDESC[sc];
-  document.getElementById("maxLabel").textContent=MAXLABEL[sc];
   var co=document.getElementById("callout");
   if(CALLOUT[sc]){co.style.display="";document.getElementById("calloutBody").innerHTML=CALLOUT[sc];}
   else co.style.display="none";
@@ -326,14 +415,23 @@ function switchSc(sc){
 // events
 document.querySelectorAll(".seg").forEach(function(s){s.addEventListener("click",function(){switchSc(this.dataset.sc);});});
 document.getElementById("maxInput").addEventListener("input",function(){state.max=parseFloat(this.value)||0;calc();});
+// affordability inputs
+[["af_nla","nla"],["af_ndi","ndi"],["af_mog","mog"],["af_cdi","cdi"],["af_ca","ca"]].forEach(function(pair){
+  document.getElementById(pair[0]).addEventListener("input",function(){state.aff[pair[1]]=parseFloat(this.value)||0;calc();});
+});
+document.getElementById("ovChk").addEventListener("change",function(){
+  state.override=this.checked;
+  document.getElementById("ovRow").style.display=this.checked?"":"none";
+  calc();
+});
 document.getElementById("addManual").addEventListener("click",function(){
-  var isMon=isMonthlyScenario();
-  state.policies.push({id:uid++,src:"manual",amount:isMon?5000:200000,cp:(isMon||isMixed())?10:null,sel:true});
+  if(state.sc==="single") state.policies.push({id:uid++,src:"manual",type:"single",amount:200000,freq:null,pt:null,sel:true});
+  else state.policies.push({id:uid++,src:"manual",type:"regular",amount:5000,freq:"monthly",pt:10,sel:true});
   renderPolicies();calc();
 });
 document.getElementById("addAuto").addEventListener("click",function(){
-  var isMon=isMonthlyScenario();
-  state.policies.push({id:uid++,src:"auto",amount:isMon?4000:150000,cp:(isMon||isMixed())?12:null,sel:true});
+  if(state.sc==="single") state.policies.push({id:uid++,src:"auto",type:"single",amount:150000,freq:null,pt:null,sel:true});
+  else state.policies.push({id:uid++,src:"auto",type:"regular",amount:4000,freq:"monthly",pt:12,sel:true});
   renderPolicies();calc();
 });
 
