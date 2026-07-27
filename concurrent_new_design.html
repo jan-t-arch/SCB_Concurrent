@@ -3,19 +3,22 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Concurrent Submission — New Design (Draft)</title>
+<title>7.27 Demo — Concurrent Submission</title>
 <style>
 :root{
   --red:#E4032E; --red-dk:#C8102E;
-  --grn:#0F5A4E; --grn-dk:#0B3B34; --grn-sel:#2E7D4F; --grn-bg:#F2F9F4;
-  --amb:#B26F14; --amb-bg:#FFF8E6; --amb-line:#EBD9AE;
-  --ink:#1F2A28; --mut:#5C6B67; --mut2:#8A968F;
-  --line:#E5E9E7; --panel:#F7F9F8; --white:#fff;
+  --grn:#138A82; --grn-dk:#385B5A; --grn-sel:#4CAF57; --grn-bg:#F1F8F2;
+  --amb:#E1970B; --amb-bg:#FFF8E8; --amb-line:#EED8A6;
+  --ink:#24282A; --mut:#667074; --mut2:#90989B;
+  --line:#DFE2E3; --panel:#F7F7F8; --white:#fff;
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial,system-ui,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
-body{margin:0;background:#EDF1F0;color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55}
+/* UI-only safeguard: scripted states use the native hidden attribute.
+   Keep every hidden element out of layout even when its class sets flex/grid. */
+[hidden]{display:none!important}
+body{margin:0;background:#EEF0F2;color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55}
 body[data-lang="zh"] .en{display:none}
 body[data-lang="en"] .zh{display:none}
 
@@ -100,26 +103,30 @@ body[data-lang="en"] .zh{display:none}
 .verdict .need li{margin:2px 0}
 
 /* ---------- ipad ---------- */
-.stage{display:flex;flex-direction:column;gap:14px;min-width:0;width:800px;max-width:100%}
+.stage{display:flex;flex-direction:column;gap:14px;min-width:0;width:820px;max-width:100%}
 .stage .log,.stage .oq{overflow-wrap:anywhere}
-.ipad{background:#1A1A1A;border-radius:26px;padding:12px;box-shadow:0 18px 44px rgba(11,59,52,.22);width:1000px;zoom:.8}
+.ipad{background:#252728;border-radius:26px;padding:11px;box-shadow:0 16px 38px rgba(28,38,39,.20);width:1025px;zoom:.8}
 .screen{background:#fff;border-radius:16px;overflow:hidden}
-.navrow{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--mut)}
-.navrow .ttl{flex:1;text-align:center;font-weight:700;color:var(--ink)}
-.dots{display:flex;gap:8px;align-items:center;color:var(--mut2)}
-.dots i{width:13px;height:13px;border:1.4px solid var(--mut2);border-radius:3px;display:inline-block}
-.dots .live{width:9px;height:9px;border-radius:50%;background:#00A85A;border:0}
+.navrow{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);font-size:14px;color:#405055}
+.navrow>span:first-child{font-weight:600}
+.navrow .ttl{flex:1;text-align:center;font-size:15.5px;font-weight:700;color:#5A6367}
+.dots{display:flex;gap:7px;align-items:center;color:#778185}
+.dots i{width:23px;height:23px;border:0;border-radius:50%;display:grid;place-items:center;background:#F1F3F3;position:relative}
+.dots i::after{content:"";width:7px;height:7px;border:1.5px solid #7D878A;border-radius:50%}
+.dots .live{width:25px;height:25px;border-radius:50%;background:#0AA1B5;border:4px solid #E5F6F8}
 
-.pane{display:grid;grid-template-columns:216px minmax(0,1fr)}
+.pane{display:grid;grid-template-columns:245px minmax(0,1fr)}
 @media(max-width:720px){.pane{grid-template-columns:1fr}}
-.side{border-right:1px solid var(--line);padding:12px 0;background:#fff;min-height:560px}
-.side .it{display:flex;align-items:center;gap:7px;padding:7px 14px;font-size:12.5px;color:var(--ink);cursor:default}
-.side .it .tick{margin-left:auto;color:var(--grn-sel);font-weight:800;font-size:12px}
-.side .it .warn{margin-left:auto;color:var(--amb);font-weight:800;font-size:12px}
-.side .sub{padding-left:28px;font-size:12px;color:var(--mut)}
-.side .grouphd{font-weight:700}
-.side .cur{background:#FDF2F4;border-left:3px solid var(--red);font-weight:800;color:var(--red);padding-left:11px}
-.side .subcur{background:#FDF2F4;border-left:3px solid var(--red);font-weight:800;color:var(--red);padding-left:25px}
+.side{border-right:1px solid #D8DADC;padding:14px 0;background:#fff;min-height:610px}
+.side .it{display:flex;align-items:center;gap:8px;padding:9px 18px;font-size:13.2px;line-height:1.3;color:#25292B;cursor:default}
+.side .it .tick{margin-left:auto;width:18px;height:18px;border-radius:50%;background:var(--grn-sel);color:#fff;display:grid;place-items:center;font-weight:900;font-size:11px;flex:0 0 auto}
+.side .it .warn{margin-left:auto;color:var(--amb);font-weight:900;font-size:16px;line-height:1;flex:0 0 auto}
+.side .it .tick[hidden],.side .it .warn[hidden]{display:none!important}
+.side .sub{padding-left:38px;font-size:12.8px;color:#3E4548}
+.side .grouphd{font-weight:700;background:transparent;border-radius:0;margin:4px 8px;padding:10px 14px}
+.side .grouphd::before{content:"⌃";color:var(--red);font-size:17px;font-weight:900;line-height:1}
+.side .cur{background:#F7F7F9;border-left:4px solid var(--red);font-weight:800;color:#222;padding-left:14px}
+.side .subcur{background:#F7F7F9;border-left:4px solid var(--red);font-weight:800;color:#222;padding-left:34px}
 .side .tabnav{cursor:pointer}
 .side .tabnav:hover{background:#F3F6F5}
 .side .subcur.tabnav:hover{background:#FDF2F4}
@@ -128,18 +135,18 @@ body[data-lang="en"] .zh{display:none}
 .simp-note{font-size:12.5px;color:var(--mut);line-height:1.6}
 .side .off{color:#BFC9C5}
 
-.content{padding:18px 22px 26px;min-width:0}
-.h1{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800;color:var(--ink);margin:0 0 16px}
-.h1::before{content:"";width:4px;height:22px;background:var(--grn);border-radius:2px}
-.h2{display:flex;align-items:center;gap:9px;font-size:15.5px;font-weight:800;color:var(--ink);margin:0 0 10px}
-.h2::before{content:"";width:3px;height:17px;background:var(--grn);border-radius:2px}
+.content{padding:26px 34px 30px;min-width:0}
+.h1{display:flex;align-items:center;gap:11px;font-size:25px;font-weight:500;color:#111;margin:4px 0 22px;line-height:1.25}
+.h1::before{content:"";width:4px;height:36px;background:#63C3CB;border-radius:0}
+.h2{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:500;color:#17191A;margin:28px 0 13px;line-height:1.3}
+.h2::before{content:"";width:4px;height:25px;background:#91D1D0;border-radius:0}
 .h3{font-size:14px;font-weight:800;margin:22px 0 8px}
-.lede{margin:0 0 13px;font-size:13px;color:var(--ink)}
+.lede{margin:0 0 18px;font-size:13.5px;color:var(--ink);line-height:1.65}
 .foot{margin:10px 0 0;font-size:11px;color:var(--mut2);line-height:1.55}
 
 /* choice rows */
-.choice{display:block;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:9px;
-  cursor:pointer;background:#fff;transition:border-color .12s,background .12s}
+.choice{display:block;border:1.5px solid transparent;border-radius:6px;padding:14px 16px;margin-bottom:10px;
+  cursor:pointer;background:#F7F7F7;transition:border-color .12s,background .12s}
 .choice:hover{border-color:#BCCFC9}
 .choice.on{border-color:var(--grn-sel);background:var(--grn-bg)}
 .choice input{margin:0 10px 0 0;accent-color:var(--grn-sel);vertical-align:middle}
@@ -159,7 +166,7 @@ body[data-lang="en"] .zh{display:none}
 .ipad-affnotice[hidden]{display:none}
 
 /* AC18 table */
-.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:9px;margin:10px 0 4px}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:3px;margin:12px 0 6px}
 table.ac18{border-collapse:collapse;width:100%;font-size:11.5px;min-width:660px}
 table.ac18 th{background:var(--panel);text-align:left;font-weight:700;color:var(--mut);
   padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -195,24 +202,24 @@ table.ac18 tr:last-child td{border-bottom:0}
 .pdfstat .lock{color:var(--red);font-weight:800}
 /* shared-record green header (top of concurrent content) */
 /* shared-record header — full-bleed, solid teal (matches real design) */
-.rechdr{display:flex;align-items:center;gap:12px;background:#3DB5AC;color:#fff;
-  padding:13px 22px;margin:-18px -22px 18px;border-bottom:0}
-.rechdr .rh-ic{font-size:20px;line-height:1;color:#fff;opacity:.95}
+.rechdr{display:flex;align-items:center;gap:11px;background:#5BB9B4;color:#fff;
+  padding:10px 22px;margin:-26px -34px 18px;border-bottom:0}
+.rechdr .rh-ic{font-size:21px;line-height:1;color:#fff;opacity:.95}
 .rechdr .rh-txt{flex:1;min-width:0}
-.rechdr .rh-l1{font-size:12.8px;font-weight:800;margin-bottom:3px;color:#fff}
-.rechdr .rh-l2{font-size:10.8px;line-height:1.5;color:#EAFBF8}
-.rechdr .rh-edit{flex-shrink:0;align-self:center;background:#fff;border:0;color:#0E7C72;border-radius:999px;padding:8px 15px;font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.rechdr .rh-l1{font-size:13px;font-weight:500;margin-bottom:1px;line-height:1.3;color:#fff}
+.rechdr .rh-l2{font-size:11px;line-height:1.35;color:#F5FFFF}
+.rechdr .rh-edit{flex-shrink:0;align-self:center;background:#fff;border:0;color:#171A1B;border-radius:999px;padding:7px 13px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;box-shadow:none}
 .rechdr .rh-edit::before{content:"\270E  ";}
 .rechdr .rh-edit:hover{background:#F2FBFA}
-.rechdr.locked{background:#3DB5AC}
+.rechdr.locked{background:#5BB9B4}
 .rechdr.locked .rh-l2{color:#EAFBF8}
 .rechdr.locked .rh-edit{color:#0E7C72}
-@media(max-width:560px){.rechdr{flex-wrap:wrap}.rechdr .rh-edit{margin-left:29px}}
+@media(max-width:560px){.rechdr{flex-wrap:wrap}.rechdr .rh-edit{margin-left:24px}}
 /* page-level "Error is found" alert (under the record header) */
-.pgalert{display:flex;align-items:flex-start;gap:9px;background:#FBF3E0;color:#8A6100;border-bottom:1px solid #EBD9AE;
-  margin:-18px -22px 18px;padding:11px 22px;font-size:12px;font-weight:700;line-height:1.5}
+.pgalert{display:flex;align-items:flex-start;gap:11px;background:#F7F7F7;color:#D88D04;border-bottom:0;
+  margin:-24px -34px 24px;padding:14px 34px;font-size:13px;font-weight:500;line-height:1.5}
 .pgalert[hidden]{display:none}
-.pgalert .pa-ic{color:#B26F14;font-size:14px;line-height:1.2;flex-shrink:0}
+.pgalert .pa-ic{color:#E1970B;font-size:17px;line-height:1.2;flex-shrink:0}
 /* read-only cue for the form (display mode or locked) */
 /* display (read-only) mode — clean & report-like, not a dimmed form */
 .rolock .choice,.rolock .opt,.rolock .pcard,.rolock .addbtn{cursor:default}
@@ -240,6 +247,10 @@ table.ac18 tr:last-child td{border-bottom:0}
 .editpanel{position:absolute;inset:0;z-index:55;background:#fff;display:flex;flex-direction:column;border-radius:16px;overflow:hidden}
 .signpage{position:absolute;inset:0;z-index:58;background:#fff;display:flex;flex-direction:column;border-radius:16px;overflow:hidden}
 .signpage[hidden]{display:none}
+/* Preview & Sign uses its own normal-height layout instead of stretching over
+   the much taller Concurrent Submission page underneath. */
+.screen.sign-open .navrow,.screen.sign-open .pane{display:none}
+.screen.sign-open .signpage{position:relative;inset:auto;min-height:560px}
 .subrow{background:var(--grn-bg);border:1px solid #CFE8D8;border-radius:9px;padding:9px 11px;font-size:12px;color:var(--grn-dk);font-weight:700}
 .subrow .sr-ic{color:var(--grn-sel);margin-right:6px}
 .subrow .sr-refs{display:block;font-weight:600;color:var(--mut);font-size:11px;margin-top:3px}
@@ -270,6 +281,33 @@ table.ac18 tr:last-child td{border-bottom:0}
 .sp-bot{padding:14px 16px;border-top:1px solid var(--line)}
 .sp-submit{width:100%;border:0;border-radius:10px;padding:15px;font-family:var(--sans);font-size:15px;font-weight:800;color:#fff;background:var(--red);cursor:pointer}
 .sp-submit:disabled{background:#F3B6C1;cursor:not-allowed}
+.signblock{position:absolute;inset:0;z-index:3;background:rgba(35,39,38,.48);display:flex;align-items:center;justify-content:center;padding:24px}
+.signblock[hidden]{display:none}
+.signblock-dlg{width:430px;max-width:100%;background:#fff;border-radius:16px;box-shadow:0 18px 48px rgba(0,0,0,.28);overflow:hidden}
+.signblock-hd{display:flex;align-items:center;gap:12px;padding:20px 22px 14px}
+.signblock-ic{width:38px;height:38px;border-radius:50%;background:#FCE9ED;color:var(--red);display:grid;place-items:center;font-size:21px;font-weight:900;flex-shrink:0}
+.signblock-ttl{font-size:17px;font-weight:800;color:var(--red-dk)}
+.signblock-msg{padding:0 22px 16px;color:var(--ink);font-size:12.8px;line-height:1.6}
+.signblock-calc{margin:0 22px 18px;border:1px solid #F1CAD2;background:#FFF7F8;border-radius:10px;padding:12px 14px;font-size:12px}
+.signblock-calc .sbc-row{display:flex;justify-content:space-between;gap:16px;padding:3px 0}
+.signblock-calc .sbc-row b{font-family:var(--mono)}
+.signblock-actions{display:flex;gap:10px;padding:15px 22px 20px;border-top:1px solid var(--line)}
+.signblock-actions button{flex:1;border-radius:9px;padding:11px 12px;font-family:var(--sans);font-size:12.5px;font-weight:800;cursor:pointer}
+.signblock-back{border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+.signblock-void{border:1.5px solid var(--red);background:var(--red);color:#fff}
+.signblock-void:hover{background:var(--red-dk)}
+/* Submitted App: replace the whole iPad surface with one persistent success state. */
+.submittedpage{position:absolute;inset:0;z-index:70;background:linear-gradient(180deg,#F3FBF7 0%,#fff 70%);display:flex;align-items:center;justify-content:center;padding:34px;border-radius:16px}
+.submittedpage[hidden]{display:none}
+.screen.submitted-open .navrow,.screen.submitted-open .pane,.screen.submitted-open .editpanel,.screen.submitted-open .lockmask,.screen.submitted-open .signpage{display:none}
+.screen.submitted-open .submittedpage{position:relative;inset:auto;min-height:560px}
+.submitted-card{width:460px;max-width:100%;text-align:center}
+.submitted-ic{width:74px;height:74px;border-radius:50%;background:var(--grn-sel);color:#fff;display:grid;place-items:center;margin:0 auto 20px;font-size:38px;font-weight:900;box-shadow:0 10px 26px rgba(22,141,98,.24)}
+.submitted-title{font-size:25px;font-weight:800;color:var(--grn-dk);margin-bottom:10px}
+.submitted-msg{font-size:13.5px;line-height:1.65;color:var(--mut);margin:0 auto 18px;max-width:390px}
+.submitted-meta{background:#fff;border:1px solid #CFE8D8;border-radius:11px;padding:12px 15px;color:var(--ink);font-size:12px;font-weight:700;margin-bottom:22px;box-shadow:0 4px 14px rgba(11,59,52,.06)}
+.submitted-void{width:100%;border:1.5px solid var(--red);background:#fff;color:var(--red);border-radius:10px;padding:13px 16px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer}
+.submitted-void:hover{background:#FDF2F4}
 .editpanel[hidden]{display:none}
 .editpanel .ep-top{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line);background:#fff}
 .editpanel .ep-back{color:var(--mut);cursor:pointer;font-size:12.5px;font-weight:600}
@@ -280,12 +318,7 @@ table.ac18 tr:last-child td{border-bottom:0}
 .editpanel .ep-ok{width:100%;border:0;background:var(--red);color:#fff;border-radius:999px;padding:12px;
   font-family:var(--sans);font-size:14px;font-weight:800;letter-spacing:.4px;cursor:pointer}
 .editpanel .ep-ok:hover{background:var(--red-dk)}
-/* Void PDF (dev rail) */
-.voidpdf:disabled{border-color:var(--line);color:var(--mut2);cursor:not-allowed;opacity:.7}
 .sp-void:disabled{border-color:var(--line);color:var(--mut2);cursor:not-allowed;opacity:.6}
-.voidpdf{width:100%;border:1.5px solid var(--red);background:#fff;color:var(--red);border-radius:9px;padding:8px;
-  font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer}
-.voidpdf:hover{background:#FDF2F4}
 /* PDF-lock intercept modal — confined to the iPad screen only */
 .screen{position:relative}
 .lockmask{position:absolute;inset:0;z-index:60;background:rgba(11,59,52,.42);display:flex;align-items:flex-start;justify-content:center;padding:96px 18px 18px;border-radius:16px}
@@ -389,6 +422,7 @@ table.ac18 tr:last-child td{border-bottom:0}
 .mcard .mopt input{accent-color:var(--grn-sel);margin:0}
 .mcard .mhint{color:var(--red);font-size:11.5px;font-weight:600;margin-top:9px}
 .mcard .mfields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:11px}
+.mcard .mfields.two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .mcard .mfields.one{grid-template-columns:minmax(0,1fr)}
 @media(max-width:620px){.mcard .mfields{grid-template-columns:1fr}}
 .mcard .mfields label{display:flex;flex-direction:column;gap:4px;font-size:10.5px;color:var(--mut);font-weight:700;min-width:0}
@@ -443,8 +477,8 @@ table.ac18 tr:last-child td{border-bottom:0}
 .mockfoot{margin:14px 0 0;font-size:11px;color:var(--mut2);font-style:italic}
 
 .saverow{margin-top:22px}
-.save{width:100%;background:var(--red);color:#fff;border:0;border-radius:999px;padding:12px;
-  font-family:var(--sans);font-size:14px;font-weight:800;letter-spacing:.4px;cursor:pointer}
+.save{width:100%;background:#F31335;color:#fff;border:0;border-radius:999px;padding:15px;
+  font-family:var(--sans);font-size:15px;font-weight:500;letter-spacing:.2px;cursor:pointer}
 .save:hover{background:var(--red-dk)}
 .save.disabled,.save:disabled{background:#C9CFCD;cursor:not-allowed}
 .save.disabled:hover,.save:disabled:hover{background:#C9CFCD}
@@ -459,6 +493,34 @@ table.ac18 tr:last-child td{border-bottom:0}
 .oq p{margin:0 0 10px;font-size:11.5px;color:var(--mut)}
 .oq ol{margin:0;padding-left:18px;font-size:12.2px;color:var(--ink)}
 .oq li{margin:5px 0}
+
+/* confirmed system rules — development reference */
+.rules{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:0}
+.rules h2{margin:0 0 5px;font-size:16px;font-weight:800;color:var(--grn-dk)}
+.rules .rules-intro{margin:0 0 14px;font-size:11.8px;line-height:1.6;color:var(--mut)}
+.rules .rules-note{display:inline-block;margin-top:5px;padding:4px 9px;border-radius:999px;background:#EEF7F6;color:#257B75;font-size:10.5px;font-weight:800}
+.rules-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.rules-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11.7px;line-height:1.55}
+.rules-table col.rule-id-col{width:92px}
+.rules-table col.rule-trigger-col{width:235px}
+.rules-table th{padding:10px 12px;background:#F3F5F5;color:#536064;text-align:left;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.45px;border-bottom:1px solid var(--line)}
+.rules-table td{padding:12px;vertical-align:top;color:var(--ink);border-bottom:1px solid var(--line)}
+.rules-table tr:last-child td{border-bottom:0}
+.rules-table tbody tr:nth-child(even){background:#FBFCFC}
+.rules-table .rule-id{font-family:var(--mono);font-size:11px;font-weight:800;color:#117F77;white-space:nowrap}
+.rules-table .rule-name{display:block;margin-top:4px;font-family:var(--sans);font-size:11.2px;font-weight:800;color:var(--ink);white-space:normal}
+.rules-table .condition{font-weight:700;color:#434B4E}
+.rules-table ul{margin:0;padding-left:17px}
+.rules-table li{margin:0 0 5px}
+.rules-table li:last-child{margin-bottom:0}
+@media(max-width:760px){
+  .rules-table,.rules-table tbody,.rules-table tr,.rules-table td{display:block;width:100%}
+  .rules-table thead{display:none}
+  .rules-table tr{border-bottom:1px solid var(--line);padding:9px 11px}
+  .rules-table tr:last-child{border-bottom:0}
+  .rules-table td{border:0;padding:5px 0}
+  .rules-table td::before{content:attr(data-label);display:block;margin-bottom:2px;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--mut2)}
+}
 /* ===== passcode gate ===== */
 html.locked{overflow:hidden}
 html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select:none}
@@ -510,7 +572,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
 
 <div class="topbar">
   <h1><span class="zh">一併投保呈交 — 新設計</span><span class="en">Concurrent Submission — New Design</span></h1>
-  <span class="draft">DRAFT · <span class="zh">全部待確認</span><span class="en">NOTHING CONFIRMED</span></span>
+  <span class="draft"><span class="zh">示範原型</span><span class="en">DEMO PROTOTYPE</span></span>
   <span class="spacer"></span>
   <div class="langtog">
     <button id="lz" aria-pressed="false">中</button>
@@ -583,7 +645,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
       <!-- Aggregate max check -->
       <div class="railpanel" id="ac19">
         <div class="rp-hd"><span class="zh">總保費上限檢查</span><span class="en">Aggregate max check</span></div>
-        <p class="hint"><span class="zh">背景檢查,不會在 iPad 畫面顯示,並隨 iPad 的選取即時計算。</span><span class="en">Backend check, not shown on the iPad screen. Follows the selection on the iPad live.</span></p>
+        <p class="hint"><span class="zh">背景檢查只會在進入 Concurrent Submission 分頁及按「開始簽署」時重新計算；其他修改不會即時計算。</span><span class="en">The backend check recalculates only when entering the Concurrent Submission tab and when Start Signing is pressed; other changes do not recalculate it in real time.</span></p>
 
         <div class="affin">
           <div class="affin-hd"><span class="zh">供款能力輸入 → 上限</span><span class="en">Affordability → Max</span></div>
@@ -608,7 +670,6 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
     <div class="railsec danger">
       <div class="railsec-hd"><span class="zh">⚠ 危險操作</span><span class="en">⚠ Danger zone</span></div>
       <div class="grp">
-        <button class="voidpdf" id="voidpdf" hidden><span class="zh">作廢 PDF(解鎖)</span><span class="en">Void PDF (unlock)</span></button>
         <button class="reset" id="rst"><span class="zh">重設全部</span><span class="en">Reset all</span></button>
       </div>
     </div>
@@ -669,6 +730,8 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
           </div>
 
           <div id="formbody">
+          <div class="h1">Concurrent Submission</div>
+
           <section id="topTable">
             <div class="banner">
               <b><span class="zh">重要提示:</span><span class="en">Important Reminder:</span></b>
@@ -687,7 +750,6 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
             <p class="readonly"><span class="zh">此表列出所有偵測到的同日保單,僅供閱覽,不可選取。</span><span class="en">This table lists all detected same-day policies; read-only, cannot be de-selected here.</span></p>
           </section>
 
-          <div class="h1">Concurrent Submission</div>
           <div class="h2"><span class="zh">一併投保呈交的客戶聲明</span><span class="en">Customer Declaration on Concurrent Submission</span></div>
 
           <p class="lede">
@@ -820,10 +882,6 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
           </div><!-- /#concurrentPage -->
 
           <div id="simplePage" hidden>
-            <div class="rechdr"><div class="rh-ic">&#128196;</div><div class="rh-txt">
-              <div class="rh-l1" id="simpTitle"></div>
-              <div class="rh-l2"><span class="zh">此為示範頁面。按「下一頁」以完成此部分。</span><span class="en">Demo page. Press Next Page to complete this section.</span></div>
-            </div></div>
             <div class="simp-body">
               <div class="h1" id="simpH1"></div>
               <p class="simp-note"><span class="zh">(此原型只模擬多分頁流程。實際內容從略。)</span><span class="en">(This prototype only simulates the multi-tab flow; real content is omitted.)</span></p>
@@ -871,26 +929,229 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
           <div class="sp-card" id="signCard"></div>
           <div class="sp-actions">
             <button class="sp-void" id="signVoid"><span class="zh">作廢 PDF</span><span class="en">Void PDF</span></button>
-            <button class="sp-finish" id="finishSign"><span class="zh">繼續簽署</span><span class="en">Finish signing</span></button>
+            <button class="sp-finish" id="finishSign"><span class="zh">開始簽署</span><span class="en">Start Signing</span></button>
           </div>
         </div>
         <div class="sp-bot"><button class="sp-submit" id="submitBtn" disabled><span class="zh">提交已簽署之保單</span><span class="en">Submit signed application</span></button></div>
+        <div class="signblock" id="signblock" hidden>
+          <div class="signblock-dlg">
+            <div class="signblock-hd">
+              <div class="signblock-ic">!</div>
+              <div class="signblock-ttl"><span class="zh">目前無法開始簽署</span><span class="en">Unable to Start Signing</span></div>
+            </div>
+            <div class="signblock-msg">
+              <span class="zh">系統已在開始簽署前重新計算一併投保保費。最新總額超出可負擔上限，因此簽署已被阻止。請作廢 PDF，返回 Concurrent Submission 覆核資料後重新產生 PDF。</span>
+              <span class="en">The concurrent premium was recalculated before signing. The latest total exceeds the affordability maximum, so signing is blocked. Void the PDF, review the Concurrent Submission information, and generate a new PDF.</span>
+            </div>
+            <div class="signblock-calc" id="signblockCalc"></div>
+            <div class="signblock-actions">
+              <button class="signblock-back" id="signblockBack"><span class="zh">返回預覽</span><span class="en">Back to Preview</span></button>
+              <button class="signblock-void" id="signblockVoid"><span class="zh">作廢 PDF 並覆核</span><span class="en">Void PDF &amp; Review</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== App-level persistent submission-success blocker ===== -->
+      <div class="submittedpage" id="submittedpage" hidden>
+        <div class="submitted-card">
+          <div class="submitted-ic">&#10003;</div>
+          <div class="submitted-title"><span class="zh">提交成功</span><span class="en">Submission Successful</span></div>
+          <p class="submitted-msg">
+            <span class="zh">本申請已成功提交。此 App 的畫面及操作已鎖定；切換至其他 App 不會改變此狀態。</span>
+            <span class="en">This application has been submitted successfully. This App is now locked; switching to another App will not change this status.</span>
+          </p>
+          <div class="submitted-meta" id="submittedMeta"></div>
+          <button class="submitted-void" id="submittedVoid"><span class="zh">作廢提交（示範）</span><span class="en">Void Submission (Demo)</span></button>
+        </div>
       </div>
     </div></div>
 
     <div class="log" id="log"></div>
 
     <div class="oq">
-      <h2><span class="zh">此原型的已確認規則及未定項</span><span class="en">Confirmed rules and open questions in this prototype</span></h2>
-      <p><span class="zh">以下清楚分列已確認規則，以及仍需 BA／AC 確認的項目。</span><span class="en">The items below distinguish confirmed rules from points that still require BA/AC confirmation.</span></p>
+      <h2><span class="zh">此原型的未定問題</span><span class="en">Open question in this prototype</span></h2>
+      <p><span class="zh">以下項目仍需 BA／AC 確認。</span><span class="en">The following point still requires BA/AC confirmation.</span></p>
       <ol>
         <li><span class="zh">未定:Story 的 AC11 與 AC14 #8 互相矛盾。目前原型按 AC14 #8 及 mockup 處理:在情況 3 即使全部保單已選取，AC11 仍會顯示並為必填；最終規則仍待 BA／AC 確認。</span><span class="en">Open: AC11 and AC14 #8 conflict in the Story. This prototype currently follows AC14 #8 and the mockup: in Situation 3, AC11 remains visible and mandatory even when all policies are selected. Final BA/AC confirmation is still required.</span></li>
-        <li><span class="zh">已確認:部分選取時，AC11 與 AC7.2 是兩個獨立控件，兩項均為必填。</span><span class="en">Confirmed: on partial selection, AC11 and AC7.2 are two separate controls and both are mandatory.</span></li>
-        <li><span class="zh">已確認:在選項 A／B 之間切換時保留已輸入的共用資料。隱藏或目前不適用的欄位不會影響 PDF gate；如切換回原選項，之前輸入的資料會重新顯示。</span><span class="en">Confirmed: shared answers are retained when switching between Options A and B. Hidden or currently inapplicable fields do not affect the PDF gate; previously entered values reappear when switching back.</span></li>
-        <li><span class="zh">已確認(業務規則更新):當前申請(本申請)的保單卡毋須勾選即可通過 gate / 產生 PDF。剔選與否純粹反映是否將自己納入此次一併投保聲明,不再是強制項(E4 已移除)。剔選狀態仍為共用並會保留,新偵測到的卡(包括新的當前申請)預設不勾選。</span><span class="en">Confirmed (business rule update): the current application's own policy card no longer needs to be ticked to pass the gate or generate a PDF. Ticking it is now optional — it simply reflects whether the app includes itself in this concurrent declaration (E4 removed). Selection is still shared and carried over; a newly-detected card (including a newly-entered current app) is left unticked by default.</span></li>
-        <li><span class="zh">已確認:如較早 App 已產生 PDF，共用 Concurrent Submission 內容會鎖定為唯讀；但只要該共用內容及目前 App 本身的分頁均符合要求，目前 App 仍可產生自己的 PDF，毋須等待較早 App 提交或作廢。</span><span class="en">Confirmed: when an earlier App has generated a PDF, the shared Concurrent Submission content is locked read-only. However, if the shared content and the current App's own tabs meet all requirements, the current App may still generate its own PDF without waiting for the earlier App to submit or void.</span></li>
       </ol>
-      <p style="margin-top:10px"><span class="zh">已確認:上限檢查永遠顯示;選項 A 計入尚未提交的唯讀表保單;E4 已移除,不指定必須剔選本申請。選項 B 只要求已選取的保單清單不可為空,任何適用保單卡均可符合此規則。</span><span class="en">Confirmed: the aggregate check always displays; Option A counts unsubmitted policies in the read-only table; E4 has been removed, so the current policy is not specifically mandatory. Option B only requires the selected policy list to be non-empty, and any applicable policy card can satisfy this rule.</span></p>
+    </div>
+
+    <div class="rules">
+      <h2><span class="zh">系統規則 — 開發參考</span><span class="en">System Rules — Development Reference</span></h2>
+      <p class="rules-intro">
+        <span class="zh">本表只記錄已確認的系統業務規則、觸發點及預期行為。未確認項目不會列作規則；英文內容為標準，中文內容與英文保持一致。</span>
+        <span class="en">This table records confirmed system business rules, triggers and expected behaviour only. Unresolved items are not treated as rules. English is the governing version and the Chinese content follows it.</span>
+        <br><span class="rules-note"><span class="zh">適用範圍：Concurrent Submission、PDF、簽署及提交生命週期</span><span class="en">Scope: Concurrent Submission, PDF, signing and submission lifecycle</span></span>
+      </p>
+
+      <div class="rules-table-wrap">
+        <table class="rules-table">
+          <colgroup>
+            <col class="rule-id-col"><col class="rule-trigger-col"><col>
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Rule ID</th>
+              <th><span class="zh">觸發條件／範圍</span><span class="en">Trigger / Condition</span></th>
+              <th><span class="zh">預期系統行為</span><span class="en">Expected System Behaviour</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-01</span><span class="rule-name"><span class="zh">共享資料範圍</span><span class="en">Shared data scope</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">多份 Application屬於同一 Concurrent Group。</span><span class="en">Multiple applications belong to the same Concurrent Group.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">Concurrent Submission答案必須由同一組內所有相關 Application共用。</span><span class="en">Concurrent Submission answers must be shared by all related applications in the group.</span></li>
+                <li><span class="zh">共享資料包括 declaration option、Policy Selection、AC11、AC7.2及 Manual Policy。</span><span class="en">Shared data includes the declaration option, Policy Selection, AC11, AC7.2 and Manual Policies.</span></li>
+                <li><span class="zh">任何相關 Application開啟 Concurrent Submission時，必須讀取同一份共享內容。</span><span class="en">Every related application must read the same shared content when Concurrent Submission is opened.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-02</span><span class="rule-name"><span class="zh">Application狀態隔離</span><span class="en">Application state isolation</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶切換或操作不同 Application。</span><span class="en">The user switches between or acts on different applications.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">Section completion、PDF generation、signing、submission及 submission-success blocker必須按 Application獨立保存。</span><span class="en">Section completion, PDF generation, signing, submission and the submission-success blocker must be stored independently per application.</span></li>
+                <li><span class="zh">切換 Application不得複製、清除或繼承另一份 Application的狀態。</span><span class="en">Switching applications must not copy, clear or inherit another application's state.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-03</span><span class="rule-name"><span class="zh">資料保留及完成判斷</span><span class="en">Retention and completion</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶切換 Option、編輯內容、按 OK或 Next Page。</span><span class="en">The user switches options, edits content, presses OK or presses Next Page.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">在 Option A及 Option B之間切換時，已輸入的共享答案必須保留。</span><span class="en">Shared answers must be retained when switching between Option A and Option B.</span></li>
+                <li><span class="zh">隱藏或目前不適用的欄位不可參與當前 validation。</span><span class="en">Hidden or currently inapplicable fields must not participate in the current validation.</span></li>
+                <li><span class="zh">Completion必須根據目前有效內容判斷，包括仍在 Edit Mode內的內容。</span><span class="en">Completion must be derived from the current valid content, including content still in Edit Mode.</span></li>
+                <li><span class="zh">OK只退出 Edit Mode；Next Page只負責導航，兩者均不是 Save或 completion gate。</span><span class="en">OK only exits Edit Mode and Next Page only navigates; neither is a Save or completion gate.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-04</span><span class="rule-name"><span class="zh">Policy Selection validation</span><span class="en">Policy Selection validation</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">Option B或部分選取 Policy。</span><span class="en">Option B is selected or the policy selection is partial.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">Option B的 Selected Policy List不可為空；空白時顯示 inline red validation並阻止 Generate PDF。</span><span class="en">The Option B Selected Policy List must not be empty; an empty list shows inline red validation and blocks Generate PDF.</span></li>
+                <li><span class="zh">Current Application的 Policy Card不屬強制選取項目；任何符合資格的 Policy Card均可滿足非空要求。</span><span class="en">The Current Application's Policy Card is not mandatory; any eligible Policy Card may satisfy the non-empty requirement.</span></li>
+                <li><span class="zh">部分選取時，AC11及 AC7.2是兩個獨立控件，兩項均須符合各自的 mandatory rule。</span><span class="en">For partial selection, AC11 and AC7.2 are separate controls and each must satisfy its own mandatory rule.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-05</span><span class="rule-name"><span class="zh">Policy List Refresh</span><span class="en">Policy List Refresh</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">進入 Concurrent Submission、提出 Generate PDF要求或按 Start Signing。</span><span class="en">Concurrent Submission is entered, Generate PDF is requested or Start Signing is pressed.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">系統必須讀取最新 Policy List及 Policy lifecycle status。</span><span class="en">The system must read the latest Policy List and Policy lifecycle status.</span></li>
+                <li><span class="zh">需要偵測新增／刪除 Policy、status改變及 Premium、Pay Term、Type、Frequency、pt等重要資料改變。</span><span class="en">The system must detect added or removed policies, status changes and material changes to Premium, Pay Term, Type, Frequency or pt.</span></li>
+                <li><span class="zh">Manual Policy新增、刪除或重要資料修改亦屬 Policy List更新。</span><span class="en">Adding, removing or materially changing a Manual Policy is also a Policy List update.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-06</span><span class="rule-name"><span class="zh">無 Outstanding PDF的資料變更</span><span class="en">Change without outstanding PDF</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">沒有 Generated-but-unsubmitted／unvoided PDF，而進入 Concurrent Submission或 Generate PDF前發現 Policy List已改變。</span><span class="en">No generated-but-unsubmitted or unvoided PDF exists, and a Policy List change is found when Concurrent Submission is entered or before Generate PDF.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">Concurrent section必須顯示 Warning；任何 section有 Warning時均不可產生新 PDF。</span><span class="en">The Concurrent section must show Warning; no new PDF may be generated while any section shows Warning.</span></li>
+                <li><span class="zh">如果 Policy List由現有 Application新增另一份 Application（例如由 App A／B新增 App C），新增的 Application在第一次開啟時亦必須顯示 Policy change Warning。只是在既有清單中首次開啟、但並非新加入的 Application，不可因此被誤判為資料變更。</span><span class="en">If another application is added to the existing Policy List (for example, App C is added after App A and App B), the newly added application must also show a Policy change Warning when first opened. Merely opening an application that already existed in the list for the first time must not be treated as a change.</span></li>
+                <li><span class="zh">如果更新是在 Generate PDF checkpoint發現，本次 Generate PDF必須停止，並要求用戶先進入 Concurrent Submission覆核最新資料。</span><span class="en">If the change is found at the Generate PDF checkpoint, that attempt must stop and the user must first enter Concurrent Submission to review the latest data.</span></li>
+                <li><span class="zh">只進入、離開或再次進入 Concurrent Submission，以及按 OK、Save或 Next Page，均不可自動清除 Policy change Warning。</span><span class="en">Entering, leaving or re-entering Concurrent Submission, and pressing OK, Save or Next Page, must not automatically clear the Policy change Warning.</span></li>
+                <li><span class="zh">用戶須進入 Edit Mode覆核最新內容；Form在 Edit Mode內通過正常 declaration validation時，Warning即時清除並恢復 Completed，不需要按 OK儲存。</span><span class="en">The user must review the latest content in Edit Mode; when the form passes normal declaration validation inside Edit Mode, Warning clears immediately and Completed is restored without requiring OK to save.</span></li>
+                <li><span class="zh">如 Form仍然 Fail，Warning必須保留，直至所有適用 validation均通過。</span><span class="en">If the form still fails, Warning must remain until all applicable validations pass.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-07</span><span class="rule-name"><span class="zh">Outstanding PDF鎖定</span><span class="en">Outstanding PDF lock</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">任何相關 Application已有 Generated PDF，且尚未 Submit或 Void。</span><span class="en">Any related application has a Generated PDF that has not been submitted or voided.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">整個共享 Concurrent Submission不可進入 Edit Mode，但仍須顯示最新 Policy List及最新 Policy Status。</span><span class="en">The shared Concurrent Submission must not enter Edit Mode, but it must still display the latest Policy List and Policy Status.</span></li>
+                <li><span class="zh">Policy Card不設獨立 read-only規則；不能修改由整體 shared-form lock控制。</span><span class="en">A Policy Card has no independent read-only rule; non-editability is controlled by the shared-form lock.</span></li>
+                <li><span class="zh">Policy List更新不產生額外 change warning。</span><span class="en">Policy List updates do not create an additional change warning while locked.</span></li>
+                <li><span class="zh">其他符合自身 section requirements及共享 declaration gate的 Application仍可產生自己的 PDF，不需要等待較早 Application Submit或 Void。</span><span class="en">Another application that meets its own section requirements and the shared declaration gate may generate its own PDF without waiting for the earlier application to be submitted or voided.</span></li>
+                <li><span class="zh">擁有 active PDF的 Application被重新開啟時，系統必須返回該 Application自己的 Preview &amp; Sign Page，而不是顯示 Concurrent Submission。</span><span class="en">When an application that owns an active PDF is reopened, the system must return to that application's own Preview &amp; Sign Page rather than display Concurrent Submission.</span></li>
+                <li><span class="zh">沒有 active PDF的相關 Application才顯示 locked、read-only的最新 Concurrent Submission。例如 App A有 active PDF時，App B／C可查看 locked Concurrent；如 App A及 App B均有 active PDF，則由尚未產生 PDF的 App C查看。</span><span class="en">Only a related application without its own active PDF displays the latest locked, read-only Concurrent Submission. For example, if App A has an active PDF, App B or C may view locked Concurrent; if App A and App B both have active PDFs, an App C without a PDF is used to view it.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-08</span><span class="rule-name"><span class="zh">PDF Snapshot</span><span class="en">PDF Snapshot</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">為某份 Application產生 PDF。</span><span class="en">A PDF is generated for an application.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">每份 Application的 PDF及 signing lifecycle必須獨立。</span><span class="en">Each application's PDF and signing lifecycle must remain independent.</span></li>
+                <li><span class="zh">PDF必須保存產生當刻所使用的 application data snapshot。</span><span class="en">The PDF must retain the application data snapshot used at generation time.</span></li>
+                <li><span class="zh">其他 Application的後續操作不可修改已產生 PDF的內容或 signing status。</span><span class="en">Subsequent actions in another application must not modify the generated PDF content or signing status.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-09</span><span class="rule-name"><span class="zh">Max／Total計算觸發點</span><span class="en">Max / Total calculation triggers</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">Policy資料、背景 calculation inputs或選取內容改變。</span><span class="en">Policy data, background calculation inputs or selected content changes.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">Max及 Total Premium不可因一般輸入或 Policy List變動而即時重新計算。</span><span class="en">Max and Total Premium must not recalculate in real time merely because input or the Policy List changes.</span></li>
+                <li><span class="zh">只在進入 Concurrent Submission及按 Start Signing時重新計算。</span><span class="en">Recalculation occurs only when Concurrent Submission is entered and when Start Signing is pressed.</span></li>
+                <li><span class="zh">Generate PDF會讀取最新 Policy List，但不重新計算 Max／Total。</span><span class="en">Generate PDF reads the latest Policy List but does not recalculate Max or Total.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-10</span><span class="rule-name"><span class="zh">Max Enforcement</span><span class="en">Max Enforcement</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">系統取得最新 Total及 Maximum結果。</span><span class="en">The system obtains the latest Total and Maximum result.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">判斷採用 strict &lt;；只有 Total &lt; Maximum才 Pass。</span><span class="en">The comparison uses strict &lt;; only Total &lt; Maximum passes.</span></li>
+                <li><span class="zh">Total = Maximum或 Total &gt; Maximum均為 Fail。</span><span class="en">Total = Maximum and Total &gt; Maximum both fail.</span></li>
+                <li><span class="zh">Concurrent Submission顯示 Over Max時，只顯示結果及提示，不可令 section incomplete或阻止 Generate PDF。</span><span class="en">An Over Max result shown in Concurrent Submission is informational; it must not make the section incomplete or block Generate PDF.</span></li>
+                <li><span class="zh">真正的 Over Max blocking只在 Start Signing發生。</span><span class="en">Actual Over Max blocking occurs only at Start Signing.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-11</span><span class="rule-name"><span class="zh">Start Signing validation</span><span class="en">Start Signing validation</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶在 Sign Page按 Start Signing。</span><span class="en">The user presses Start Signing on the Sign Page.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">系統讀取最新 Policy List並重新計算最新 Max及 Total。</span><span class="en">The system reads the latest Policy List and recalculates the latest Max and Total.</span></li>
+                <li><span class="zh">Pass時允許開始簽署；Fail時阻止簽署但保留已產生 PDF。</span><span class="en">A Pass allows signing to start; a Fail blocks signing but retains the generated PDF.</span></li>
+                <li><span class="zh">Fail後用戶可返回 PDF Preview或 Void PDF後覆核資料。</span><span class="en">After a Fail, the user may return to PDF Preview or void the PDF and review the data.</span></li>
+                <li><span class="zh">一份 Application的 Start Signing結果不可影響其他 Application。</span><span class="en">One application's Start Signing result must not affect another application.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-12</span><span class="rule-name"><span class="zh">Manual Policy</span><span class="en">Manual Policy</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶手動新增或修改未顯示於 detected list的 Policy。</span><span class="en">The user manually adds or changes a policy not shown in the detected list.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">Manual Policy必須具有有效 Type及 Premium；未填妥時 Concurrent validation Fail。</span><span class="en">A Manual Policy must have a valid Type and Premium; an incomplete policy fails Concurrent validation.</span></li>
+                <li><span class="zh">Regular Manual Policy固定使用 Monthly Frequency，UI不提供 Frequency dropdown。</span><span class="en">A Regular Manual Policy always uses Monthly Frequency and the UI does not provide a Frequency dropdown.</span></li>
+                <li><span class="zh">Regular使用 Monthly Premium及 pt參與計算；Single使用 Single Premium。</span><span class="en">Regular uses Monthly Premium and pt in the calculation; Single uses Single Premium.</span></li>
+                <li><span class="zh">Manual Policy修改只在下一個 calculation checkpoint反映到 Max／Total。</span><span class="en">Manual Policy changes affect Max and Total only at the next calculation checkpoint.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-13</span><span class="rule-name"><span class="zh">Submit及 Void生命週期</span><span class="en">Submit and Void lifecycle</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">Application被 Submit、PDF被 Void或提交記錄被作廢。</span><span class="en">An application is submitted, a PDF is voided or a submission record is voided.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">每份 Application必須獨立 Submit；Submit不可自動改變其他 Application狀態。</span><span class="en">Each application must submit independently; submission must not automatically change another application's state.</span></li>
+                <li><span class="zh">Void PDF只清除目標 Application的 PDF及 signing狀態。</span><span class="en">Void PDF clears only the target application's PDF and signing state.</span></li>
+                <li><span class="zh">只有所有 Outstanding PDF均已 Submit或 Void，共享 Concurrent Submission才解除 Edit Lock。</span><span class="en">The shared Concurrent Submission unlocks for editing only after every Outstanding PDF has been submitted or voided.</span></li>
+                <li><span class="zh">Application提交成功後不可繼續一般編輯或簽署；切換離開再返回時 Submitted狀態必須保留。</span><span class="en">After successful submission, normal editing and signing are unavailable, and the Submitted state must persist after switching away and back.</span></li>
+              </ul></td>
+            </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-14</span><span class="rule-name"><span class="zh">Status UI一致性</span><span class="en">Status UI consistency</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">Section completion、validation、Policy change或 PDF lifecycle status改變。</span><span class="en">Section completion, validation, Policy change or PDF lifecycle status changes.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">Completed及 Warning必須互斥，任何 section同一時間只顯示其中一個。</span><span class="en">Completed and Warning must be mutually exclusive; a section shows only one at a time.</span></li>
+                <li><span class="zh">Policy change warning與一般 validation warning由不同原因控制，但 UI只呈現目前有效狀態。</span><span class="en">Policy change and normal validation warnings are driven by different causes, but the UI presents only the currently effective state.</span></li>
+                <li><span class="zh">PDF lifecycle status、section completion及 validation status不可混作同一個狀態。</span><span class="en">PDF lifecycle status, section completion and validation status must not be treated as the same state.</span></li>
+                <li><span class="zh">任何 section顯示 Warning時，Generate PDF必須 disabled；全部適用 section均為 Completed時才可產生新 PDF。</span><span class="en">Generate PDF must be disabled while any section shows Warning; a new PDF may be generated only when every applicable section is Completed.</span></li>
+                <li><span class="zh">重新開啟該 Application已存在的 PDF不屬於產生新 PDF，因此不受上述 Generate PDF gate限制。</span><span class="en">Reopening an existing PDF for that application is not generation of a new PDF and is therefore not blocked by the above Generate PDF gate.</span></li>
+              </ul></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
   </div>
@@ -918,8 +1179,12 @@ var CURRENT = {ref:"__cur__", prod:"ENCASH — Prudential Enhanced Cash Hospital
 
 var FREQ_MONTHS = {monthly:1, quarterly:3, halfyearly:6, yearly:12};
 var FREQ_LBL = {monthly:"Monthly", quarterly:"Quarterly", halfyearly:"Half-yearly", yearly:"Yearly"};
+var DEFAULT_SECTION_TICKS = [
+  "proposer","needs","fna","proposerFinancial","paymentRatio",
+  "lifeProposedFinancial","recommendation","quotation","otherInfo","healthVideo"
+];
 
-function blankPdf(){ return {done:false, byApp:"", byRef:"", frozenRefs:[], frozenSel:{}}; }
+function blankPdf(){ return {done:false, byApp:"", byRef:"", frozenRefs:[], frozenSel:{}, calc:null}; }
 function blankAppState(){
   return {
     tab:"concurrent",
@@ -928,7 +1193,10 @@ function blankAppState(){
     pdf:blankPdf(),
     signPageOpen:false,
     signed:false,
-    submitted:null
+    signBlock:false,
+    submitted:null,
+    policySnapshot:null,
+    policyChangePending:false
   };
 }
 
@@ -937,6 +1205,7 @@ function blankAppState(){
 var st = { opt:null, det:0, shownDet:0, sel:{}, curRef:POLICIES[0].ref, a11:{}, a11oth:"", a72:{},
            aff:{nla:800000, ndi:100000, mog:5000, cdi:50, ca:50}, pm:{},
            manual:[], mseq:0,
+           calc:null, affOK:true,
            lateRefs:[], editing:false, appStates:{}, detLocked:false };
 
 function $(id){ return document.getElementById(id); }
@@ -951,7 +1220,15 @@ function T(z,e){ return isZh() ? z : e; }
 var APP_LBL = ["App A","App B","App C","App D","App E"];
 function curPolicy(){ return POLICIES.filter(function(p){ return p.ref === st.curRef; })[0] || null; }
 function stateFor(ref){
-  if(!st.appStates[ref]) st.appStates[ref] = blankAppState();
+  if(!st.appStates[ref]){
+    st.appStates[ref] = blankAppState();
+    // Every App begins with its own prerequisite-section baseline. These ticks
+    // are separate objects per App; changing one App never changes another.
+    DEFAULT_SECTION_TICKS.forEach(function(k){ st.appStates[ref].sectionTicks[k] = true; });
+    // A newly opened App starts from the latest policy-list version. Existing
+    // Apps keep their own snapshot so a later refresh can detect a change.
+    st.appStates[ref].policySnapshot = policyListSignature();
+  }
   return st.appStates[ref];
 }
 function curAppState(){ return stateFor(st.curRef); }
@@ -964,9 +1241,9 @@ function activeLock(){
   return null;
 }
 function hasAnyPdf(){
-  return Object.keys(st.appStates).some(function(ref){ return st.appStates[ref].pdf.done; });
+  return !!activeLock();
 }
-// a "late" identity was added AFTER a PDF was generated — it forms its own new declaration
+// Track an identity detected while a PDF lock is active (demo status only).
 function isLate(){ return st.lateRefs.indexOf(st.curRef) >= 0; }
 // card list = detected same-day policies + the current application's own policy (always shown).
 // Each App freezes its own snapshot when it generates its PDF.
@@ -987,8 +1264,9 @@ function cardsList(){
     // the signer's list = exactly the batch it signed (frozen snapshot); narrower than the top table.
     out = pdf.frozenRefs.map(function(r){ return POLICIES.filter(function(p){ return p.ref === r; })[0]; }).filter(Boolean);
   } else {
-    // everyone else (incl. locked late apps) sees every detected same-day policy; signed ones are
-    // shown read-only with a "PDF generated" tag (renderCards). Locking just makes them non-editable.
+    // Everyone else (including later Apps) sees the latest detected list and
+    // current status tags. Cards are not independently read-only: the shared
+    // form-level PDF lock is what prevents entry to Edit Mode.
     var a = live().slice(), cp = curPolicy();
     if(cp && !a.some(function(p){ return p.ref === cp.ref; })) a.unshift(cp);
     out = a;
@@ -1131,8 +1409,9 @@ function renderCards(){
         '<span><span class="lbl">Pay Term</span><b>' + p.term + '</b></span>' +
         '<span><span class="lbl">SI Generated</span><b>' + p.si + '</b></span>' +
       '</div>';
-    // signed (frozen) cards are read-only even for a late identity; only editable cards can be toggled
-    d.addEventListener("click", function(){ if(roForm() || pdfGen) return; st.sel[p.ref] = !st.sel[p.ref]; render(); });
+    // A PDF status tag does not add a card-level restriction. Editability is
+    // controlled only by the shared form's display/edit mode and PDF lock.
+    d.addEventListener("click", function(){ if(roForm()) return; st.sel[p.ref] = !st.sel[p.ref]; render(); });
     wrap.appendChild(d);
   });
 }
@@ -1150,7 +1429,7 @@ function renderManualCards(){
       // display: plain text, no inputs / no box / no red / no delete
       d.className = "mcard ro";
       var modeTxt = isMon ? T("定期供款 Regular","Regular") : (isSin ? T("整付保費 Single","Single") : "—");
-      var amtTxt = "HKD " + money(m.amt || 0) + (isMon ? (" / " + (m.freq || "monthly") + (m.pt ? (" · pt " + m.pt) : "")) : "");
+      var amtTxt = "HKD " + money(m.amt || 0) + (isMon && m.pt ? (" · pt " + m.pt) : "");
       d.innerHTML =
         '<div class="mtop"><div class="mtitle">' + T("保單 ","Policy ") + (idx + 1) + '</div></div>' +
         '<div class="mline"><span class="mlbl">' + T("付款模式","Payment mode") + '</span>' + modeTxt + '</div>' +
@@ -1168,9 +1447,8 @@ function renderManualCards(){
         '<label class="mopt' + (isSin ? " on" : "") + '"><input type="radio" name="mode-' + m.id + '" value="single" data-mid="' + m.id + '"' + (isSin ? " checked" : "") + '> ' + T("整付保費 Single","Single") + '</label>' +
       '</div>';
     if(isMon){
-      html += '<div class="mfields">' +
-        '<label>' + T("每期金額 (HKD)","Amount/period (HKD)") + '<input class="m-amt" type="number" data-mid="' + m.id + '" value="' + (m.amt || "") + '"></label>' +
-        '<label>' + T("頻率 Freq","Frequency") + '<select class="m-freq" data-mid="' + m.id + '">' + freqOpts(m.freq) + '</select></label>' +
+      html += '<div class="mfields two">' +
+        '<label>' + T("每月保費 (HKD)","Monthly premium (HKD)") + '<input class="m-amt" type="number" data-mid="' + m.id + '" value="' + (m.amt || "") + '"></label>' +
         '<label>pt<input class="m-pt" type="number" data-mid="' + m.id + '" value="' + (m.pt || "") + '"></label>' +
       '</div>';
     } else if(isSin){
@@ -1186,21 +1464,21 @@ function renderManualCards(){
   if(ro) return;   // no interactive controls to wire in display mode
   // wire manual card controls
   wrap.querySelectorAll('.mdel').forEach(function(b){ b.addEventListener("click", function(e){ e.stopPropagation();
-    var id = +this.dataset.mid; st.manual = st.manual.filter(function(x){ return x.id !== id; }); render(); }); });
+    var id = +this.dataset.mid; st.manual = st.manual.filter(function(x){ return x.id !== id; });
+    acknowledgeCurrentPolicyList(); render(); }); });
   wrap.querySelectorAll('input[type="radio"][data-mid]').forEach(function(r){ r.addEventListener("change", function(){
-    var m = mById(+this.dataset.mid); if(m){ if(m.mode !== this.value) m.amt = 0; m.mode = this.value; if(m.mode==="monthly" && !m.pt) m.pt = 10; } render(); }); });
-  wrap.querySelectorAll('.m-freq').forEach(function(s){ s.addEventListener("change", function(){
-    var m = mById(+this.dataset.mid); if(m) m.freq = this.value; render(); }); });
+    var m = mById(+this.dataset.mid); if(m){ if(m.mode !== this.value) m.amt = 0; m.mode = this.value; if(m.mode==="monthly"){ m.freq = "monthly"; if(!m.pt) m.pt = 10; } }
+    acknowledgeCurrentPolicyList(); render(); }); });
   wrap.querySelectorAll('.m-amt').forEach(function(i){
     i.addEventListener("input", function(){
       var m = mById(+this.dataset.mid); if(!m) return; m.amt = parseFloat(this.value) || 0;
+      acknowledgeCurrentPolicyList();
       var card = this.closest('.mcard'); if(card) card.classList.toggle('incomplete', mIncomplete(m));  // live red border
-      renderAfford(); renderTotal();
     });
     i.addEventListener("change", function(){ render(); });   // full sync (tab ⚠ / PDF gate) on blur
   });
   wrap.querySelectorAll('.m-pt').forEach(function(i){
-    i.addEventListener("input", function(){ var m = mById(+this.dataset.mid); if(m) m.pt = parseFloat(this.value) || 0; renderAfford(); renderTotal(); });
+    i.addEventListener("input", function(){ var m = mById(+this.dataset.mid); if(m){ m.pt = parseFloat(this.value) || 0; acknowledgeCurrentPolicyList(); } });
     i.addEventListener("change", function(){ render(); });
   });
 }
@@ -1247,8 +1525,8 @@ function renderHeader(){
     var lname = p ? p.prod : T("本申請","this application");
     el.textContent = T("新一份聲明「" + lname + "」(未鎖) — 於 PDF 產生後才加入",
                        "New separate declaration for \u201C" + lname + "\u201D (unlocked) — added after the PDF");
-    l2.textContent = T("此申請可獨立作答;清單列出所有同日保單,已簽署的以「已產生 PDF」顯示為唯讀。",
-                       "This application can be completed independently; the list shows all same-day policies, with already-signed ones read-only and marked \u201CPDF generated\u201D.");
+    l2.textContent = T("此申請可獨立作答；清單列出所有同日保單及其最新狀態。卡片本身不會因 PDF 狀態而獨立鎖定。",
+                       "This application can be completed independently; the list shows all same-day policies and their latest status. A card is not independently locked by its PDF status.");
   } else {
     hd.classList.remove("locked");
     var name = (p && curInLive()) ? p.prod : T("本申請","this application");
@@ -1279,18 +1557,60 @@ function pmOf(p){ var o = st.pm[p.ref] || {}; return {
   pt:   o.pt   != null ? o.pt   : p.pt }; }
 function setPM(ref,k,v){
   // Manual rows use refs such as "m1". Keep their developer-panel fields on the
-  // manual policy itself so Type/Frequency/pt feed the same calculation source.
+  // manual policy itself so Type/pt feed the same calculation source.
+  // Manual Regular Premium is always monthly; Frequency is not user-editable.
   var mm = /^m(\d+)$/.exec(ref);
   if(mm){
     var m = mById(+mm[1]);
     if(!m) return;
-    if(k === "type") m.mode = (v === "regular") ? "monthly" : "single";
-    if(k === "freq") m.freq = v;
+    if(k === "type"){
+      m.mode = (v === "regular") ? "monthly" : "single";
+      if(m.mode === "monthly") m.freq = "monthly";
+    }
     if(k === "pt") m.pt = parseFloat(v) || 0;
     return;
   }
   if(!st.pm[ref]) st.pm[ref] = {};
   st.pm[ref][k] = v;
+}
+
+// Policy-list refresh is independent per App. The signature covers list
+// membership, material policy/calculation data, manual policies and App status.
+// Selection ticks and declaration answers are shared form content, not
+// policy-list changes.
+function policyListSignature(){
+  var refs = POLICIES.slice(0, Math.min(st.det + 1, POLICIES.length)).map(function(p){
+    var a = st.appStates[p.ref];
+    var status = a && a.submitted ? "submitted" : (a && a.pdf.done ? "generated" : "in-progress");
+    var pm = st.pm[p.ref] || {};
+    return [p.ref,p.po,p.lp,p.prod,p.cur,p.prem,p.term,p.si,status,
+      pm.type == null ? p.type : pm.type,
+      pm.freq == null ? p.freq : pm.freq,
+      pm.pt == null ? p.pt : pm.pt];
+  });
+  var manual = st.manual.map(function(m){
+    return [m.id,m.mode,m.amt,m.pt];
+  });
+  return JSON.stringify({policies:refs,manual:manual});
+}
+
+// Reload the latest list without recalculating Max/Total. The caller decides
+// whether a detected change should create a tab warning.
+function refreshPolicyList(trigger){
+  var ca = curAppState();
+  var before = ca.policySnapshot;
+  st.shownDet = st.det;
+  var latest = policyListSignature();
+  var changed = before !== null && before !== latest;
+  ca.policySnapshot = latest;
+  return {trigger:trigger, changed:changed};
+}
+
+// A manual policy is edited inside the currently visible shared form, so the
+// current App has already seen that exact change. Other Apps retain their own
+// older snapshots and will detect it on their next refresh.
+function acknowledgeCurrentPolicyList(){
+  curAppState().policySnapshot = policyListSignature();
 }
 
 // aggregate list = SELECTED cards only (O1) + completed manual policies
@@ -1305,7 +1625,7 @@ function aggList(){
       prod: T("手動保單","Manual policy"),
       amt: m.amt || 0,                        // manual amounts entered directly in HKD
       type: m.mode === "monthly" ? "regular" : "single",
-      freq: m.freq, pt: m.pt });
+      freq: "monthly", pt: m.pt });            // Regular manual premium is always monthly
   });
   return out;
 }
@@ -1328,7 +1648,7 @@ function renderAfford(){
       "<label>" + T("類型","Type") + ' <select class="pm-type" data-ref="' + x.ref + '">' +
         '<option value="single"' + (!reg?" selected":"") + ">" + T("單筆","Single") + "</option>" +
         '<option value="regular"' + (reg?" selected":"") + ">" + T("供款","Regular") + "</option></select></label>" +
-      (reg ? "<label>" + T("頻率","Freq") + ' <select class="pm-freq" data-ref="' + x.ref + '">' + freqOpts(x.freq) + "</select></label>" : "") +
+      (reg && !x.manual ? "<label>" + T("頻率","Freq") + ' <select class="pm-freq" data-ref="' + x.ref + '">' + freqOpts(x.freq) + "</select></label>" : "") +
       (reg ? '<label>pt <input class="ptin" type="number" data-ref="' + x.ref + '" value="' + x.pt + '"></label>' : "") +
       '<span class="conv">' + conv + "</span>";
     box.appendChild(row);
@@ -1336,20 +1656,18 @@ function renderAfford(){
   box.querySelectorAll(".pm-type").forEach(function(s){ s.addEventListener("change", function(){ setPM(this.dataset.ref,"type",this.value); render(); }); });
   box.querySelectorAll(".pm-freq").forEach(function(s){ s.addEventListener("change", function(){ setPM(this.dataset.ref,"freq",this.value); render(); }); });
   box.querySelectorAll(".ptin").forEach(function(i){
-    i.addEventListener("input", function(){ setPM(this.dataset.ref,"pt",parseFloat(this.value)||0); computeAfford(); renderTotal(); });
+    i.addEventListener("input", function(){ setPM(this.dataset.ref,"pt",parseFloat(this.value)||0); });
     i.addEventListener("change", function(){ render(); });
   });
-  computeAfford();
-  renderTotal();
+  renderAffordResult();
 }
 
-function computeAfford(){
+// Max and Total are snapshots. They are recalculated only when entering the
+// Concurrent Submission tab and when Start Signing is pressed.
+function recalculate(trigger){
   var a = {nla:num("af_nla"), ndi:num("af_ndi"), mog:num("af_mog"), cdi:num("af_cdi"), ca:num("af_ca")};
   var list = aggList(), pt = grpPt(list);
   var mS = maxSingleF(a,pt), mM = maxMonthlyF(a,pt);
-  $("aff_pt").textContent = pt + " yr";
-  $("aff_ms").textContent = "HKD " + money(mS);
-  $("aff_mm").textContent = "HKD " + money(mM);
 
   var hasS = list.some(function(x){ return x.type === "single"; });
   var hasR = list.some(function(x){ return x.type === "regular"; });
@@ -1364,11 +1682,35 @@ function computeAfford(){
     var sg  = list.filter(function(x){ return x.type === "single"; }).reduce(function(s,x){ return s + x.amt; }, 0);
     total = sg + one; limit = mS; limName = "maxSingle";
   }
+  var monthly = list.reduce(function(s,x){
+    return s + (x.type === "regular" ? monthlyVal(x) : x.amt/12);
+  }, 0);
+  var single = list.reduce(function(s,x){
+    return s + (x.type === "regular" ? monthlyVal(x)*x.pt*12 : x.amt);
+  }, 0);
+  var pass = total < limit;                       // strict <
+  st.calc = {
+    trigger:trigger, pt:pt, maxSingle:mS, maxMonthly:mM,
+    mode:mode, total:total, limit:limit, limName:limName,
+    monthly:monthly, single:single, pass:pass
+  };
+  st.affOK = pass;                                // display/signing result only; not the PDF-generation gate
+  return st.calc;
+}
+
+function renderAffordResult(){
+  var c = st.calc || {
+    pt:1, maxSingle:0, maxMonthly:0, mode:"C", total:0, limit:0,
+    limName:"maxSingle", monthly:0, single:0, pass:true
+  };
+  $("aff_pt").textContent = c.pt + " yr";
+  $("aff_ms").textContent = "HKD " + money(c.maxSingle);
+  $("aff_mm").textContent = "HKD " + money(c.maxMonthly);
+
+  var mode = c.mode, total = c.total, limit = c.limit, limName = c.limName, pass = c.pass;
   var modeTxt = mode + (mode==="A"?T(" · 全單筆"," · all single"):mode==="B"?T(" · 全供款"," · all regular"):T(" · 混合"," · mixed"));
   var totalTxt = "HKD " + money(total) + (mode==="B" ? " /" + T("月","mth") : "");
 
-  var pass = total < limit;                       // strict <
-  st.affOK = pass;                                // affordability result feeds the tab ⚠ and PDF gate
   var sym = total < limit ? " < " : (total > limit ? " > " : " = ");
   var box = $("a19out");
   box.className = "aggverdict " + (pass ? "pass" : "block");
@@ -1397,17 +1739,9 @@ function computeAfford(){
 
 /* iPad Total section — per-policy, no cross-policy pt sharing */
 function renderTotal(){
-  var list = aggList();
-  // Monthly = Σ each policy's monthly value (regular: amt/freqMonths ; single: amt/12, pt=1)
-  var monthly = list.reduce(function(s,x){
-    return s + (x.type === "regular" ? monthlyVal(x) : x.amt/12);
-  }, 0);
-  // Single (lump sum) = Σ each policy one-off (regular: monthlyValue × own pt × 12 ; single: amt)
-  var single = list.reduce(function(s,x){
-    return s + (x.type === "regular" ? monthlyVal(x)*x.pt*12 : x.amt);
-  }, 0);
-  $("totMonthly").textContent = money(monthly);
-  $("totSingle").textContent = money(single);
+  var c = st.calc || {monthly:0,single:0};
+  $("totMonthly").textContent = money(c.monthly);
+  $("totSingle").textContent = money(c.single);
 }
 
 function renderVerdict(){
@@ -1422,7 +1756,7 @@ function renderVerdict(){
   // while the shared content is locked by a PDF (not yet submitted), it is read-only for everyone
   var lk = activeLock();
   if(lk){
-    var lockedPass = g.ok && (st.affOK !== false);
+    var lockedPass = g.ok;
     v.className = "verdict " + (lockedPass ? "pass" : "block");
     v.innerHTML = eb +
       '<div class="status"><span class="ic">' + (lockedPass ? "&#10003;" : "&#128274;") + '</span>' +
@@ -1431,7 +1765,7 @@ function renderVerdict(){
       '<div class="sit" style="margin-top:6px">' +
         (lockedPass
           ? T("目前 App 可在完成自己的分頁後產生獨立 PDF。","This App may generate its own PDF after completing its own tabs.")
-          : T("目前 App 未符合共用內容或上限要求。","This App does not meet the shared-content or affordability requirements.")) +
+          : T("目前 App 未符合共用內容要求。","This App does not meet the shared-content requirements.")) +
       '</div>';
     if(!g.ok && g.need.length){
       v.innerHTML += '<div class="sit" style="margin-top:9px">' + T("尚欠:","Outstanding:") + '</div><ul class="need">' +
@@ -1515,6 +1849,14 @@ function render(){
 
   var lk = locked();
   var g = gate();
+  var ca = curAppState();
+
+  // A policy-change warning is sticky: navigation, OK and Next Page do not
+  // clear it. The warning clears only when the latest form is actively
+  // revalidated inside Edit Mode and passes. An outstanding PDF suppresses
+  // change-only warnings because the shared form is locked read-only.
+  if(lk && ca.policyChangePending) ca.policyChangePending = false;
+  if(!lk && st.editing && ca.policyChangePending && g.ok) ca.policyChangePending = false;
 
   var fb = $("formbody");
   if(fb){
@@ -1532,14 +1874,15 @@ function render(){
 
   // Confirmed intended behaviour: completion follows the valid current content.
   // OK leaves the edit view; it is not a separate completion/save gate.
-  var concurrentDone = g.ok && (st.affOK !== false);   // tab passes when declaration ok + within affordability max
+  // Concurrent completion follows declaration/form validity only. An Over Max
+  // result remains visible but does not change the tab status or PDF gate.
+  var concurrentDone = g.ok && (lk || !ca.policyChangePending);
   var allTabsDone = concurrentDone && curTabs().basic && curTabs().extended;
 
   // Each App owns its own PDF/signing state. Another App's active PDF locks the
   // shared content read-only, but does not block an eligible App from generating its own PDF.
-  var ca = curAppState();
   var myActivePdf = ca.pdf.done && !ca.submitted;
-  var canPdf = myActivePdf || (!ca.submitted && allTabsDone && (st.affOK !== false));
+  var canPdf = myActivePdf || (!ca.submitted && allTabsDone);
   $("genpdf").disabled = !canPdf;
   renderPdfStatus(canPdf);
 
@@ -1550,12 +1893,12 @@ function render(){
   renderTabs(concurrentDone);      // tab active state + ✓/⚠ per tab
   renderPageSwitch();              // show concurrent vs simple demo page
   renderSignPage();                // full-screen Preview & Sign page
+  renderSubmittedPage();           // submitted App replaces the whole iPad with a persistent success state
   renderSubmitRec();               // control-panel submission record
   renderStatusCard();              // at-a-glance status summary
 
   $("voidgrp").hidden = !lk;
   var amSigner = myActivePdf;
-  if($("voidpdf")){ $("voidpdf").hidden = !lk; $("voidpdf").disabled = !amSigner; }
   if($("signVoid")) $("signVoid").disabled = !amSigner;
 
   renderVerdict();
@@ -1569,15 +1912,19 @@ function renderTabs(concurrentDone){
   });
   function mark(tab, done){
     var t = $("tick_" + tab), w = $("tabwarn_" + tab);
-    if(t) t.hidden = !done;
-    if(w) w.hidden = done;
+    // UI-only visibility: one status icon at a time. Inline display prevents
+    // the circular tick's display:grid style from exposing a hidden tick.
+    if(t){ t.hidden = !done; t.style.display = done ? "grid" : "none"; }
+    if(w){ w.hidden = done; w.style.display = done ? "none" : ""; }
   }
   mark("concurrent", concurrentDone);
   mark("basic", curTabs().basic);
   mark("extended", curTabs().extended);
   // Omitted demo sections also use per-App status; a newly opened App never inherits these ticks.
   document.querySelectorAll("[data-app-tick]").forEach(function(t){
-    t.hidden = !ca.sectionTicks[t.getAttribute("data-app-tick")];
+    var show = !!ca.sectionTicks[t.getAttribute("data-app-tick")];
+    t.hidden = !show;
+    t.style.display = show ? "grid" : "none";
   });
 }
 
@@ -1589,7 +1936,6 @@ function renderPageSwitch(){
   $("simplePage").hidden = onConc;
   if(!onConc){
     var name = (tab === "basic") ? "Basic Info" : "Extended Part";
-    $("simpTitle").textContent = name;
     $("simpH1").textContent = name;
   }
 }
@@ -1660,11 +2006,17 @@ $("adddet").addEventListener("click", function(){
   st.det += 1;                            // one more OTHER detected policy; keep current identity (curRef)
   var newRef = POLICIES[st.det] ? POLICIES[st.det].ref : null;   // the newly-added batch member
   if(afterPdf && newRef && st.lateRefs.indexOf(newRef) < 0) st.lateRefs.push(newRef);  // added after lock → late
+  if(!afterPdf && newRef){
+    // Create the newly detected App against the pre-refresh snapshot. It must
+    // review the same 2→3 (or equivalent) Policy List change when first opened.
+    // This is different from merely opening a pre-existing App for the first time.
+    stateFor(newRef).policyChangePending = true;
+  }
   render();
   if(afterPdf){
     var lbl = APP_LBL[st.det] || ("App " + (st.det + 1));
-    log("示範:PDF 產生後才偵測到多 1 張(" + lbl + ")。它屬新一份聲明 — 切到其身份時清單只會顯示它自己。",
-        "Demo: one more policy detected AFTER the PDF (" + lbl + "). It is a new, separate declaration — switching to its identity shows only itself.");
+    log("示範:PDF 產生後才偵測到多 1 張(" + lbl + ")。共用內容保持鎖定，所有相關 App 只顯示最新保單清單，不新增 Policy change 警告。",
+        "Demo: one more policy was detected after PDF generation (" + lbl + "). Shared content stays locked; related Apps display the latest policy list without a new policy-change warning.");
   } else {
     log("示範:多偵測到 1 張其他保單(共 " + st.det + " 張其他保單,連本申請合共 " + (st.det + 1) + " 張)。",
         "Demo: one more OTHER policy detected (now " + st.det + " others; " + (st.det + 1) + " cards incl. the current app).");
@@ -1692,6 +2044,7 @@ document.querySelectorAll(".sitbtn button").forEach(function(b){
 $("addp").addEventListener("click", function(){
   if(roForm()) return;
   st.manual.push({ id:++st.mseq, mode:null, amt:0, freq:"monthly", pt:10 });
+  acknowledgeCurrentPolicyList();
   render();
   log("已在畫面加入一張保單,請選擇付款模式。",
       "Added a policy on screen — please select a payment mode.");
@@ -1749,14 +2102,38 @@ $("editok").addEventListener("click", function(){ commitEdit(); log(gate().ok ? 
 $("editback").addEventListener("click", function(){ closeEdit(); log("已離開編輯；目前輸入內容已保留,完成狀態按現有內容判斷。", "Left edit; current input is retained and completion follows the current content."); });
 
 $("genpdf").addEventListener("click", function(){
-  if($("genpdf").disabled || !gate().ok) return;
   var ca = curAppState();
   if(ca.pdf.done && !ca.submitted){ ca.signPageOpen = true; render(); return; }   // reopen only this App's own PDF
+  if($("genpdf").disabled) return;
+
+  // Generate PDF reloads the latest policy list but deliberately does not
+  // recalculate Max/Total. Without an outstanding PDF, a newly detected list
+  // change marks this App's Concurrent tab for review and stops this attempt.
+  // With an outstanding PDF, shared content is locked: show the latest list,
+  // do not create a policy-change warning, and continue if normal form gates pass.
+  var hadLock = locked();
+  var refreshed = refreshPolicyList("generate-pdf");
+  if(!hadLock && refreshed.changed){
+    ca.policyChangePending = true;
+    render();
+    log("已重新載入最新保單清單；偵測到更新。請先開啟 Concurrent Submission 查看最新資料。",
+        "The latest policy list has been reloaded and a change was detected. Open Concurrent Submission to review the latest information first.");
+    return;
+  }
+  ca.policyChangePending = false;
+  var g = gate();
+  var tabsReady = curTabs().basic && curTabs().extended;
+  if(!g.ok || !tabsReady){
+    render();
+    log("已重新載入最新保單清單；目前表格或本申請分頁仍未符合 PDF 要求。",
+        "The latest policy list has been reloaded; the form or this App's tabs do not currently meet the PDF requirements.");
+    return;
+  }
   var ps = live(), app = T("本申請","this app");
   for(var i=0;i<ps.length;i++){ if(ps[i].ref === st.curRef){ app = APP_LBL[i] || ("App "+(i+1)); break; } }
   var frz = {}; cardsList().forEach(function(p){ frz[p.ref] = !!st.sel[p.ref]; });   // freeze tick state at PDF time
-  ca.pdf = {done:true, byApp:app, byRef:st.curRef, frozenRefs: cardsList().map(function(p){ return p.ref; }), frozenSel: frz};
-  ca.signPageOpen = true; ca.signed = false;    // this App's sign state is independent
+  ca.pdf = {done:true, byApp:app, byRef:st.curRef, frozenRefs: cardsList().map(function(p){ return p.ref; }), frozenSel: frz, calc:null};
+  ca.signPageOpen = true; ca.signed = false; ca.signBlock = false;    // this App's sign state is independent
   render();
   log("已產生 PDF(由 " + app + ")。前往預覽及簽署頁 —— 需提交或作廢方可離開。",
       "PDF generated (by " + app + "). Opening the Preview & Sign page — Submit or Void to leave.");
@@ -1765,8 +2142,9 @@ $("genpdf").addEventListener("click", function(){
 function voidPdf(){
   var ca = curAppState();
   if(!ca.pdf.done || ca.submitted) return;
-  ca.pdf = blankPdf(); ca.signPageOpen = false; ca.signed = false;
+  ca.pdf = blankPdf(); ca.signPageOpen = false; ca.signed = false; ca.signBlock = false;
   if(!hasAnyPdf()) st.lateRefs = [];
+  enterConcurrent();
   render();
   log(locked() ? "已作廢本申請 PDF；其他未完成 PDF 仍令共用內容保持鎖定。" : "已作廢本申請 PDF；共用內容已解鎖。",
       locked() ? "This application's PDF was voided; other outstanding PDFs still keep the shared content locked." : "This application's PDF was voided; the shared content is now unlocked.");
@@ -1802,10 +2180,27 @@ function renderSubmitRec(){
     '<span class="sr-refs">' + sub.refs.join(", ") + '</span>';
 }
 
+function renderSubmittedPage(){
+  var page = $("submittedpage"); if(!page) return;
+  var ca = curAppState(), sub = ca.submitted;
+  page.hidden = !sub;
+  var screen = document.querySelector(".screen");
+  if(screen) screen.classList.toggle("submitted-open", !!sub);
+  if(!sub) return;
+  var p = curPolicy();
+  $("submittedMeta").innerHTML =
+    '<div>' + (sub.byApp || T("本申請","This App")) + '</div>' +
+    '<div style="margin-top:4px;color:var(--mut);font-weight:600">' +
+      T("申請書編號 ","App Ref ") + (p ? p.ref : st.curRef) +
+    '</div>';
+}
+
 function renderSignPage(){
   var sp = $("signpage"); if(!sp) return;
   var ca = curAppState();
   sp.hidden = !ca.signPageOpen;
+  var screen = document.querySelector(".screen");
+  if(screen) screen.classList.toggle("sign-open", !!ca.signPageOpen);
   if(!ca.signPageOpen) return;
   var p = curPolicy();
   if($("spCount")) $("spCount").textContent = "(1)";
@@ -1821,27 +2216,83 @@ function renderSignPage(){
   $("finishSign").classList.toggle("done", ca.signed);
   $("finishSign").innerHTML = ca.signed
     ? '<span class="zh">已完成簽署 ✓</span><span class="en">Signing complete ✓</span>'
-    : '<span class="zh">繼續簽署</span><span class="en">Finish signing</span>';
+    : '<span class="zh">開始簽署</span><span class="en">Start Signing</span>';
+  $("finishSign").disabled = ca.signed;
   $("submitBtn").disabled = !ca.signed;
+
+  var block = $("signblock");
+  block.hidden = !ca.signBlock;
+  if(ca.signBlock){
+    var c = ca.pdf.calc || st.calc || {total:0,limit:0};
+    $("signblockCalc").innerHTML =
+      '<div class="sbc-row"><span>' + T("最新總額","Latest total") + '</span><b>HKD ' + money(c.total) + '</b></div>' +
+      '<div class="sbc-row"><span>' + T("可負擔上限","Affordability maximum") + '</span><b>HKD ' + money(c.limit) + '</b></div>' +
+      '<div class="sbc-row"><span>' + T("結果","Result") + '</span><b style="color:var(--red)">' + T("超出上限","Over maximum") + '</b></div>';
+  }
 }
 
-$("finishSign").addEventListener("click", function(){ curAppState().signed = true; render(); log("已完成本申請簽署 — 現可提交。", "Signing finished for this application — you can now submit."); });
+$("finishSign").addEventListener("click", function(){
+  var ca = curAppState();
+  if(ca.signed) return;
+  refreshPolicyList("start-signing");              // use the latest policy list/status
+  var c = recalculate("start-signing");          // second and only other Max/Total trigger
+  ca.pdf.calc = Object.assign({}, c);
+  if(!c.pass){
+    ca.signed = false;
+    ca.signBlock = true;
+    render();
+    log("開始簽署已被阻止:最新一併投保保費超出可負擔上限。",
+        "Start Signing blocked: the latest concurrent premium exceeds the affordability maximum.");
+    return;
+  }
+  ca.signBlock = false;
+  ca.signed = true;                              // demo: successful Start Signing completes the signing step
+  render();
+  log("開始簽署前的最新上限檢查已通過 — 已完成本申請簽署,現可提交。",
+      "The latest max check passed before Start Signing — signing is complete and the application can now be submitted.");
+});
+
+$("signblockBack").addEventListener("click", function(){
+  curAppState().signBlock = false;
+  render();
+  log("已返回 PDF 預覽；簽署仍未開始。", "Returned to PDF preview; signing has not started.");
+});
+$("signblockVoid").addEventListener("click", voidPdf);
 
 $("submitBtn").addEventListener("click", function(){
   var ca = curAppState();
   if(!ca.signed) return;
   // App List items submit independently; the shared Concurrent record remains available to the other Apps.
   ca.submitted = { refs:[st.curRef], byApp:ca.pdf.byApp };
-  ca.signPageOpen = false; ca.signed = false;
+  ca.signPageOpen = false; ca.signed = false; ca.signBlock = false;
+  if(!hasAnyPdf()) st.lateRefs = [];
+  enterConcurrent();
   render();
   log("本申請已獨立提交(由 " + ca.submitted.byApp + ")。其他 App 的分頁、PDF 及簽署狀態不受影響。",
       "This application was submitted independently (by " + ca.submitted.byApp + "). Other Apps' tabs, PDFs and signing states are unchanged.");
 });
 
+function voidSubmission(){
+  var ca = curAppState();
+  if(!ca.submitted) return;
+  var app = ca.submitted.byApp || T("本申請","this app");
+  ca.submitted = null;
+  ca.pdf = blankPdf();
+  ca.signPageOpen = false;
+  ca.signed = false;
+  ca.signBlock = false;
+  ca.tab = "concurrent";
+  if(!hasAnyPdf()) st.lateRefs = [];
+  enterConcurrent();
+  render();
+  log("已作廢 " + app + " 的提交記錄（示範）；此 App 可再次操作,其他 App 不受影響。",
+      "Voided the submission record for " + app + " (demo); this App can be used again and other Apps are unchanged.");
+}
+$("submittedVoid").addEventListener("click", voidSubmission);
+
 function showLock(msg){ $("lockmsg").textContent = msg; $("lockmask").hidden = false; }
 $("lockok").addEventListener("click", function(){ $("lockmask").hidden = true; });
 $("lockmask").addEventListener("click", function(e){ if(e.target === this) this.hidden = true; });
-$("voidpdf").addEventListener("click", voidPdf);
 
 $("identseg").addEventListener("click", function(e){
   var b = e.target.closest("button[data-ref]"); if(!b) return;
@@ -1851,7 +2302,11 @@ $("identseg").addEventListener("click", function(e){
   ca.tab = "concurrent";                    // entering from the App List starts on this App's Concurrent tab
   // Only this App's own PDF/signing page can reopen. No action is inherited from the previous App.
   ca.signPageOpen = !!(ca.pdf.done && !ca.submitted);
-  enterConcurrent();              // refresh snapshot
+  if(ca.signPageOpen){
+    st.shownDet = st.det;                    // reopening Sign Page is not the Concurrent-tab calculation trigger
+  } else {
+    enterConcurrent();
+  }
   render();
   log("已從 App List 切換至另一份獨立申請 — " + (ca.signPageOpen ? "返回此 App 的預覽及簽署頁。" : "只載入此 App 的分頁狀態及共用 Concurrent 內容。"),
       "Switched to another independent App List item — " + (ca.signPageOpen ? "back to this App's Preview & Sign page." : "loaded only this App's tab state plus the shared Concurrent content."));
@@ -1861,18 +2316,17 @@ $("rst").addEventListener("click", function(){
   st = { opt:null, det:0, shownDet:0, sel:{}, curRef:POLICIES[0].ref, a11:{}, a11oth:"", a72:{},
          aff:{nla:800000, ndi:100000, mog:5000, cdi:50, ca:50}, pm:{},
          manual:[], mseq:0,
+         calc:null, affOK:true,
          lateRefs:[], editing:false, appStates:{}, detLocked:false };
-  applyDefaults();
-  enterConcurrent();   // reset lands on concurrent tab → default option per total (opt is null after reset)
   $("af_nla").value=800000; $("af_ndi").value=100000; $("af_mog").value=5000; $("af_cdi").value=50; $("af_ca").value=50;
+  applyDefaults();
+  enterConcurrent();   // reset lands on concurrent tab and triggers a fresh calculation
   render();
   log("已重設。", "Reset.");
 });
 
-// AC19 affordability inputs -> recompute + refresh tab/PDF gate (static inputs keep focus across render)
-["af_nla","af_ndi","af_mog","af_cdi","af_ca"].forEach(function(id){
-  $(id).addEventListener("input", function(){ computeAfford(); render(); });
-});
+// AC19 inputs are read only by the two calculation triggers. Input itself does
+// not recalculate Max or Total.
 
 function setLang(l){
   document.body.dataset.lang = l;
@@ -1886,22 +2340,29 @@ $("le").addEventListener("click", function(){ setLang("en"); });
 function applyDefaults(){
   st.sel = {}; st.sel[POLICIES[0].ref] = true;   // the first/original app card is ticked by default
   st.shownDet = st.det;                          // display snapshot in sync
-  // Only App A receives the prototype's pre-completed prerequisite sections.
-  // Newly opened App List items start with their own blank section status.
-  var first = stateFor(POLICIES[0].ref);
-  ["proposer","needs","fna","proposerFinancial","paymentRatio","lifeProposedFinancial",
-   "recommendation","quotation","otherInfo","healthVideo"].forEach(function(k){ first.sectionTicks[k] = true; });
+  // Create App A's independent baseline now. Other Apps receive the same
+  // prerequisite baseline only when their own state is first created.
+  stateFor(POLICIES[0].ref);
   // option (A/B) is NOT auto-set — the user chooses it (shared content must not change by itself)
 }
-// (re)entering the Concurrent tab: refresh the display snapshot only. Option (A/B) is NEVER auto-set — the user always chooses.
+// (re)entering the Concurrent tab refreshes detected policies and recalculates
+// Max/Total. Option (A/B) is NEVER auto-set — the user always chooses.
 function enterConcurrent(){
-  st.shownDet = st.det;
+  var ca = curAppState();
+  var hasLock = locked();
+  var refreshed = refreshPolicyList("concurrent-tab");
+  // Without an outstanding PDF, a detected policy-list change keeps this
+  // section in Warning until the latest form passes inside Edit Mode.
+  // Navigation, OK and Next Page never clear the change-only warning.
+  if(hasLock) ca.policyChangePending = false;
+  else if(refreshed.changed) ca.policyChangePending = true;
+  recalculate("concurrent-tab");
 }
 
 applyDefaults();
 enterConcurrent();
 render();
-log("原型已載入 — 全部行為屬草稿,未經確認。", "Prototype loaded — every behaviour here is draft, not confirmed.");
+log("示範原型已載入。", "Demo prototype loaded.");
 </script>
 </body>
 </html>
