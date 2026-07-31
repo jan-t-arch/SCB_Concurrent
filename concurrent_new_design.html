@@ -329,9 +329,9 @@ table.ac18 tr:last-child td{border-bottom:0}
 .pdf-toolbar .pdf-pagecount{margin-left:auto;font-weight:700}
 .pdf-workspace{flex:1;min-height:0;display:block;padding:8px;overflow:auto}
 .pdf-paper{background:#fff;border:1px solid #CFD4D6;box-shadow:0 3px 14px rgba(34,44,48,.12);padding:24px 25px 25px;min-width:0;min-height:710px;width:100%;color:#2E3437;font-family:Arial,"Microsoft JhengHei",sans-serif}
-.pdf-brand{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #59666A;padding-bottom:7px;margin-bottom:14px}
+.pdf-dochead{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #59666A;padding-bottom:7px;margin-bottom:14px}
 .pdf-sectionlabel{display:inline-block;background:#EEF4F4;color:#40565A;border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:800;letter-spacing:.15px}
-.pdf-brand .pdf-formname{text-align:right;font-size:11px;line-height:1.45;color:#687478}
+.pdf-dochead .pdf-formname{text-align:right;font-size:11px;line-height:1.45;color:#687478}
 .pdf-doc-title{font-size:18px;font-weight:800;margin:0 0 14px;color:#26383B}
 .pdf-q{font-size:13px;line-height:1.5;margin-bottom:10px}
 .pdf-q b{display:block;font-size:13.5px;margin-bottom:4px}
@@ -393,7 +393,6 @@ table.ac18 tr:last-child td{border-bottom:0}
 .sp-card .spc-status{font-size:11px;font-weight:800;margin-top:4px}
 .sp-card .spc-k{font-size:10.5px;color:#7D878A;font-weight:700;margin-bottom:2px}
 .sp-card .spc-v{font-size:14px;font-weight:700;color:#344044}
-.sp-card .spc-msv{display:inline-block;border:1px solid #D8A23E;color:#B88118;border-radius:5px;padding:0 5px;font-size:9px;margin-left:5px;vertical-align:2px}
 .spc-productline{display:grid;grid-template-columns:115px minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:10px;font-size:10.8px;color:#455155}
 .spc-product{grid-column:2}
 .spc-docs{grid-column:3}
@@ -1115,7 +1114,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
         </div>
         <div class="pdf-workspace">
           <article class="pdf-paper">
-            <div class="pdf-brand">
+            <div class="pdf-dochead">
               <div class="pdf-sectionlabel">Financial Needs Analysis section</div>
               <div class="pdf-formname">Financial Needs Analysis<br>財務需要分析</div>
             </div>
@@ -1399,6 +1398,19 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
                 <li><span class="zh">Concurrent頁不可直接Delete其他App的Policy。</span><span class="en">Concurrent must not provide a control to delete another App's Policy directly.</span></li>
               </ul></td>
             </tr>
+
+            <tr>
+              <td data-label="Rule ID"><span class="rule-id">SYS-16</span><span class="rule-name"><span class="zh">Concurrent Tab「&lt;!&gt;」邏輯</span><span class="en">Concurrent Tab “&lt;!&gt;” logic</span></span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">沒有Outstanding PDF，而系統在重新進入Concurrent Submission、按Preview &amp; Sign或按Start Signing時，發現最新Policy List／lifecycle status與目前Application上次確認的snapshot不同。</span><span class="en">No outstanding PDF exists, and re-entering Concurrent Submission, pressing Preview &amp; Sign or pressing Start Signing finds that the latest Policy List/lifecycle status differs from the current application's last confirmed snapshot.</span></td>
+              <td data-label="Expected System Behaviour"><ul>
+                <li><span class="zh">Add／Delete Policy、Policy status改變，以及Premium、Pay Term、Type、Frequency或pt等重要資料改變，均須觸發目前Application的Concurrent Tab「&lt;!&gt;」。</span><span class="en">Adding/deleting a Policy, a Policy status change, or a material change to Premium, Pay Term, Type, Frequency or pt must trigger “&lt;!&gt;” on the current application's Concurrent Tab.</span></li>
+                <li><span class="zh">只新增空白Application不算Policy List改變，因此不觸發Concurrent「&lt;!&gt;」；其後在該Application的Quotation加入Policy才觸發。</span><span class="en">Adding an empty Application alone is not a Policy List change and does not trigger Concurrent “&lt;!&gt;”; adding its Policy later in Quotation does trigger it.</span></li>
+                <li><span class="zh">「&lt;!&gt;」必須按Application獨立保存，並使用各Application自己的最後確認snapshot作比較；一個Application完成重新確認，不可清除其他Application的「&lt;!&gt;」。</span><span class="en">“&lt;!&gt;” must be stored per application and compared against that application's own last confirmed snapshot; reconfirming one application must not clear another application's “&lt;!&gt;”.</span></li>
+                <li><span class="zh">離開Concurrent Tab、按Next Page或只按OK均不可自動清除「&lt;!&gt;」。只有用戶在Edit Mode內檢視最新內容，而目前共享表格通過正常validation後，才可更新該Application的snapshot並清除「&lt;!&gt;」。</span><span class="en">Leaving the Concurrent Tab, pressing Next Page or merely pressing OK must not automatically clear “&lt;!&gt;”. It may clear only after the user reviews the latest content in Edit Mode and the current shared form passes normal validation, allowing that application's snapshot to be updated.</span></li>
+                <li><span class="zh">任何適用Section顯示「&lt;!&gt;」時，該Application不可開始新的PDF流程；Preview &amp; Sign／Start Signing重新載入資料後如觸發「&lt;!&gt;」，必須停止並要求重新確認。</span><span class="en">While any applicable section shows “&lt;!&gt;”, that application cannot start a new PDF flow. If reloading at Preview &amp; Sign or Start Signing triggers “&lt;!&gt;”, processing must stop and require reconfirmation.</span></li>
+                <li><span class="zh">有Outstanding PDF時，Policy List更新不可新增change-only「&lt;!&gt;」，舊PDF繼續使用其frozen snapshot；但最新共享內容如未通過一般validation，Concurrent仍須顯示「&lt;!&gt;」，並阻止其他Application建立新PDF。</span><span class="en">When an outstanding PDF exists, a Policy List update must not create a change-only “&lt;!&gt;”, and the existing PDF continues using its frozen snapshot. However, if the latest shared content fails normal validation, Concurrent must still show “&lt;!&gt;” and block another application from creating a new PDF.</span></li>
+              </ul></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -1436,18 +1448,18 @@ var FX_MAP = {HKD:1, USD:7.803548, AUD:5.103225, SGD:5.812366};
 var FX_UPDATED = "28-May-2026";
 
 var POLICIES = [
-  {ref:"APP-20260717-001", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"PRUHealth VHIS Plan",
+  {ref:"APP-20260717-001", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy 123",
    cur:"HKD", prem:18800.00, term:"20 Years", si:"17/07/2026 10:45", type:"regular", freq:"yearly", pt:20},
-  {ref:"APP-20260717-002", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"ENCASH Saving Plan",
+  {ref:"APP-20260717-002", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy 345",
    cur:"USD", prem:7825.82, term:"5 / @100", si:"17/07/2026 11:34", type:"regular", freq:"yearly", pt:5},
-  {ref:"APP-20260717-003", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"PRULife Protector",
+  {ref:"APP-20260717-003", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy XYZ",
    cur:"HKD", prem:12960.00, term:"10 Years", si:"17/07/2026 12:05", type:"regular", freq:"yearly", pt:10},
-  {ref:"APP-20260717-004", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"PRUSaver Plus",
+  {ref:"APP-20260717-004", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy 789",
    cur:"HKD", prem:9600.00, term:"15 Years", si:"17/07/2026 13:20", type:"regular", freq:"yearly", pt:12}
 ];
 
 /* current application (this case) — its own premium counts in the aggregate */
-var CURRENT = {ref:"__cur__", prod:"ENCASH — Prudential Enhanced Cash Hospital Income Savings",
+var CURRENT = {ref:"__cur__", prod:"Policy ABC",
   cur:"USD", prem:5000.00, term:"5 / @100", type:"regular", freq:"yearly", pt:5};
 
 var FREQ_MONTHS = {monthly:1, quarterly:3, halfyearly:6, yearly:12};
@@ -2700,8 +2712,8 @@ function renderSignPage(){
     '<div class="spc-grid">' +
       '<div class="spc-statuscell"><div class="spc-ic">' + (ca.signed ? "&#10003;" : "&#128203;") + '</div><div class="spc-status">' +
         (ca.signed ? T("簽署完成","Signing Complete") : T("待簽署","To Sign")) + '</div></div>' +
-      '<div><div class="spc-k">' + T("受保人","Insured") + '</div><div class="spc-v">' + p.lp + '<span class="spc-msv">MSV</span></div></div>' +
-      '<div><div class="spc-k">' + T("投保人","Applicant") + '</div><div class="spc-v">' + p.po + '<span class="spc-msv">MSV</span></div></div>' +
+      '<div><div class="spc-k">' + T("受保人","Insured") + '</div><div class="spc-v">' + p.lp + '</div></div>' +
+      '<div><div class="spc-k">' + T("投保人","Applicant") + '</div><div class="spc-v">' + p.po + '</div></div>' +
     '</div>' +
     '<div class="spc-productline">' +
       '<div class="spc-product"><b>' + p.prod + '</b><br>' + T("每期總保費","Premium") + " " + p.cur + " " + money(p.prem) + '</div>' +
