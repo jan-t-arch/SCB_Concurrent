@@ -344,6 +344,13 @@ table.ac18 tr:last-child td{border-bottom:0}
 .pdf-snapmeta{display:flex;justify-content:space-between;gap:11px;background:#F5F7F7;border:1px solid #DDE1E2;padding:8px 10px;margin:11px 0;font-size:10.8px;line-height:1.4;color:#596568}
 .pdf-table-title{font-size:13px;font-weight:800;margin:13px 0 8px}
 .pdf-table-wrap{overflow-x:auto}
+/* Slim in-device table scrollbar; touch swipe remains unchanged. */
+.screen .tblwrap,.screen .pdf-table-wrap{scrollbar-width:thin;scrollbar-color:#9AABA7 transparent}
+.screen .tblwrap::-webkit-scrollbar,.screen .pdf-table-wrap::-webkit-scrollbar{height:5px}
+.screen .tblwrap::-webkit-scrollbar-track,.screen .pdf-table-wrap::-webkit-scrollbar-track{background:transparent}
+.screen .tblwrap::-webkit-scrollbar-thumb,.screen .pdf-table-wrap::-webkit-scrollbar-thumb{background:#9AABA7;border-radius:999px}
+.screen .tblwrap::-webkit-scrollbar-thumb:hover,.screen .pdf-table-wrap::-webkit-scrollbar-thumb:hover{background:#69837E}
+.screen .tblwrap::-webkit-scrollbar-corner,.screen .pdf-table-wrap::-webkit-scrollbar-corner{background:transparent}
 .pdf-detail{border-collapse:collapse;width:100%;table-layout:fixed;font-size:11.2px;line-height:1.42}
 .pdf-detail th,.pdf-detail td{border:1px solid #AEB6B9;padding:7px 6px;vertical-align:top;overflow-wrap:anywhere}
 .pdf-detail th{background:#F2F4F4;text-align:center;font-weight:800}
@@ -952,14 +959,14 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
             </div>
             <div class="tag">AC11 · <span class="zh">必填</span><span class="en">MANDATORY</span></div>
             <label class="opt" data-a11="needs">
-              <input type="checkbox"/>
+              <input type="radio" name="ac11-choice" value="needs"/>
               <span class="t">
                 <span class="zh">不同的保險需要,以及為日後傳承規劃的變更提供靈活性</span>
                 <span class="en">different insurance needs and flexibility for future change in legacy planning</span>
               </span>
             </label>
             <label class="opt" data-a11="other">
-              <input type="checkbox"/>
+              <input type="radio" name="ac11-choice" value="other"/>
               <span class="t"><span class="zh">其他原因,請註明:</span><span class="en">Other reasons, please specific:</span></span>
             </label>
             <input class="othbox" id="a11oth" hidden placeholder=""/>
@@ -970,11 +977,11 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
             <div class="rq"><span class="zh">取消選取交易的原因</span><span class="en">Reasons for de-select the transaction</span></div>
             <div class="tag">AC7.2 · <span class="zh">必填</span><span class="en">MANDATORY</span></div>
             <label class="opt" data-a72="pending">
-              <input type="checkbox"/>
+              <input type="radio" name="ac72-choice" value="pending"/>
               <span class="t"><span class="zh">待客戶進一步考慮</span><span class="en">Pending client's further consideration</span></span>
             </label>
             <label class="opt" data-a72="redundant">
-              <input type="checkbox"/>
+              <input type="radio" name="ac72-choice" value="redundant"/>
               <span class="t"><span class="zh">多餘個案</span><span class="en">Redundant case</span></span>
             </label>
           </section>
@@ -1255,7 +1262,9 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
                 <li><span class="zh">Option A只把目前App Policy納入Total、Max及PDF；如系統偵測其他Policy，AC7.2 Reasons for de-select the transaction為必填。</span><span class="en">Option A includes only the current App Policy in Total, Max and PDF. If other Policies are detected, AC7.2 Reasons for de-select the transaction is mandatory.</span></li>
                 <li><span class="zh">Option B的Selected Policy List不可為空；空白時顯示inline red validation並阻止產生新PDF。</span><span class="en">The Option B Selected Policy List must not be empty; an empty list shows inline red validation and blocks creation of a new PDF.</span></li>
                 <li><span class="zh">Current Application的 Policy Card不屬強制選取項目；任何符合資格的 Policy Card均可滿足非空要求。</span><span class="en">The Current Application's Policy Card is not mandatory; any eligible Policy Card may satisfy the non-empty requirement.</span></li>
-                <li><span class="zh">部分選取時，AC11及 AC7.2是兩個獨立控件，兩項均須符合各自的 mandatory rule。</span><span class="en">For partial selection, AC11 and AC7.2 are separate controls and each must satisfy its own mandatory rule.</span></li>
+                <li><span class="zh">AC11及 AC7.2是兩組獨立問題；當兩組同時適用時，兩組均必須分別完成。</span><span class="en">AC11 and AC7.2 are independent question groups; when both apply, both groups must be completed separately.</span></li>
+                <li><span class="zh">每組答案均使用 radio button，組內只可選一項；選擇另一項時必須自動取消原有選項。</span><span class="en">Each group uses radio buttons and allows exactly one answer; selecting another answer must automatically clear the previous choice in that group.</span></li>
+                <li><span class="zh">AC11選擇「其他原因」時，說明文字為必填；改選另一項後可保留已輸入文字，但該文字不可參與目前 validation、計算或PDF內容。</span><span class="en">When AC11 “Other reasons” is selected, the explanatory text is mandatory. If another answer is selected, the entered text may be retained but must not participate in current validation, calculation or PDF content.</span></li>
                 <li><span class="zh">Policy被刪除並於 refresh checkpoint從最新清單移除時，其 shared selection tick亦須清除；不可讓已刪除 Policy繼續參與 gate或計算。</span><span class="en">When a deleted policy is removed from the latest list at a refresh checkpoint, its shared selection tick must also be cleared; a deleted policy must not continue to participate in the gate or calculation.</span></li>
               </ul></td>
             </tr>
@@ -1598,13 +1607,19 @@ function situation(){
 }
 function selCount(){ return cardsList().filter(function(p){ return st.sel[p.ref]; }).length; }
 function allSelected(){ var l = cardsList(); return l.length > 0 && l.every(function(p){ return st.sel[p.ref]; }); }
+function singleChoice(obj, keys){
+  var chosen = keys.filter(function(k){ return !!obj[k]; });
+  return chosen.length === 1 ? chosen[0] : null;
+}
+function a11Choice(){ return singleChoice(st.a11, ["needs","other"]); }
+function a72Choice(){ return singleChoice(st.a72, ["pending","redundant"]); }
 function a11Filled(){
-  var any = st.a11.needs || st.a11.other;
-  if(!any) return false;
-  if(st.a11.other && !st.a11oth.trim()) return false;
+  var choice = a11Choice();
+  if(!choice) return false;
+  if(choice === "other" && !st.a11oth.trim()) return false;
   return true;
 }
-function a72Filled(){ return !!(st.a72.pending || st.a72.redundant); }
+function a72Filled(){ return !!a72Choice(); }
 
 function gate(){
   var s = situation(), need = [];
@@ -1951,8 +1966,8 @@ function buildPdfSnapshot(byApp){
     totalMonthly:includedRows.reduce(function(sum,r){ return sum + r.monthly; },0),
     totalSingle:includedRows.reduce(function(sum,r){ return sum + r.single; },0),
     calculationPt:grpPt(includedRows),
-    a11:{needs:!!st.a11.needs,other:!!st.a11.other,otherText:st.a11oth || ""},
-    a72:{pending:!!st.a72.pending,redundant:!!st.a72.redundant},
+    a11:{choice:a11Choice(),otherText:a11Choice() === "other" ? (st.a11oth || "") : ""},
+    a72:{choice:a72Choice()},
     fx:{USD:FX_MAP.USD,AUD:FX_MAP.AUD,SGD:FX_MAP.SGD,updated:FX_UPDATED}
   };
 }
@@ -2360,8 +2375,8 @@ document.querySelectorAll("#ac11 .opt").forEach(function(l){
     ev.preventDefault();
     if(roForm()) return;
     var k = l.getAttribute("data-a11");
-    st.a11[k] = !st.a11[k];
-    if(k === "other" && !st.a11.other) st.a11oth = "";
+    st.a11 = {};
+    st.a11[k] = true;
     render();
   });
 });
@@ -2372,7 +2387,8 @@ document.querySelectorAll("#ac72 .opt").forEach(function(l){
     ev.preventDefault();
     if(roForm()) return;
     var k = l.getAttribute("data-a72");
-    st.a72[k] = !st.a72[k];
+    st.a72 = {};
+    st.a72[k] = true;
     render();
   });
 });
@@ -2746,15 +2762,15 @@ function renderPdfDocumentPage(){
     '<span class="pdf-check">' + check(!snap.multiple) + ' No / 否</span>';
 
   var reasons = [];
-  reasons.push('<div class="reason-line">' + check(snap.a11.needs) +
+  reasons.push('<div class="reason-line">' + check(snap.a11.choice === "needs") +
     '<span>Different insurance needs and flexibility for future legacy-planning changes / 不同的保險需要及日後傳承規劃的靈活性</span></div>');
-  reasons.push('<div class="reason-line">' + check(snap.a11.other) +
+  reasons.push('<div class="reason-line">' + check(snap.a11.choice === "other") +
     '<span>Other reasons / 其他原因' + (snap.a11.otherText ? ": " + escHtml(snap.a11.otherText) : "") + '</span></div>');
-  if(snap.a72.pending || snap.a72.redundant){
+  if(snap.a72.choice){
     reasons.push('<div style="font-weight:800;margin-top:5px">Reasons for de-selection / 取消選取交易的原因</div>');
-    reasons.push('<div class="reason-line">' + check(snap.a72.pending) +
+    reasons.push('<div class="reason-line">' + check(snap.a72.choice === "pending") +
       '<span>Pending client’s further consideration / 待客戶進一步考慮</span></div>');
-    reasons.push('<div class="reason-line">' + check(snap.a72.redundant) +
+    reasons.push('<div class="reason-line">' + check(snap.a72.choice === "redundant") +
       '<span>Redundant case / 多餘個案</span></div>');
   }
   $("pdfReasonAnswers").innerHTML = reasons.join("");
