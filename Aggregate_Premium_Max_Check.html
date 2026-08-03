@@ -59,6 +59,19 @@ h3{font-size:15px;margin:18px 0 8px}
 /* affordability grid */
 .affgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .affgrid .fld input{width:100%;font-family:var(--mono);font-size:12.5px}
+.affgrid .fld select{width:100%}
+.affgrid .wide{grid-column:1/-1}
+.checkrow{display:flex;align-items:center;gap:7px;font-size:12px;padding:7px 9px;background:#fff;border:1px solid var(--line);border-radius:7px}
+.checkrow input{width:auto!important}
+.capgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.capcard{background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:10px 11px}
+.capcard.triggered{border-color:var(--amber);background:var(--amber-tint)}
+.capcard .capname{font-size:11px;color:var(--muted);font-weight:700}
+.capcard .capvalue{font-family:var(--mono);font-size:17px;font-weight:800;color:var(--green);margin:2px 0}
+.capcard.triggered .capvalue{color:var(--amber)}
+.capcard .capwhy{font-size:10.5px;color:var(--muted);line-height:1.45}
+.assumption-note{font-size:11px;color:var(--amber);background:var(--amber-tint);border-radius:7px;padding:7px 9px;margin:9px 0 0}
+.validation{display:none;margin-top:10px;padding:9px 11px;border-radius:8px;background:var(--red-tint);color:var(--red);font-size:11.5px;font-weight:600}
 .calc .brk{color:var(--muted);font-size:11.5px;padding:3px 0 0}
 .calc .maxtotal{margin-top:6px;padding-top:8px;border-top:2px solid var(--green);font-size:14px;font-weight:800;color:var(--green)}
 
@@ -97,6 +110,12 @@ h3{font-size:15px;margin:18px 0 8px}
 .info-panel ul{margin:0;padding-left:20px}
 .info-panel li{margin:5px 0}
 .info-panel .qn{font-family:var(--mono);font-weight:700;font-size:11px;margin-right:4px}
+.rules-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:10px 0 16px}
+.rules-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+.rules-table th{background:var(--green);color:#fff;text-align:left;padding:9px 10px;white-space:nowrap}
+.rules-table td{border-top:1px solid var(--line);padding:8px 10px;vertical-align:top}
+.rules-table code{font-family:var(--mono);font-size:10.5px}
+.rules-table .result{font-weight:700;color:var(--green)}
 
 .foot{color:var(--muted);font-size:12px;margin:30px 0 40px;border-top:1px solid var(--line);padding-top:14px}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -144,19 +163,29 @@ h3{font-size:15px;margin:18px 0 8px}
 
       <div class="panel" style="margin-top:14px">
         <h3 style="margin-top:0">供款能力上限 / Max premium (affordability)</h3>
-        <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px">依已確認公式(見下)即場計出上限,直接餵入右方 verdict。<code style="font-family:var(--mono);background:var(--green-tint);padding:1px 5px;border-radius:4px;font-size:11px">cappedDI% / cappedA%</code> = 用戶 range 取 Max 後,再按客戶標籤 cap 至 30/50。</p>
+        <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px">依已確認公式(見下)即場計出上限,直接餵入右方 verdict。D5 / D6 先取用戶選擇或 range maximum,再根據以下客戶條件 cap 至 30% 或 50%。</p>
         <div class="affgrid">
-          <div class="fld"><label>netLiquidAssets (HKD)</label><input type="number" id="af_nla" value="800000"></div>
-          <div class="fld"><label>netDisposableIncome (HKD)</label><input type="number" id="af_ndi" value="100000"></div>
-          <div class="fld"><label>monthlyOutGoing (HKD)</label><input type="number" id="af_mog" value="5000"></div>
-          <div class="fld"><label>cappedDI %</label><input type="number" id="af_cdi" value="50"></div>
-          <div class="fld"><label>cappedA %</label><input type="number" id="af_ca" value="50"></div>
+          <div class="fld"><label>Proposer age</label><input type="number" id="af_age" value="45" min="0" max="120" step="1"></div>
+          <div class="fld"><label>Education level</label><select id="af_edu"><option value="above">Above primary</option><option value="primary">Primary</option></select></div>
+          <label class="checkrow"><input type="checkbox" id="af_barrier"> Communication barrier = Yes</label>
+          <label class="checkrow"><input type="checkbox" id="af_nongain"> Non-gainful occupation = Yes</label>
+          <div class="fld"><label>Net Liquid Assets (HKD)</label><input type="number" id="af_nla" value="800000"></div>
+          <div class="fld"><label>Net Disposable Income (annual HKD)</label><input type="number" id="af_ndi" value="100000"></div>
+          <div class="fld"><label>Monthly Outgoing (HKD)</label><input type="number" id="af_mog" value="5000" min="0"></div>
+          <div class="fld"><label>D5 selected / range max %</label><input type="number" id="af_cdi_raw" value="50" min="0" max="100"></div>
+          <div class="fld"><label>D6 selected / range max %</label><input type="number" id="af_ca_raw" value="50" min="0" max="100"></div>
         </div>
+        <div class="assumption-note">⚠ Unit assumption: the formula divides Net Disposable Income by 12, so this demo treats NDI as an annual amount. Confirm this against the source specification.</div>
+        <div class="capgrid">
+          <div class="capcard" id="d5Card"><div class="capname">D5 · cappedDI percentage</div><div class="capvalue" id="d5Value">50%</div><div class="capwhy" id="d5Why"></div></div>
+          <div class="capcard" id="d6Card"><div class="capname">D6 · cappedAsset percentage</div><div class="capvalue" id="d6Value">50%</div><div class="capwhy" id="d6Why"></div></div>
+        </div>
+        <div class="validation" id="validationMsg"></div>
         <div class="calc" id="maxcalc" style="margin-top:12px"></div>
         <label class="selchk" style="margin-top:10px"><input type="checkbox" id="ovChk"> 手動覆寫上限 override (for boundary testing)</label>
         <div class="maxrow" id="ovRow" style="display:none">
           <label id="maxLabel">上限 Max (HKD)</label>
-          <input type="number" id="maxInput" value="1000000">
+          <input type="number" id="maxInput" value="1000000" min="0">
         </div>
       </div>
     </div>
@@ -169,6 +198,40 @@ h3{font-size:15px;margin:18px 0 8px}
         <div class="verdict" id="verdict"></div>
       </div>
     </div>
+  </div>
+
+  <h2>D5 / D6 Percentage Cap Rules</h2>
+  <p class="scdesc">Rows within each percentage are evaluated with OR. Conditions shown together inside one row are evaluated with AND. The resulting percentage is <code style="font-family:var(--mono)">min(selected/range maximum, applicable cap)</code>; it is not increased to 30% when the selected value is lower.</p>
+  <div class="rules-wrap">
+    <table class="rules-table">
+      <thead><tr><th>Percentage</th><th>Rule group</th><th>Conditions</th><th>Relationship</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>D5 · cappedDI%</td><td>VC Customer</td><td>Age ≥ 65 / Education = Primary / Communication Barrier = Yes</td><td>Any one (OR)</td><td class="result">Cap limit 30%</td></tr>
+        <tr><td>D5 · cappedDI%</td><td>Near vulnerable age</td><td>Age ≥ 50 AND Age + applicable Pay Term ≥ 65</td><td>All (AND)</td><td class="result">Cap limit 30%</td></tr>
+        <tr><td>D5 · cappedDI%</td><td>Non-gainful occupation</td><td>Non-gainful occupation = Yes</td><td>—</td><td class="result">Cap limit 30%</td></tr>
+        <tr><td>D5 · cappedDI%</td><td>Net Liquid Assets</td><td>NLA ≤ 0</td><td>—</td><td class="result">Cap limit 30%</td></tr>
+        <tr><td>D5 · cappedDI%</td><td>Normal case</td><td>No D5 trigger is met</td><td>—</td><td class="result">Cap limit 50%</td></tr>
+        <tr><td>D6 · cappedAsset%</td><td>VC Customer</td><td>Age ≥ 65 / Education = Primary / Communication Barrier = Yes</td><td>Any one (OR)</td><td class="result">Cap limit 30%</td></tr>
+        <tr><td>D6 · cappedAsset%</td><td>Near vulnerable + regular</td><td>Age ≥ 50 AND Age + applicable Pay Term ≥ 65 AND an included policy is Regular</td><td>All (AND)</td><td class="result">Cap limit 30%</td></tr>
+        <tr><td>D6 · cappedAsset%</td><td>Net Disposable Income</td><td>NDI ≤ 0</td><td>—</td><td class="result">Cap limit 30%</td></tr>
+        <tr><td>D6 · cappedAsset%</td><td>Normal case</td><td>No D6 trigger is met</td><td>—</td><td class="result">Cap limit 50%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Calculation & Validation Rules</h2>
+  <div class="rules-wrap">
+    <table class="rules-table">
+      <thead><tr><th>Area</th><th>Rule implemented in this demo</th></tr></thead>
+      <tbody>
+        <tr><td>Applicable Pay Term</td><td>Maximum positive whole-year Pay Term among included Regular policies; if none exists, <code>pt = 1</code>.</td></tr>
+        <tr><td>Single / Mixed</td><td>Uses D6 only. D5 does not affect <code>maxSinglePremium</code>.</td></tr>
+        <tr><td>Monthly with NDI &gt; 0</td><td>Uses both D5 and D6.</td></tr>
+        <tr><td>Monthly with NDI ≤ 0</td><td>Uses D6 only and deducts <code>monthlyOutgoing × 12 × pt</code>.</td></tr>
+        <tr><td>Invalid inputs</td><td>Age must be 0–120; D5/D6 inputs must be 0–100%; amounts cannot be negative except NLA/NDI; included Regular policy Pay Term must be a positive whole number.</td></tr>
+        <tr><td>Boundary</td><td>Calculated maximum is rounded and clamped to zero. Total must be strictly less than the maximum; equality fails.</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <!-- confirmed assumptions -->
@@ -208,7 +271,10 @@ var state={
   sc:"single",
   max:1000000,          // manual override value
   override:false,
-  aff:{nla:800000,ndi:100000,mog:5000,cdi:50,ca:50},
+  aff:{
+    age:45,education:"above",communicationBarrier:false,nonGainful:false,
+    nla:800000,ndi:100000,mog:5000,cdiRaw:50,caRaw:50
+  },
   policies:[]
 };
 var uid=1;
@@ -219,8 +285,71 @@ function monthlyValue(p){ return p.amount / (FREQ_MONTHS[p.freq]||1); }   // per
 
 // pt = max pay term across all included regular policies; none -> Case A -> pt = 1
 function groupPt(){
-  var pts=state.policies.filter(included).filter(function(p){return p.type==="regular"&&p.pt;}).map(function(p){return p.pt;});
+  var pts=state.policies.filter(included).filter(function(p){return p.type==="regular"&&Number.isFinite(p.pt)&&p.pt>0;}).map(function(p){return p.pt;});
   return pts.length?Math.max.apply(null,pts):1;
+}
+function hasIncludedRegular(){
+  return state.policies.filter(included).some(function(p){return p.type==="regular";});
+}
+function capValue(raw,limit){
+  raw=Number.isFinite(raw)?raw:0;
+  return Math.max(0,Math.min(raw,limit,100));
+}
+function capInfo(){
+  var a=state.aff,pt=groupPt(),age=a.age;
+  var vc=[];
+  if(age>=65) vc.push("Proposer age ≥ 65");
+  if(a.education==="primary") vc.push("Education level = Primary");
+  if(a.communicationBarrier) vc.push("Communication barrier = Yes");
+  var near=age>=50 && age+pt>=65;
+  var diReasons=vc.slice();
+  if(near) diReasons.push("Near vulnerable: age ≥ 50 and age + pt ≥ 65");
+  if(a.nonGainful) diReasons.push("Non-gainful occupation = Yes");
+  if(a.nla<=0) diReasons.push("Net Liquid Assets ≤ 0");
+  var assetReasons=vc.slice();
+  if(near&&hasIncludedRegular()) assetReasons.push("Near vulnerable and an included policy is Regular");
+  if(a.ndi<=0) assetReasons.push("Net Disposable Income ≤ 0");
+  var diLimit=diReasons.length?30:50,assetLimit=assetReasons.length?30:50;
+  return {
+    pt:pt,
+    di:{limit:diLimit,value:capValue(a.cdiRaw,diLimit),reasons:diReasons},
+    asset:{limit:assetLimit,value:capValue(a.caRaw,assetLimit),reasons:assetReasons}
+  };
+}
+function evaluatedAff(){
+  var c=capInfo();
+  return {nla:state.aff.nla,ndi:state.aff.ndi,mog:state.aff.mog,cdi:c.di.value,ca:c.asset.value};
+}
+function renderCapCards(){
+  var c=capInfo();
+  [["d5",c.di,state.aff.cdiRaw],["d6",c.asset,state.aff.caRaw]].forEach(function(x){
+    var key=x[0],info=x[1],raw=x[2],card=document.getElementById(key+"Card");
+    var rawValid=Number.isFinite(raw)&&raw>=0&&raw<=100;
+    card.classList.toggle("triggered",info.limit===30);
+    document.getElementById(key+"Value").textContent=rawValid?info.value+"%":"—";
+    document.getElementById(key+"Why").innerHTML=(rawValid?"min("+raw+"%, "+info.limit+"% cap)":"Enter a value from 0% to 100%.")+
+      (info.reasons.length?"<br>Triggered by: "+info.reasons.join("; "):"<br>No special trigger; normal 50% cap.");
+  });
+}
+function validationErrors(){
+  var a=state.aff,errors=[];
+  if(!Number.isFinite(a.age)||a.age<0||a.age>120||!Number.isInteger(a.age)) errors.push("Proposer age must be a whole number from 0 to 120.");
+  if(!Number.isFinite(a.cdiRaw)||a.cdiRaw<0||a.cdiRaw>100) errors.push("D5 selected/range maximum must be between 0% and 100%.");
+  if(!Number.isFinite(a.caRaw)||a.caRaw<0||a.caRaw>100) errors.push("D6 selected/range maximum must be between 0% and 100%.");
+  if(!Number.isFinite(a.nla)) errors.push("Net Liquid Assets is required.");
+  if(!Number.isFinite(a.ndi)) errors.push("Net Disposable Income is required.");
+  if(!Number.isFinite(a.mog)||a.mog<0) errors.push("Monthly Outgoing cannot be negative.");
+  if(state.override&&(!Number.isFinite(state.max)||state.max<0)) errors.push("Manual maximum override cannot be negative.");
+  state.policies.filter(included).forEach(function(p){
+    if(!Number.isFinite(p.amount)||p.amount<0) errors.push("Policy #"+p.id+" amount cannot be negative.");
+    if(p.type==="regular"&&(!Number.isFinite(p.pt)||p.pt<=0||!Number.isInteger(p.pt))) errors.push("Policy #"+p.id+" Pay Term must be a positive whole number.");
+  });
+  return errors;
+}
+function renderValidation(errors){
+  var box=document.getElementById("validationMsg");
+  box.style.display=errors.length?"block":"none";
+  box.innerHTML=errors.length?"Please correct the following before evaluating:<br>• "+errors.join("<br>• "):"";
 }
 
 /* ===== confirmed max-premium formulas (from Case A / B diagrams) ===== */
@@ -237,13 +366,14 @@ function calcMaxMonthly(a,pt){
   return Math.max(Math.round(raw),0);
 }
 // scenario -> which max feeds the verdict
-function computedMax(){ var pt=groupPt(); return state.sc==="monthly" ? calcMaxMonthly(state.aff,pt) : calcMaxSingle(state.aff,pt); }
+function computedMax(){ var pt=groupPt(),a=evaluatedAff(); return state.sc==="monthly" ? calcMaxMonthly(a,pt) : calcMaxSingle(a,pt); }
 function currentMax(){ return state.override ? state.max : computedMax(); }
 
 function renderMaxCalc(){
-  var a=state.aff, pt=groupPt(), box=document.getElementById("maxcalc"), L=[];
+  var a=evaluatedAff(), caps=capInfo(), pt=groupPt(), box=document.getElementById("maxcalc"), L=[];
   var mono=state.sc==="monthly";
   L.push('<div class="brk">pt = max pay term of all policies = <b>'+pt+'</b> 年'+(state.sc==="single"?' (全單筆 → Case A, pt=1)':'')+'</div>');
+  L.push('<div class="brk">D5 cappedDI% = <b>'+caps.di.value+'%</b> · D6 cappedAsset% = <b>'+caps.asset.value+'%</b></div>');
   var branch = a.ndi<=0 ? "netDisposableIncome ≤ 0 → 扣 outgoing / asset-based"
                         : "netDisposableIncome > 0 → "+(mono?"income + assets":"assets only");
   L.push('<div class="brk">分支 branch: '+branch+'</div>');
@@ -317,14 +447,14 @@ function renderPolicies(){
     }
     html+='<button class="pol-del" data-id="'+p.id+'" title="刪除">✕</button></div>';
     var amtLabel = isReg? "每期金額 Amount/period (HKD)" : "單筆金額 Amount (HKD)";
-    html+='<div class="pol-fields"><div class="fld"><label>'+amtLabel+'</label><input type="number" class="amt" data-id="'+p.id+'" value="'+p.amount+'"></div>';
+    html+='<div class="pol-fields"><div class="fld"><label>'+amtLabel+'</label><input type="number" class="amt" data-id="'+p.id+'" value="'+p.amount+'" min="0"></div>';
     if(isReg){
       html+='<div class="fld"><label>繳費頻率 Frequency</label><select class="freq" data-id="'+p.id+'">';
       ["monthly","quarterly","halfyearly","yearly"].forEach(function(f){
         html+='<option value="'+f+'" '+(p.freq===f?"selected":"")+'>'+FREQ_LABEL[f]+'</option>';
       });
       html+='</select></div>';
-      html+='<div class="fld cp"><label>pay term / pt (年 yr)</label><input type="number" class="pt" data-id="'+p.id+'" value="'+(p.pt||"")+'"></div>';
+      html+='<div class="fld cp"><label>pay term / pt (年 yr)</label><input type="number" class="pt" data-id="'+p.id+'" value="'+(p.pt||"")+'" min="1" step="1"></div>';
       var mv=monthlyValue(p);
       html+='<div class="fld" style="justify-content:flex-end"><label>= 每月值 monthly</label><div style="font-family:var(--mono);font-size:12.5px;padding:5px 0;font-weight:700">'+HKD(mv)+' /月</div></div>';
     }
@@ -344,9 +474,18 @@ function find(id){return state.policies.filter(function(x){return x.id==id;})[0]
 function included(p){return p.src==="manual"||p.sel;}
 
 function calc(){
-  renderMaxCalc();
+  renderCapCards();
   var box=document.getElementById("calc");
   var lines=[];
+  var errors=validationErrors();
+  renderValidation(errors);
+  if(errors.length){
+    document.getElementById("maxcalc").innerHTML='<div class="brk" style="color:var(--red)">Maximum calculation paused until the input errors are corrected.</div>';
+    box.innerHTML='<div class="line"><span class="lbl">Calculation paused</span><span class="val">Invalid input</span></div>';
+    invalidVerdict();
+    return;
+  }
+  renderMaxCalc();
   var used=state.policies.filter(included);
   var MAX=currentMax();
   var pt=groupPt();
@@ -392,6 +531,12 @@ function calc(){
   box.innerHTML=lines.join("");
 }
 
+function invalidVerdict(){
+  var el=document.getElementById("verdict");
+  el.className="verdict exceed";
+  el.innerHTML="⚠ Cannot evaluate until the highlighted input rules are satisfied.";
+}
+
 function verdict(total,max,maxlabel){
   var el=document.getElementById("verdict");
   var pass = total < max;                 // strict < : 等於上限 = fail
@@ -414,11 +559,14 @@ function switchSc(sc){
 
 // events
 document.querySelectorAll(".seg").forEach(function(s){s.addEventListener("click",function(){switchSc(this.dataset.sc);});});
-document.getElementById("maxInput").addEventListener("input",function(){state.max=parseFloat(this.value)||0;calc();});
+document.getElementById("maxInput").addEventListener("input",function(){state.max=this.value===""?NaN:parseFloat(this.value);calc();});
 // affordability inputs
-[["af_nla","nla"],["af_ndi","ndi"],["af_mog","mog"],["af_cdi","cdi"],["af_ca","ca"]].forEach(function(pair){
-  document.getElementById(pair[0]).addEventListener("input",function(){state.aff[pair[1]]=parseFloat(this.value)||0;calc();});
+[["af_age","age"],["af_nla","nla"],["af_ndi","ndi"],["af_mog","mog"],["af_cdi_raw","cdiRaw"],["af_ca_raw","caRaw"]].forEach(function(pair){
+  document.getElementById(pair[0]).addEventListener("input",function(){state.aff[pair[1]]=this.value===""?NaN:parseFloat(this.value);calc();});
 });
+document.getElementById("af_edu").addEventListener("change",function(){state.aff.education=this.value;calc();});
+document.getElementById("af_barrier").addEventListener("change",function(){state.aff.communicationBarrier=this.checked;calc();});
+document.getElementById("af_nongain").addEventListener("change",function(){state.aff.nonGainful=this.checked;calc();});
 document.getElementById("ovChk").addEventListener("change",function(){
   state.override=this.checked;
   document.getElementById("ovRow").style.display=this.checked?"":"none";
