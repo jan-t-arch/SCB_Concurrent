@@ -116,6 +116,10 @@ h3{font-size:15px;margin:18px 0 8px}
 .rules-table td{border-top:1px solid var(--line);padding:8px 10px;vertical-align:top}
 .rules-table code{font-family:var(--mono);font-size:10.5px}
 .rules-table .result{font-weight:700;color:var(--green)}
+.cap-chip,.na-chip{display:inline-block;min-width:48px;text-align:center;border-radius:999px;padding:2px 8px;font-family:var(--mono);font-size:10.5px;font-weight:800;white-space:nowrap}
+.cap-chip.cap30{background:var(--amber-tint);color:var(--amber)}
+.cap-chip.cap50{background:var(--ok-tint);color:var(--ok)}
+.na-chip{background:var(--panel);color:var(--muted)}
 
 .foot{color:var(--muted);font-size:12px;margin:30px 0 40px;border-top:1px solid var(--line);padding-top:14px}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -124,7 +128,7 @@ h3{font-size:15px;margin:18px 0 8px}
 <body>
 
 <div class="topbar"><div class="wrap">
-  <a href="https://jan-t-arch.github.io/SCB_Concurrent/" class="back">← 返回主 Demo / Back to main demo</a>
+  <a href="https://jan-t-arch.github.io/SCB_Concurrent/concurrent_new_design" class="back">← 返回主 Demo / Back to main demo</a>
   <span class="badge-top">Aggregate Premium Maximum Check</span>
 </div></div>
 
@@ -201,20 +205,17 @@ h3{font-size:15px;margin:18px 0 8px}
   </div>
 
   <h2>D5 / D6 Percentage Cap Rules</h2>
-  <p class="scdesc">Rows within each percentage are evaluated with OR. Conditions shown together inside one row are evaluated with AND. The resulting percentage is <code style="font-family:var(--mono)">min(selected/range maximum, applicable cap)</code>; it is not increased to 30% when the selected value is lower.</p>
+  <p class="scdesc">Different rule groups are evaluated with <b>OR</b>. Conditions within the VC Customer row use <b>OR</b>; conditions within the Near Vulnerable row use <b>AND</b>. Final percentage = <code style="font-family:var(--mono)">min(selected/range maximum, applicable cap)</code>.</p>
   <div class="rules-wrap">
     <table class="rules-table">
-      <thead><tr><th>Percentage</th><th>Rule group</th><th>Conditions</th><th>Relationship</th><th>Result</th></tr></thead>
+      <thead><tr><th>Rule group</th><th>Conditions</th><th>D5 cap</th><th>D6 cap</th></tr></thead>
       <tbody>
-        <tr><td>D5 · cappedDI%</td><td>VC Customer</td><td>Age ≥ 65 / Education = Primary / Communication Barrier = Yes</td><td>Any one (OR)</td><td class="result">Cap limit 30%</td></tr>
-        <tr><td>D5 · cappedDI%</td><td>Near vulnerable age</td><td>Age ≥ 50 AND Age + applicable Pay Term ≥ 65</td><td>All (AND)</td><td class="result">Cap limit 30%</td></tr>
-        <tr><td>D5 · cappedDI%</td><td>Non-gainful occupation</td><td>Non-gainful occupation = Yes</td><td>—</td><td class="result">Cap limit 30%</td></tr>
-        <tr><td>D5 · cappedDI%</td><td>Net Liquid Assets</td><td>NLA ≤ 0</td><td>—</td><td class="result">Cap limit 30%</td></tr>
-        <tr><td>D5 · cappedDI%</td><td>Normal case</td><td>No D5 trigger is met</td><td>—</td><td class="result">Cap limit 50%</td></tr>
-        <tr><td>D6 · cappedAsset%</td><td>VC Customer</td><td>Age ≥ 65 / Education = Primary / Communication Barrier = Yes</td><td>Any one (OR)</td><td class="result">Cap limit 30%</td></tr>
-        <tr><td>D6 · cappedAsset%</td><td>Near vulnerable + regular</td><td>Age ≥ 50 AND Age + applicable Pay Term ≥ 65 AND an included policy is Regular</td><td>All (AND)</td><td class="result">Cap limit 30%</td></tr>
-        <tr><td>D6 · cappedAsset%</td><td>Net Disposable Income</td><td>NDI ≤ 0</td><td>—</td><td class="result">Cap limit 30%</td></tr>
-        <tr><td>D6 · cappedAsset%</td><td>Normal case</td><td>No D6 trigger is met</td><td>—</td><td class="result">Cap limit 50%</td></tr>
+        <tr><td><b>VC Customer</b></td><td>Age ≥ 65 <b>OR</b> Education = Primary <b>OR</b> Communication Barrier = Yes</td><td><span class="cap-chip cap30">30%</span></td><td><span class="cap-chip cap30">30%</span></td></tr>
+        <tr><td><b>Near vulnerable age</b></td><td>Age ≥ 50 <b>AND</b> Age + applicable Pay Term ≥ 65</td><td><span class="cap-chip cap30">30%</span></td><td><span class="cap-chip cap30">30%*</span><br><span style="font-size:10px;color:var(--muted)">*Only when an included policy is Regular</span></td></tr>
+        <tr><td><b>Non-gainful occupation</b></td><td>Non-gainful occupation = Yes</td><td><span class="cap-chip cap30">30%</span></td><td><span class="na-chip">N/A</span></td></tr>
+        <tr><td><b>Net Liquid Assets</b></td><td>NLA ≤ 0</td><td><span class="cap-chip cap30">30%</span></td><td><span class="na-chip">N/A</span></td></tr>
+        <tr><td><b>Net Disposable Income</b></td><td>NDI ≤ 0</td><td><span class="na-chip">N/A</span></td><td><span class="cap-chip cap30">30%</span></td></tr>
+        <tr><td><b>Default</b></td><td>No applicable trigger</td><td><span class="cap-chip cap50">50%</span></td><td><span class="cap-chip cap50">50%</span></td></tr>
       </tbody>
     </table>
   </div>
