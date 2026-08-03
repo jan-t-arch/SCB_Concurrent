@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>7.30 Demo with Full Capture — Concurrent Submission</title>
+<title>8.3 Demo — Concurrent Submission</title>
 <style>
 :root{
   --red:#E4032E; --red-dk:#C8102E;
@@ -1016,7 +1016,9 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
           </section>
           </div><!-- /#formbody -->
 
-          <div class="saverow"><button class="save" id="save"><span class="zh">下一頁</span><span class="en">Next Page</span></button></div>
+          <div class="saverow">
+            <button class="save" id="save"><span class="zh">下一頁</span><span class="en">Next Page</span></button>
+          </div>
           </div><!-- /#concurrentPage -->
 
           <div id="simplePage" hidden>
@@ -1229,6 +1231,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
                 <li><span class="zh">Concurrent Submission答案必須由同一組內所有相關 Application共用。</span><span class="en">Concurrent Submission answers must be shared by all related applications in the group.</span></li>
                 <li><span class="zh">共享資料包括 declaration option、Policy Selection、AC11、AC7.2及 Manual Policy。</span><span class="en">Shared data includes the declaration option, Policy Selection, AC11, AC7.2 and Manual Policies.</span></li>
                 <li><span class="zh">任何相關 Application開啟 Concurrent Submission時，必須讀取同一份共享內容。</span><span class="en">Every related application must read the same shared content when Concurrent Submission is opened.</span></li>
+                <li><span class="zh">Policy List變更確認亦屬Group-level行為；任一相關Application在Edit Mode內按有效的OK，可確認同一份已覆核清單並清除整個Group的同類「&lt;!&gt;」。</span><span class="en">Policy List change acknowledgement is also Group-level. A valid OK in Edit Mode from any related Application acknowledges the same reviewed list and clears that type of “&lt;!&gt;” for the whole Group.</span></li>
               </ul></td>
             </tr>
 
@@ -1246,10 +1249,10 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Rule ID"><span class="rule-id">SYS-03</span><span class="rule-name"><span class="zh">資料保留及完成判斷</span><span class="en">Retention and completion</span></span></td>
               <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶切換 Option、編輯內容、按 OK或 Next Page。</span><span class="en">The user switches options, edits content, presses OK or presses Next Page.</span></td>
               <td data-label="Expected System Behaviour"><ul>
-                <li><span class="zh">在 Option A及 Option B之間切換時，已輸入的共享答案必須保留。</span><span class="en">Shared answers must be retained when switching between Option A and Option B.</span></li>
+                <li><span class="zh">除同一Concurrent Group首次把User Declaration改為Yes／Option B時執行一次預設Select All外，在Option A及Option B之間切換必須保留已輸入的共享答案及Policy selections。</span><span class="en">Except for the one-time default Select All when User Declaration is first changed to Yes/Option B within the Concurrent Group, switching between Option A and Option B must retain the shared answers and Policy selections.</span></li>
                 <li><span class="zh">隱藏或目前不適用的欄位不可參與當前 validation。</span><span class="en">Hidden or currently inapplicable fields must not participate in the current validation.</span></li>
                 <li><span class="zh">Completion必須根據目前有效內容判斷，包括仍在 Edit Mode內的內容。</span><span class="en">Completion must be derived from the current valid content, including content still in Edit Mode.</span></li>
-                <li><span class="zh">OK只退出 Edit Mode；Next Page只負責導航，兩者均不是 Save或 completion gate。</span><span class="en">OK only exits Edit Mode and Next Page only navigates; neither is a Save or completion gate.</span></li>
+                <li><span class="zh">OK及Next Page均不是Save或completion gate；Next Page只負責導航。一般情況下OK只退出Edit Mode，但如存在Group Policy-list-change「&lt;!&gt;」，有效的OK亦代表用戶已覆核最新清單。</span><span class="en">Neither OK nor Next Page is a Save or completion gate, and Next Page only navigates. Normally OK only exits Edit Mode; when a Group policy-list-change “&lt;!&gt;” exists, a valid OK also acknowledges that the latest list has been reviewed.</span></li>
               </ul></td>
             </tr>
 
@@ -1260,6 +1263,9 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
                 <li><span class="zh">Option A必須保留原文「No further concurrent application/this is not last application of concurrent submission of client」。系統把它解讀為：目前Application在本次獨立簽署，其他Application稍後處理，因此本次視為No Concurrent Submission。</span><span class="en">Option A must retain the wording “No further concurrent application/this is not last application of concurrent submission of client”. The system interprets it as signing the current Application alone in this signing batch while other Applications are handled later; this batch is treated as No Concurrent Submission.</span></li>
                 <li><span class="zh">Option A只把目前App Policy納入Total、Max及PDF；如系統偵測其他Policy，AC7.2 Reasons for de-select the transaction為必填。</span><span class="en">Option A includes only the current App Policy in Total, Max and PDF. If other Policies are detected, AC7.2 Reasons for de-select the transaction is mandatory.</span></li>
                 <li><span class="zh">Option B的Selected Policy List不可為空；空白時顯示inline red validation並阻止產生新PDF。</span><span class="en">The Option B Selected Policy List must not be empty; an empty list shows inline red validation and blocks creation of a new PDF.</span></li>
+                <li><span class="zh">同一Concurrent Group首次把User Declaration改為Yes／Option B時，系統必須預設選取當刻Policy List內所有auto-searched Policies；Manual Policy不屬此預設選取範圍。</span><span class="en">When User Declaration is first changed to Yes/Option B within a Concurrent Group, every auto-searched Policy in the Policy List at that moment must be selected by default; Manual Policies are outside this default selection.</span></li>
+                <li><span class="zh">其後由Yes／Option B改為No／Option A再改回Yes／Option B時，不可再次執行Select All，原有Policy selections必須保持不變。首次Yes後才新搜尋到的Policy亦保持未選取，直至用戶明確選取。</span><span class="en">If the declaration is subsequently changed from Yes/Option B to No/Option A and back to Yes/Option B, Select All must not run again and the previous Policy selections must remain unchanged. A Policy first detected after the initial Yes also remains unselected until the user explicitly selects it.</span></li>
+                <li><span class="zh">首次Yes狀態及Policy selections屬Concurrent Group共享資料；切換Application不可把另一Application當作新的首次Yes。重新載入已保存的Yes答案亦不可重新執行預設選取。</span><span class="en">The first-Yes state and Policy selections are shared at Concurrent Group level; switching Applications must not treat another Application as a new first Yes. Reloading an already-saved Yes answer must not run the default selection again.</span></li>
                 <li><span class="zh">Current Application的 Policy Card不屬強制選取項目；任何符合資格的 Policy Card均可滿足非空要求。</span><span class="en">The Current Application's Policy Card is not mandatory; any eligible Policy Card may satisfy the non-empty requirement.</span></li>
                 <li><span class="zh">AC11及 AC7.2是兩組獨立問題；當兩組同時適用時，兩組均必須分別完成。</span><span class="en">AC11 and AC7.2 are independent question groups; when both apply, both groups must be completed separately.</span></li>
                 <li><span class="zh">每組答案均使用 radio button，組內只可選一項；選擇另一項時必須自動取消原有選項。</span><span class="en">Each group uses radio buttons and allows exactly one answer; selecting another answer must automatically clear the previous choice in that group.</span></li>
@@ -1270,25 +1276,26 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
 
             <tr>
               <td data-label="Rule ID"><span class="rule-id">SYS-05</span><span class="rule-name"><span class="zh">Policy List Refresh</span><span class="en">Policy List Refresh</span></span></td>
-              <td class="condition" data-label="Trigger / Condition"><span class="zh">進入Concurrent Submission、按Preview &amp; Sign或按Start Signing。</span><span class="en">Concurrent Submission is entered, Preview &amp; Sign is pressed, or Start Signing is pressed.</span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">進入Concurrent Submission或按Start Signing。</span><span class="en">Concurrent Submission is entered or Start Signing is pressed.</span></td>
               <td data-label="Expected System Behaviour"><ul>
-                <li><span class="zh">系統必須讀取最新 Policy List及 Policy lifecycle status。</span><span class="en">The system must read the latest Policy List and Policy lifecycle status.</span></li>
-                <li><span class="zh">需要偵測新增／刪除 Policy、status改變及 Premium、Pay Term、Type、Frequency、pt等重要資料改變。</span><span class="en">The system must detect added or removed policies, status changes and material changes to Premium, Pay Term, Type, Frequency or pt.</span></li>
+                <li><span class="zh">無論是否有Outstanding PDF，系統均須在兩個checkpoint重新搜尋最新Policy List及Policy lifecycle status。沒有Outstanding PDF時，搜尋結果可更新顯示清單；有Outstanding PDF時，只在後台識別Pending差異，不可更新已凍結Group清單或任何已產生PDF。</span><span class="en">At both checkpoints, the system must re-search the latest Policy List and lifecycle status whether or not an outstanding PDF exists. Without an outstanding PDF, the displayed list may be updated; with an outstanding PDF, differences are identified only as Pending in the backend and must not update the frozen Group list or any generated PDF.</span></li>
+                <li><span class="zh">需要偵測新增／刪除 Policy、同時新增及刪除、Quotation ID不同、status改變，以及Premium、Pay Term、Type、Frequency、pt等重要資料改變。</span><span class="en">The system must detect added policies, removed policies, simultaneous additions and removals, a changed Quotation ID, status changes, and material changes to Premium, Pay Term, Type, Frequency or pt.</span></li>
                 <li><span class="zh">Manual Policy新增、刪除或重要資料修改亦屬 Policy List更新。</span><span class="en">Adding, removing or materially changing a Manual Policy is also a Policy List update.</span></li>
+                <li><span class="zh">每次顯示Policy List時，如目前Application是該清單的Group成員，其自己的Policy必須排列在最上方；其他Policy維持原有搜尋次序。鎖定後新增而尚未加入Group的Current App／Policy不可在凍結清單顯示；解鎖並加入後才排首位。此排序只影響顯示，不可改變selection、validation或計算。</span><span class="en">Whenever the Policy List is displayed, the current Application's own Policy must appear at the top if it is a member of that list. A Current App/Policy added after lock and not yet admitted to the Group must not appear in the frozen list; once admitted after unlock, it appears first. This ordering affects display only and must not change selection, validation or calculation.</span></li>
+                <li><span class="zh">Preview &amp; Sign只進入Submit Page，不屬Policy List refresh或Max／Total recalculation checkpoint。</span><span class="en">Preview &amp; Sign only opens the Submit Page and is not a Policy List refresh or Max/Total recalculation checkpoint.</span></li>
               </ul></td>
             </tr>
 
             <tr>
               <td data-label="Rule ID"><span class="rule-id">SYS-06</span><span class="rule-name"><span class="zh">無 Outstanding PDF的資料變更</span><span class="en">Change without outstanding PDF</span></span></td>
-              <td class="condition" data-label="Trigger / Condition"><span class="zh">沒有Outstanding PDF，而在進入Concurrent Submission、按Preview &amp; Sign或按Start Signing時發現Policy List已改變。</span><span class="en">No outstanding PDF exists, and a Policy List change is found when Concurrent Submission is entered, Preview &amp; Sign is pressed, or Start Signing is pressed.</span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">沒有Outstanding PDF，而在進入Concurrent Submission或按Start Signing時發現Policy List已改變。</span><span class="en">No outstanding PDF exists, and a Policy List change is found when Concurrent Submission is entered or Start Signing is pressed.</span></td>
               <td data-label="Expected System Behaviour"><ul>
-                <li><span class="zh">Concurrent section必須顯示 Warning；任何 section有 Warning時均不可產生新 PDF。</span><span class="en">The Concurrent section must show Warning; no new PDF may be generated while any section shows Warning.</span></li>
+                <li><span class="zh">Concurrent Group內所有未提交Application的Concurrent section必須顯示同一個Group-level Warning；任何適用section有Warning時，該Application均不可產生新PDF。</span><span class="en">The Concurrent section of every unsubmitted Application in the Concurrent Group must show the same Group-level Warning; an Application cannot generate a new PDF while any applicable section shows Warning.</span></li>
                 <li><span class="zh">只新增空白Application不會改變Policy List，因此Concurrent不顯示change warning；該新App只在Quotation顯示Warning。其後在Quotation加入Policy才構成Policy List更新。</span><span class="en">Adding an empty Application does not change the Policy List, so Concurrent shows no change warning; only the new App's Quotation shows Warning. Adding its Policy later is the Policy List change.</span></li>
-                <li><span class="zh">如果更新是在Preview &amp; Sign checkpoint發現，本次前往Submit Page必須停止，並要求用戶先進入Concurrent Submission覆核最新資料。</span><span class="en">If the change is found at the Preview &amp; Sign checkpoint, that attempt to enter the Submit Page must stop and the user must first review the latest data in Concurrent Submission.</span></li>
-                <li><span class="zh">如果用戶已進入Submit Page，而資料在Preview與Start Signing之間改變，Start Signing必須停止、不可產生PDF，並要求用戶返回Concurrent Submission覆核最新資料。</span><span class="en">If the user has entered the Submit Page and the data changes between Preview and Start Signing, Start Signing must stop without generating a PDF and require the user to return to Concurrent Submission to review the latest data.</span></li>
-                <li><span class="zh">只進入、離開或再次進入 Concurrent Submission，以及按 OK、Save或 Next Page，均不可自動清除 Policy change Warning。</span><span class="en">Entering, leaving or re-entering Concurrent Submission, and pressing OK, Save or Next Page, must not automatically clear the Policy change Warning.</span></li>
-                <li><span class="zh">用戶須進入 Edit Mode覆核最新內容；Form在 Edit Mode內通過正常 declaration validation時，Warning即時清除並恢復 Completed，不需要按 OK儲存。</span><span class="en">The user must review the latest content in Edit Mode; when the form passes normal declaration validation inside Edit Mode, Warning clears immediately and Completed is restored without requiring OK to save.</span></li>
-                <li><span class="zh">如 Form仍然 Fail，Warning必須保留，直至所有適用 validation均通過。</span><span class="en">If the form still fails, Warning must remain until all applicable validations pass.</span></li>
+                <li><span class="zh">如果用戶已進入Submit Page，而資料在Preview與Start Signing之間改變，Start Signing必須停止、不可產生PDF，顯示專屬橙色Policy List Change錯誤，並要求用戶返回Concurrent Submission覆核最新資料及按OK確認。</span><span class="en">If the user has entered the Submit Page and the data changes between Preview and Start Signing, Start Signing must stop without generating a PDF, show a dedicated orange Policy List Change error, and require the user to return to Concurrent Submission, review the latest data and press OK to acknowledge it.</span></li>
+                <li><span class="zh">只進入、離開或再次進入Concurrent Submission，以及按Save或Next Page，均不可自動清除Policy change Warning。單純令Form變成Pass亦不可自動清除。</span><span class="en">Entering, leaving or re-entering Concurrent Submission, and pressing Save or Next Page, must not automatically clear the Policy change Warning. Merely making the form pass must not clear it automatically either.</span></li>
+                <li><span class="zh">用戶須進入Edit Mode覆核最新內容；只有當正常Concurrent validation通過後按OK，才可把最新signature確認為整個Group的reviewed snapshot，並一次過清除所有相關未提交Application的同類「&lt;!&gt;」。OK不是Save action。</span><span class="en">The user must review the latest content in Edit Mode. Only pressing OK after normal Concurrent validation passes acknowledges the latest signature as the Group's reviewed snapshot and clears that type of “&lt;!&gt;” for all related unsubmitted Applications at once. OK is not a Save action.</span></li>
+                <li><span class="zh">如Form仍然Fail，按OK只退出Edit Mode並保留現有輸入；Group Warning不得清除。其他section或validation warning亦不可被Concurrent OK清除。</span><span class="en">If the form still fails, OK only exits Edit Mode and retains the current input; the Group Warning must remain. Concurrent OK must not clear warnings from other sections or validations.</span></li>
               </ul></td>
             </tr>
 
@@ -1296,13 +1303,16 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Rule ID"><span class="rule-id">SYS-07</span><span class="rule-name"><span class="zh">Outstanding PDF鎖定</span><span class="en">Outstanding PDF lock</span></span></td>
               <td class="condition" data-label="Trigger / Condition"><span class="zh">任何相關Application已成功通過Start Signing並產生PDF，且尚未Submit或Void。</span><span class="en">Any related application has passed Start Signing and generated a PDF that has not been submitted or voided.</span></td>
               <td data-label="Expected System Behaviour"><ul>
-                <li><span class="zh">整個共享 Concurrent Submission不可進入 Edit Mode，但仍須顯示最新 Policy List及最新 Policy Status。</span><span class="en">The shared Concurrent Submission must not enter Edit Mode, but it must still display the latest Policy List and Policy Status.</span></li>
+                <li><span class="zh">第一份PDF產生後，凍結整個Concurrent Group snapshot，而不只凍結該份PDF。Group Policy List、Policy lifecycle display、declaration答案、Policy selection、AC11、AC7.2、Manual Policy及Group Total／Max均不可被後續資料變更改寫。</span><span class="en">After the first PDF is generated, the entire Concurrent Group snapshot is frozen, not only that PDF. The Group Policy List, lifecycle display, declaration answers, Policy selection, AC11, AC7.2, Manual Policies and Group Total/Max must not be rewritten by later data changes.</span></li>
                 <li><span class="zh">Policy Card不設獨立 read-only規則；不能修改由整體 shared-form lock控制。</span><span class="en">A Policy Card has no independent read-only rule; non-editability is controlled by the shared-form lock.</span></li>
-                <li><span class="zh">鎖定期間，Policy List更新不產生額外的change-only warning；但最新共享內容如未通過一般 declaration validation，Concurrent仍須顯示Warning，並阻止其他Application產生新PDF。</span><span class="en">While locked, Policy List updates do not create an additional change-only warning. However, if the latest shared content fails normal declaration validation, Concurrent must still show Warning and block another application from generating a new PDF.</span></li>
+                <li><span class="zh">鎖定期間仍須在Concurrent tab及Start Signing checkpoint重新搜尋，但搜尋只識別後台Pending差異。ADD／DEL、Quotation ID、Policy Status及重要資料變更不可更新已凍結Group table、selection、Total／Max或任何舊PDF Snapshot。</span><span class="en">During the lock, the system must still re-search at the Concurrent tab and Start Signing checkpoints, but the search only identifies Pending backend differences. ADD/DEL, Quotation ID, Policy Status and material changes must not update the frozen Group table, selection, Total/Max or any existing PDF Snapshot.</span></li>
+                <li><span class="zh">鎖定後新增的Application／Policy可以保存，但只屬Pending，不加入或顯示於目前凍結Group，亦不可產生PDF。所有Outstanding PDF解除後，下一次refresh才可載入Pending變更及按SYS-16顯示Group-level「&lt;!&gt;」。</span><span class="en">An Application/Policy added after lock may be saved but remains Pending; it does not join or appear in the current frozen Group and cannot generate a PDF. Only the next refresh after all outstanding PDFs end may admit Pending changes and show the Group-level “&lt;!&gt;” under SYS-16.</span></li>
+                <li><span class="zh">鎖定期間不顯示用戶無法解除的change-only「&lt;!&gt;」，亦不可把Pending最新signature寫回Group的已確認snapshot。</span><span class="en">A change-only “&lt;!&gt;” that the user cannot resolve must not be shown during the lock, and the latest Pending signature must not overwrite the Group's acknowledged snapshot.</span></li>
                 <li><span class="zh">Delete Policy必須在Owner App的Quotation執行；如Owner App自己已有PDF則不可Delete該Policy，但可Delete整個未提交Owner App。其他沒有自己PDF的Owner App仍可刪除自己的Policy。</span><span class="en">Delete Policy is performed in the owner App's Quotation. If the owner App has its own PDF, that Policy cannot be deleted separately, but the whole unsubmitted owner App may be deleted. Another owner App without its own PDF may still delete its own Policy.</span></li>
-                <li><span class="zh">其他符合自身 section requirements及共享 declaration gate的 Application仍可產生自己的 PDF，不需要等待較早 Application Submit或 Void。</span><span class="en">Another application that meets its own section requirements and the shared declaration gate may generate its own PDF without waiting for the earlier application to be submitted or voided.</span></li>
+                <li><span class="zh">只有第一份PDF產生時已屬凍結Group的其他Application，才可在完成自身section requirements後按同一Group snapshot產生自己的獨立PDF，而不需要等待較早Application Submit或Void。</span><span class="en">Only another Application that already belonged to the frozen Group when the first PDF was generated may create its own independent PDF from the same Group snapshot after completing its own section requirements, without waiting for the earlier Application to be submitted or voided.</span></li>
+                <li><span class="zh">Shared Concurrent鎖定不要求每份PDF包含相同rows；Option A仍只把產生該PDF的Current App Policy納入。但該Current App必須是凍結Group既有成員，鎖定後新增的App C／Policy C不可利用Option A繞過Group lock。</span><span class="en">A Shared Concurrent lock does not require every PDF to contain identical rows; Option A still includes only the Current App Policy. However, that Current App must already be a frozen Group member; an App C/Policy C added after lock cannot use Option A to bypass the Group lock.</span></li>
                 <li><span class="zh">擁有active PDF的Application被重新開啟時，系統必須返回該Application自己的Preview &amp; Sign／PDF簽署狀態，而不是繼承另一App的畫面。</span><span class="en">When an application with an active PDF is reopened, it must return to its own Preview &amp; Sign/PDF signing state and must not inherit another App's screen.</span></li>
-                <li><span class="zh">沒有 active PDF的相關 Application才顯示 locked、read-only的最新 Concurrent Submission。例如 App A有 active PDF時，App B／C可查看 locked Concurrent；如 App A及 App B均有 active PDF，則由尚未產生 PDF的 App C查看。</span><span class="en">Only a related application without its own active PDF displays the latest locked, read-only Concurrent Submission. For example, if App A has an active PDF, App B or C may view locked Concurrent; if App A and App B both have active PDFs, an App C without a PDF is used to view it.</span></li>
+                <li><span class="zh">沒有active PDF但已屬凍結Group的Application顯示同一份locked、read-only Group snapshot。搜尋仍會執行，但Pending結果不會顯示或改寫snapshot，直至Group解鎖。</span><span class="en">An Application without its own active PDF that already belongs to the frozen Group displays the same locked, read-only Group snapshot. Searching still runs, but Pending results do not appear or rewrite the snapshot until the Group unlocks.</span></li>
               </ul></td>
             </tr>
 
@@ -1314,6 +1324,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
                 <li><span class="zh">Preview &amp; Sign只進入Submit Page，不產生PDF；PDF必須在Start Signing成功後建立並保存當刻data snapshot。</span><span class="en">Preview &amp; Sign only enters the Submit Page and does not generate a PDF; the PDF is created after Start Signing passes and retains that moment's data snapshot.</span></li>
                 <li><span class="zh">客戶 PDF表格只顯示產生當刻已選取／納入的保單；未選取保單不可出現在表格。每列顯示 Application Ref、Product、Premium details、Monthly／Single HKD及 Contribution Period，Total只計算表格內保單。</span><span class="en">The customer PDF table must display only policies selected/included at generation time; unselected policies must not appear. Each row shows Application Ref, Product, Premium details, Monthly/Single HKD and Contribution Period, and totals include only the policies displayed in the table.</span></li>
                 <li><span class="zh">Option A的PDF只顯示目前App Policy，並把Multiple applications within the same day答案記錄為No；其他偵測到但留待稍後處理的Policy不可加入本次PDF表格。</span><span class="en">For Option A, the PDF displays only the current App Policy and records Multiple applications within the same day as No; other detected Policies handled later must not appear in this PDF table.</span></li>
+                <li><span class="zh">Outstanding PDF期間，只有第一份PDF產生時已在凍結Group內的Application可再產生Option A PDF；Current App Policy須來自凍結Group snapshot及其仍有效的Owner App Quotation。鎖定後新增的App／Policy不可產生PDF。</span><span class="en">While a PDF is outstanding, only an Application already present in the frozen Group when the first PDF was generated may create an Option A PDF. Its Current App Policy must come from the frozen Group snapshot and its still-valid owner App Quotation. An App/Policy added after lock cannot generate a PDF.</span></li>
                 <li><span class="zh">如系統需要 audit，完整 detected policy list及每張保單的選取狀態可保留在內部 snapshot，但不可輸出為客戶 PDF的額外 rows或 Included Yes／No欄。</span><span class="en">If required for audit, the full detected policy list and each policy's selection status may remain in the internal snapshot, but must not be output as extra customer-PDF rows or an Included Yes/No column.</span></li>
                 <li><span class="zh">Option B的PDF只保存有效並已納入本次Concurrent Submission的Manual Policy；Option A不把Manual Policy加入客戶PDF表格。declaration答案、選取狀態、calculation pt及exchange-rate snapshot須按產生當刻保存；如需audit，未納入的Manual Policy只可保留於內部snapshot。</span><span class="en">An Option B PDF retains only valid Manual Policies included in the current Concurrent Submission; Option A does not add Manual Policies to the customer PDF table. Declaration answers, selections, the calculation pt and the exchange-rate snapshot are retained as at generation time; excluded Manual Policies may be retained only in the internal snapshot if required for audit.</span></li>
                 <li><span class="zh">PDF產生後的 Policy ADD／DEL或資料修改不可改變已產生 PDF的表格或 Total。</span><span class="en">Policy ADD/DEL or data changes after PDF generation must not alter the generated PDF table or totals.</span></li>
@@ -1326,8 +1337,8 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td class="condition" data-label="Trigger / Condition"><span class="zh">Policy資料、背景 calculation inputs或選取內容改變。</span><span class="en">Policy data, background calculation inputs or selected content changes.</span></td>
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">Max及 Total Premium不可因一般輸入或 Policy List變動而即時重新計算。</span><span class="en">Max and Total Premium must not recalculate in real time merely because input or the Policy List changes.</span></li>
-                <li><span class="zh">只在進入 Concurrent Submission及按 Start Signing時重新計算。</span><span class="en">Recalculation occurs only when Concurrent Submission is entered and when Start Signing is pressed.</span></li>
-                <li><span class="zh">Preview &amp; Sign會讀取最新Policy List，但不重新計算Max／Total。</span><span class="en">Preview &amp; Sign reads the latest Policy List but does not recalculate Max or Total.</span></li>
+                <li><span class="zh">無論是否有Outstanding PDF，只在進入Concurrent Submission及按Start Signing時執行check。鎖定期間顯示及後續既有Group成員的檢查只使用第一份PDF建立的凍結Group list／selection；後台Pending ADD／DEL不可改變Group Total／Max或任何PDF snapshot。</span><span class="en">Whether or not an outstanding PDF exists, checks occur only when Concurrent Submission is entered and when Start Signing is pressed. During the lock, display and checks for later existing Group members use only the frozen Group list/selection created by the first PDF; Pending backend ADD/DEL must not change Group Total/Max or any PDF snapshot.</span></li>
+                <li><span class="zh">Preview &amp; Sign不讀取最新Policy List，亦不重新計算Max／Total。</span><span class="en">Preview &amp; Sign does not read the latest Policy List and does not recalculate Max or Total.</span></li>
               </ul></td>
             </tr>
 
@@ -1345,7 +1356,8 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Rule ID"><span class="rule-id">SYS-11</span><span class="rule-name"><span class="zh">Start Signing validation</span><span class="en">Start Signing validation</span></span></td>
               <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶在 Sign Page按 Start Signing。</span><span class="en">The user presses Start Signing on the Sign Page.</span></td>
               <td data-label="Expected System Behaviour"><ul>
-                <li><span class="zh">首次Start Signing讀取最新Policy List、執行section／Concurrent validation，並重新計算最新Max及Total。</span><span class="en">The first Start Signing reads the latest Policy List, performs section/Concurrent validation, and recalculates the latest Max and Total.</span></li>
+                <li><span class="zh">Start Signing必須重新搜尋Policy List、執行section／Concurrent validation，並按當前有效snapshot重新檢查Max及Total。沒有Outstanding PDF時使用最新搜尋結果；有Outstanding PDF時，只有既有Group成員可使用第一份PDF的凍結Group snapshot執行自己的獨立檢查。</span><span class="en">Start Signing must re-search the Policy List, perform section/Concurrent validation, and recheck Max and Total against the currently effective snapshot. Without an outstanding PDF it uses the latest search result; with an outstanding PDF, only an existing Group member may perform its independent check using the frozen Group snapshot created by the first PDF.</span></li>
+                <li><span class="zh">如Current Application／Policy在Group鎖定後才加入，Start Signing必須以橙色Group-lock訊息阻止，且不得產生PDF；Option A不可繞過此限制。</span><span class="en">If the Current Application/Policy was added after the Group lock, Start Signing must be blocked with an orange Group-lock message and no PDF may be generated; Option A cannot bypass this restriction.</span></li>
                 <li><span class="zh">Pass時才產生及freeze PDF並開啟PDF文件簽署頁；Fail時不得產生PDF。</span><span class="en">Only a Pass generates and freezes the PDF and opens the PDF document signing page; a Fail must not generate a PDF.</span></li>
                 <li><span class="zh">Start Signing本身不可直接把狀態設為 Signing Complete；只有在 PDF文件頁按 Finish Signing後才完成簽署並返回 Submit Page。</span><span class="en">Start Signing must not directly set Signing Complete; signing completes only after Finish Signing is pressed on the PDF document page, after which the user returns to the Submit Page.</span></li>
                 <li><span class="zh">Fail後用戶返回Application覆核資料；因PDF尚未產生，不需要Void PDF。</span><span class="en">After a Fail, the user returns to the Application to review data; no PDF void is needed because no PDF was generated.</span></li>
@@ -1382,6 +1394,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">Completed及 Warning必須互斥，任何 section同一時間只顯示其中一個。</span><span class="en">Completed and Warning must be mutually exclusive; a section shows only one at a time.</span></li>
                 <li><span class="zh">Policy change warning與一般 validation warning由不同原因控制，但 UI只呈現目前有效狀態。</span><span class="en">Policy change and normal validation warnings are driven by different causes, but the UI presents only the currently effective state.</span></li>
+                <li><span class="zh">Concurrent OK只可清除Group Policy-list-change Warning；不可清除Quotation incomplete、其他section warning或尚未通過的normal validation。</span><span class="en">Concurrent OK may clear only the Group policy-list-change Warning; it must not clear Quotation incomplete, another section's Warning or a normal validation that has not passed.</span></li>
                 <li><span class="zh">PDF lifecycle status、section completion及 validation status不可混作同一個狀態。</span><span class="en">PDF lifecycle status, section completion and validation status must not be treated as the same state.</span></li>
                 <li><span class="zh">任何section顯示Warning時，Preview &amp; Sign必須disabled，因此不可開始新PDF流程；全部適用section均Completed時才可進入Submit Page。</span><span class="en">Preview &amp; Sign must be disabled while any section shows Warning, so a new PDF flow cannot start; every applicable section must be Completed before entering the Submit Page.</span></li>
               </ul></td>
@@ -1392,6 +1405,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶Add Application、於Quotation Add／Delete Policy，或Delete App。</span><span class="en">The user adds an Application, adds/deletes a Policy in Quotation, or deletes an App.</span></td>
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">新Application先以空白狀態建立並首先開啟Concurrent；Quotation為Incomplete。每個Application最多一張Policy，Policy只能在其Owner App的Quotation Add／Delete。</span><span class="en">A new Application is created empty and opens Concurrent first, with Quotation incomplete. Each Application may contain at most one Policy, managed only from its owner App's Quotation.</span></li>
+                <li><span class="zh">如建立Application或加入Policy時Group已鎖定，資料可保存但只屬Pending，不加入凍結Group亦不可產生PDF；解鎖後須在下一次Concurrent refresh載入並覆核。</span><span class="en">If an Application is created or a Policy is added while the Group is locked, it may be saved but remains Pending; it neither joins the frozen Group nor generates a PDF, and must be loaded and reviewed at the next Concurrent refresh after unlock.</span></li>
                 <li><span class="zh">Delete Policy不等於Delete App；Delete App則cascade刪除其Policy、未提交PDF及signing progress。</span><span class="en">Delete Policy is not Delete App; Delete App cascades to its Policy, unsubmitted PDF and signing progress.</span></li>
                 <li><span class="zh">Owner App已有PDF時不可單獨Delete其Policy；但只要尚未Submit，整個App仍可Delete，包括已簽署但未Submit的App。</span><span class="en">A Policy cannot be deleted separately when its owner App has a PDF; however, the whole App may still be deleted before submission, including after signing is complete.</span></li>
                 <li><span class="zh">本輪第一次Delete Policy或Delete App後進入Delete phase；不可再Add Application或Add Policy，直至Reset／Jump Situation。</span><span class="en">The first Delete Policy or Delete App starts the Delete phase; Add Application and Add Policy remain unavailable until Reset/Jump Situation.</span></li>
@@ -1401,14 +1415,15 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
 
             <tr>
               <td data-label="Rule ID"><span class="rule-id">SYS-16</span><span class="rule-name"><span class="zh">Concurrent Tab「&lt;!&gt;」邏輯</span><span class="en">Concurrent Tab “&lt;!&gt;” logic</span></span></td>
-              <td class="condition" data-label="Trigger / Condition"><span class="zh">沒有Outstanding PDF，而系統在重新進入Concurrent Submission、按Preview &amp; Sign或按Start Signing時，發現最新Policy List／lifecycle status與目前Application上次確認的snapshot不同。</span><span class="en">No outstanding PDF exists, and re-entering Concurrent Submission, pressing Preview &amp; Sign or pressing Start Signing finds that the latest Policy List/lifecycle status differs from the current application's last confirmed snapshot.</span></td>
+              <td class="condition" data-label="Trigger / Condition"><span class="zh">沒有Outstanding PDF，而系統在重新進入Concurrent Submission或按Start Signing時，發現最新Policy List／Quotation ID／lifecycle status與Concurrent Group上次確認的snapshot不同。</span><span class="en">No outstanding PDF exists, and re-entering Concurrent Submission or pressing Start Signing finds that the latest Policy List, Quotation ID or lifecycle status differs from the Concurrent Group's last acknowledged snapshot.</span></td>
               <td data-label="Expected System Behaviour"><ul>
-                <li><span class="zh">Add／Delete Policy、Policy status改變，以及Premium、Pay Term、Type、Frequency或pt等重要資料改變，均須觸發目前Application的Concurrent Tab「&lt;!&gt;」。</span><span class="en">Adding/deleting a Policy, a Policy status change, or a material change to Premium, Pay Term, Type, Frequency or pt must trigger “&lt;!&gt;” on the current application's Concurrent Tab.</span></li>
+                <li><span class="zh">Add／Delete Policy、同時Add及Delete、Quotation ID不同、Policy status改變，以及Premium、Pay Term、Type、Frequency或pt等重要資料改變，均屬auto-searched Policy List Change，並須觸發整個Concurrent Group的「&lt;!&gt;」。</span><span class="en">Adding/deleting a Policy, simultaneous addition and deletion, a changed Quotation ID, a Policy status change, or a material change to Premium, Pay Term, Type, Frequency or pt is an auto-searched Policy List Change and must trigger “&lt;!&gt;” for the whole Concurrent Group.</span></li>
                 <li><span class="zh">只新增空白Application不算Policy List改變，因此不觸發Concurrent「&lt;!&gt;」；其後在該Application的Quotation加入Policy才觸發。</span><span class="en">Adding an empty Application alone is not a Policy List change and does not trigger Concurrent “&lt;!&gt;”; adding its Policy later in Quotation does trigger it.</span></li>
-                <li><span class="zh">「&lt;!&gt;」必須按Application獨立保存，並使用各Application自己的最後確認snapshot作比較；一個Application完成重新確認，不可清除其他Application的「&lt;!&gt;」。</span><span class="en">“&lt;!&gt;” must be stored per application and compared against that application's own last confirmed snapshot; reconfirming one application must not clear another application's “&lt;!&gt;”.</span></li>
-                <li><span class="zh">離開Concurrent Tab、按Next Page或只按OK均不可自動清除「&lt;!&gt;」。只有用戶在Edit Mode內檢視最新內容，而目前共享表格通過正常validation後，才可更新該Application的snapshot並清除「&lt;!&gt;」。</span><span class="en">Leaving the Concurrent Tab, pressing Next Page or merely pressing OK must not automatically clear “&lt;!&gt;”. It may clear only after the user reviews the latest content in Edit Mode and the current shared form passes normal validation, allowing that application's snapshot to be updated.</span></li>
-                <li><span class="zh">任何適用Section顯示「&lt;!&gt;」時，該Application不可開始新的PDF流程；Preview &amp; Sign／Start Signing重新載入資料後如觸發「&lt;!&gt;」，必須停止並要求重新確認。</span><span class="en">While any applicable section shows “&lt;!&gt;”, that application cannot start a new PDF flow. If reloading at Preview &amp; Sign or Start Signing triggers “&lt;!&gt;”, processing must stop and require reconfirmation.</span></li>
-                <li><span class="zh">有Outstanding PDF時，Policy List更新不可新增change-only「&lt;!&gt;」，舊PDF繼續使用其frozen snapshot；但最新共享內容如未通過一般validation，Concurrent仍須顯示「&lt;!&gt;」，並阻止其他Application建立新PDF。</span><span class="en">When an outstanding PDF exists, a Policy List update must not create a change-only “&lt;!&gt;”, and the existing PDF continues using its frozen snapshot. However, if the latest shared content fails normal validation, Concurrent must still show “&lt;!&gt;” and block another application from creating a new PDF.</span></li>
+                <li><span class="zh">「&lt;!&gt;」是Group-level狀態；偵測到變更後，同一Group所有未提交Application的Concurrent Tab均須顯示「&lt;!&gt;」，不可與Completed tick同時出現。</span><span class="en">“&lt;!&gt;” is a Group-level state. Once a change is detected, the Concurrent Tab of every unsubmitted Application in the Group must show “&lt;!&gt;”, never together with the Completed tick.</span></li>
+                <li><span class="zh">離開Concurrent Tab、按Next Page或只令Form變成Pass均不可自動清除「&lt;!&gt;」。用戶須在Edit Mode覆核最新清單；正常Concurrent validation通過後，從任一相關Application按OK，才可更新Group snapshot並一次過清除全Group同類「&lt;!&gt;」。</span><span class="en">Leaving the Concurrent Tab, pressing Next Page or merely making the form pass must not automatically clear “&lt;!&gt;”. The user must review the latest list in Edit Mode; after normal Concurrent validation passes, pressing OK from any related Application updates the Group snapshot and clears that type of “&lt;!&gt;” across the whole Group at once.</span></li>
+                <li><span class="zh">OK不是Save或一般completion gate；validation Fail時按OK不得清除「&lt;!&gt;」，亦不可清除其他section或其他原因的Warning。</span><span class="en">OK is not a Save or general completion gate. Pressing OK while validation fails must not clear “&lt;!&gt;”, nor may it clear another section's Warning or a Warning caused by another reason.</span></li>
+                <li><span class="zh">任何適用Section顯示「&lt;!&gt;」時，該Application不可開始新的PDF流程；Start Signing重新載入資料後如觸發「&lt;!&gt;」，必須停止並要求重新確認。Preview &amp; Sign本身不重新載入資料。</span><span class="en">While any applicable section shows “&lt;!&gt;”, that application cannot start a new PDF flow. If reloading at Start Signing triggers “&lt;!&gt;”, processing must stop and require reconfirmation. Preview &amp; Sign itself does not reload data.</span></li>
+                <li><span class="zh">有Outstanding PDF時仍執行搜尋，但只記錄後台Pending差異；凍結Group table、selection及confirmed snapshot均不可更新，亦不顯示用戶無法解除的change-only「&lt;!&gt;」。所有Outstanding PDF解除後，下一次refresh如仍有差異，才載入最新清單並在全Group顯示「&lt;!&gt;」。</span><span class="en">When an outstanding PDF exists, searching still runs but records only Pending backend differences. The frozen Group table, selection and acknowledged snapshot must not update, and no unresolvable change-only “&lt;!&gt;” is shown. After every outstanding PDF ends, the next refresh loads the latest list and shows “&lt;!&gt;” across the Group if a difference remains.</span></li>
               </ul></td>
             </tr>
           </tbody>
@@ -1448,13 +1463,13 @@ var FX_MAP = {HKD:1, USD:7.803548, AUD:5.103225, SGD:5.812366};
 var FX_UPDATED = "28-May-2026";
 
 var POLICIES = [
-  {ref:"APP-20260717-001", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy 123",
+  {ref:"APP-20260717-001", qid:"QUO-20260717-001-A", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy 123",
    cur:"HKD", prem:18800.00, term:"20 Years", si:"17/07/2026 10:45", type:"regular", freq:"yearly", pt:20},
-  {ref:"APP-20260717-002", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy 345",
+  {ref:"APP-20260717-002", qid:"QUO-20260717-002-A", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy 345",
    cur:"USD", prem:7825.82, term:"5 / @100", si:"17/07/2026 11:34", type:"regular", freq:"yearly", pt:5},
-  {ref:"APP-20260717-003", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy XYZ",
+  {ref:"APP-20260717-003", qid:"QUO-20260717-003-A", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy XYZ",
    cur:"HKD", prem:12960.00, term:"10 Years", si:"17/07/2026 12:05", type:"regular", freq:"yearly", pt:10},
-  {ref:"APP-20260717-004", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy 789",
+  {ref:"APP-20260717-004", qid:"QUO-20260717-004-A", po:"CHAN Tai Man", lp:"CHAN Siu Ming", prod:"Policy 789",
    cur:"HKD", prem:9600.00, term:"15 Years", si:"17/07/2026 13:20", type:"regular", freq:"yearly", pt:12}
 ];
 
@@ -1490,7 +1505,7 @@ function blankAppState(){
 
 // Shared Concurrent Submission content lives at the top level.
 // Navigation, non-Concurrent tab completion, PDF, signing and submission are stored per App Ref.
-var st = { opt:null, det:1, shownDet:1, sel:{}, curRef:POLICIES[0].ref, a11:{}, a11oth:"", a72:{},
+var st = { opt:null, yesInitialized:false, det:1, shownDet:1, sel:{}, curRef:POLICIES[0].ref, a11:{}, a11oth:"", a72:{},
            aff:{nla:800000, ndi:100000, mog:5000, cdi:50, ca:50}, pm:{},
            manual:[], mseq:0,
            calc:null, affOK:true,
@@ -1516,6 +1531,9 @@ function appExists(ref){ return st.appRefs.indexOf(ref) >= 0; }
 function policyExists(ref){ return st.policyRefs.indexOf(ref) >= 0; }
 function stateFor(ref){
   if(!st.appStates[ref]){
+    var inheritGroupWarning = Object.keys(st.appStates).some(function(k){
+      return !!st.appStates[k].policyChangePending;
+    });
     st.appStates[ref] = blankAppState();
     // Every App begins with its own prerequisite-section baseline. These ticks
     // are separate objects per App; changing one App never changes another.
@@ -1523,6 +1541,7 @@ function stateFor(ref){
     // A newly opened App starts from the latest policy-list version. Existing
     // Apps keep their own snapshot so a later refresh can detect a change.
     st.appStates[ref].policySnapshot = policyListSignature();
+    st.appStates[ref].policyChangePending = inheritGroupWarning;
   }
   return st.appStates[ref];
 }
@@ -1548,21 +1567,39 @@ function submittedSet(){
   });
   return out.filter(function(ref, i){ return out.indexOf(ref) === i; });
 }
+function currentPolicyFirst(list){
+  var current = [], others = [];
+  list.forEach(function(p){ (p.ref === st.curRef ? current : others).push(p); });
+  return current.concat(others);
+}
 function cardsList(){
+  // The first generated PDF freezes the full Group list. Backend ADD/DEL and
+  // submission changes remain pending and do not alter this display until unlock.
+  var lk = activeLock();
+  if(lk) return currentPolicyFirst(policiesFor(lk.pdf.frozenRefs));
   var sub = submittedSet();
-  return live().filter(function(p){ return sub.indexOf(p.ref) < 0; });
+  var list = live().filter(function(p){ return sub.indexOf(p.ref) < 0; });
+  return currentPolicyFirst(list);
 }
 // Latest backend list used by refresh-time calculations.
 function latestCardsList(){
   var sub = submittedSet();
-  return policiesFor(st.policyRefs).filter(function(p){ return sub.indexOf(p.ref) < 0; });
+  var list = policiesFor(st.policyRefs).filter(function(p){ return sub.indexOf(p.ref) < 0; });
+  return currentPolicyFirst(list);
+}
+function currentInFrozenGroup(){
+  var lk = activeLock();
+  return !lk || lk.pdf.frozenRefs.indexOf(st.curRef) >= 0;
+}
+function canCreatePdfInCurrentGroup(){
+  return !locked() || currentInFrozenGroup();
 }
 function curInLive(){ return cardsList().some(function(p){ return p.ref === st.curRef; }); }
 // Basic Info / Extended Part completion is per-app (independent items), unlike the shared Concurrent Submission content.
 function curTabs(){
   return curAppState().tabs;
 }
-// is the current app's OWN card ticked? locked → read the frozen snapshot; otherwise live selection
+// is the current app's OWN card ticked? locked → read the immutable shared selection
 function curTicked(){
   var lk = activeLock();
   if(lk && lk.pdf.frozenSel) return !!lk.pdf.frozenSel[st.curRef];
@@ -1572,9 +1609,11 @@ function curTicked(){
 function selectedList(useLatest){
   var base = useLatest ? latestCardsList() : cardsList();
   if(st.opt === "A"){
-    // Option A = sign the current App alone in this signing batch. Other
-    // detected Apps remain visible for review but are de-selected for now.
-    return base.filter(function(p){ return p.ref === st.curRef; });
+    // Option A means only the current App's own Policy. A Policy added after
+    // Group Lock is pending and cannot participate until the Group unlocks.
+    if(locked() && !currentInFrozenGroup()) return [];
+    var own = curPolicy();
+    return own && policyExists(own.ref) ? [own] : [];
   }
   return base.filter(function(p){ return st.sel[p.ref]; });
 }
@@ -1582,9 +1621,8 @@ function selectedList(useLatest){
 function mIncomplete(m){ return !m.mode || !(m.amt > 0); }
 function anyManualIncomplete(){ return st.manual.some(mIncomplete); }
 
-// Any outstanding PDF locks the shared form against editing. The lock does not
-// stop another eligible App from generating its own independent PDF.
-// Shared editing unlocks only when every outstanding PDF is submitted or voided.
+// Any outstanding PDF freezes the complete Concurrent Group. Existing frozen
+// members may generate their own PDFs; post-lock Apps/Policies remain pending.
 function locked(){ return !!activeLock(); }
 // the form is read-only unless we are inside the edit panel and not locked
 function roForm(){ return !st.editing || locked(); }
@@ -1597,16 +1635,24 @@ function openEdit(){
   st.editing = true; render();
 }
 function closeEdit(){ st.editing = false; render(); }
-// OK only leaves edit mode. Completion is derived from the current content.
+// Data changes are live and do not need OK to save. When a Group policy-list
+// warning exists, a valid OK also acknowledges the reviewed list for the whole
+// Concurrent Group; otherwise OK only leaves Edit Mode.
 function commitEdit(){
+  var acknowledged = false;
+  if(gate().ok && groupPolicyChangePending()){
+    acknowledgeGroupPolicyList();
+    acknowledged = true;
+  }
   st.editing = false;
   render();
+  return acknowledged;
 }
 
 /* ---------- situation + gate ---------- */
 // effective number of OTHER same-day policies visible now — excludes submitted ones and the current app itself
 function effDet(){
-  var sub = submittedSet();
+  var sub = locked() ? [] : submittedSet();
   var activeCount = live().filter(function(p){ return sub.indexOf(p.ref) < 0; }).length;
   // Situation is derived from the number of active Policies, not from whether
   // the currently opened (possibly empty) App owns one of them.
@@ -1674,7 +1720,9 @@ function renderCards(){
   var lk = activeLock();
   cardsList().forEach(function(p){
     var isCur = (p.ref === st.curRef);
-    var policyState = stateFor(p.ref);
+    // A Policy may remain visible in the frozen Group snapshot after its owner
+    // App is deleted from the backend; do not recreate the deleted App state.
+    var policyState = st.appStates[p.ref] || blankAppState();
     var pdfGen = !!policyState.pdf.done;   // this application has generated its own PDF
     // while shared content is locked, show the selection captured by the lock owner's PDF
     var frozen = !!lk && lk.pdf.frozenRefs.indexOf(p.ref) >= 0;
@@ -1807,8 +1855,8 @@ function renderHeader(){
     hd.classList.add("locked");
     el.textContent = T("記錄已鎖定 — 已由 " + lk.pdf.byApp + " 產生 PDF",
                        "Record locked — PDF generated by " + lk.pdf.byApp);
-    l2.textContent = T("共用內容為唯讀；其他符合要求的 App 仍可產生自己的 PDF。如需修改，須先提交或作廢所有未完成的 PDF。",
-                       "Shared content is read-only; other eligible Apps may still generate their own PDFs. To edit it, first submit or void every outstanding PDF.");
+    l2.textContent = T("整個Concurrent Group已凍結於第一份PDF產生時的snapshot。新App／Policy可保存為Pending，但不加入目前Group，且在所有Outstanding PDF完成前不可產生PDF。",
+                       "The entire Concurrent Group is frozen at the snapshot created by the first PDF. A new App/Policy may be saved as Pending, but it cannot join the current Group or generate a PDF until all outstanding PDFs are completed.");
   } else if(isLate()){
     hd.classList.remove("locked");
     var lname = p ? p.prod : T("本申請","this application");
@@ -1872,7 +1920,7 @@ function policyListSignature(){
     var a = st.appStates[p.ref];
     var status = a && a.submitted ? "submitted" : (a && a.pdf.done ? "generated" : "in-progress");
     var pm = st.pm[p.ref] || {};
-    return [p.ref,p.po,p.lp,p.prod,p.cur,p.prem,p.term,p.si,status,
+    return [p.ref,p.qid,p.po,p.lp,p.prod,p.cur,p.prem,p.term,p.si,status,
       pm.type == null ? p.type : pm.type,
       pm.freq == null ? p.freq : pm.freq,
       pm.pt == null ? p.pt : pm.pt];
@@ -1887,22 +1935,49 @@ function policyListSignature(){
 // whether a detected change should create a tab warning.
 function refreshPolicyList(trigger){
   var ca = curAppState();
+  var hasLock = locked();
   var before = ca.policySnapshot;
-  st.shownPolicyRefs = st.policyRefs.slice();
-  syncCounts();
-  // A deleted policy's shared tick is cleared only when the latest Policy List
-  // is reloaded. This keeps ADD/DEL aligned with the defined refresh checkpoints.
-  st.pendingRemovedRefs.forEach(function(ref){ delete st.sel[ref]; });
-  st.pendingRemovedRefs = [];
   var latest = policyListSignature();
   var changed = before !== null && before !== latest;
-  ca.policySnapshot = latest;
-  return {trigger:trigger, changed:changed};
+  if(hasLock){
+    // Re-search still occurs, but the complete Concurrent Group display remains
+    // frozen. Backend changes are admitted only after every outstanding PDF ends.
+    return {trigger:trigger, changed:changed, locked:true, frozen:true};
+  }
+  st.shownPolicyRefs = st.policyRefs.slice();
+  syncCounts();
+  st.pendingRemovedRefs.forEach(function(ref){ delete st.sel[ref]; });
+  st.pendingRemovedRefs = [];
+  if(!changed) ca.policySnapshot = latest;
+  return {trigger:trigger, changed:changed, locked:false, frozen:false};
 }
 
-// A manual policy is edited inside the currently visible shared form, so the
-// current App has already seen that exact change. Other Apps retain their own
-// older snapshots and will detect it on their next refresh.
+function markGroupPolicyChange(){
+  st.appRefs.forEach(function(ref){
+    var a = stateFor(ref);
+    if(!a.submitted) a.policyChangePending = true;
+  });
+}
+
+function acknowledgeGroupPolicyList(){
+  var latest = policyListSignature();
+  st.appRefs.forEach(function(ref){
+    var a = stateFor(ref);
+    if(a.submitted) return;
+    a.policySnapshot = latest;
+    a.policyChangePending = false;
+  });
+}
+
+function groupPolicyChangePending(){
+  return st.appRefs.some(function(ref){
+    var a = st.appStates[ref];
+    return !!a && !a.submitted && !!a.policyChangePending;
+  });
+}
+
+// Manual edits are intentional shared-form changes. The current App has seen
+// them; a later refresh may raise a Group warning until valid OK acknowledges it.
 function acknowledgeCurrentPolicyList(){
   curAppState().policySnapshot = policyListSignature();
 }
@@ -1941,7 +2016,16 @@ function escHtml(v){
 // later ADD/DEL or policy edits must never rewrite this object.
 function buildPdfSnapshot(byApp){
   var rows = [];
-  cardsList().forEach(function(p){
+  var snapshotPolicies = cardsList().slice();
+  // Under Option A, ensure the current App's own Policy is included in this
+  // App's independent PDF snapshot without changing any earlier PDF.
+  if(st.opt === "A"){
+    var own = curPolicy();
+    if(own && policyExists(own.ref) && !snapshotPolicies.some(function(p){ return p.ref === own.ref; })){
+      snapshotPolicies.push(own);
+    }
+  }
+  snapshotPolicies.forEach(function(p){
     var m = pmOf(p), amt = hkd(p);
     var included = st.opt === "A" ? p.ref === st.curRef : !!st.sel[p.ref];
     rows.push({
@@ -2016,11 +2100,13 @@ function renderAfford(){
 
 // Max and Total are snapshots. They are recalculated only when entering the
 // Concurrent Submission tab and when Start Signing is pressed.
-function recalculate(trigger){
+function recalculate(trigger, storeResult){
+  if(storeResult === undefined) storeResult = true;
   var a = {nla:num("af_nla"), ndi:num("af_ndi"), mog:num("af_mog"), cdi:num("af_cdi"), ca:num("af_ca")};
-  // Start Signing must calculate from the latest backend Policy List. The PDF
-  // document itself remains frozen and is rendered from ca.pdf.snapshot.
-  var list = aggList(trigger === "start-signing"), pt = grpPt(list);
+  // Without a lock, Start Signing uses the latest search result. During Group
+  // Lock every existing member is checked only against the frozen Group list.
+  var useLatest = trigger === "start-signing" && !locked();
+  var list = aggList(useLatest), pt = grpPt(list);
   var mS = maxSingleF(a,pt), mM = maxMonthlyF(a,pt);
 
   var hasS = list.some(function(x){ return x.type === "single"; });
@@ -2043,13 +2129,16 @@ function recalculate(trigger){
     return s + (x.type === "regular" ? monthlyVal(x)*x.pt*12 : x.amt);
   }, 0);
   var pass = total < limit;                       // strict <
-  st.calc = {
+  var result = {
     trigger:trigger, pt:pt, maxSingle:mS, maxMonthly:mM,
     mode:mode, total:total, limit:limit, limName:limName,
     monthly:monthly, single:single, pass:pass
   };
-  st.affOK = pass;                                // display/signing result only; not the PDF-generation gate
-  return st.calc;
+  if(storeResult){
+    st.calc = result;
+    st.affOK = pass;                              // display/signing result only; not the PDF-generation gate
+  }
+  return result;
 }
 
 function renderAffordResult(){
@@ -2110,7 +2199,8 @@ function renderVerdict(){
   // while the shared content is locked by a PDF (not yet submitted), it is read-only for everyone
   var lk = activeLock();
   if(lk){
-    var lockedPass = g.ok;
+    var groupEligible = canCreatePdfInCurrentGroup();
+    var lockedPass = g.ok && groupEligible;
     v.className = "verdict " + (lockedPass ? "pass" : "block");
     v.innerHTML = eb +
       '<div class="status"><span class="ic">' + (lockedPass ? "&#10003;" : "&#128274;") + '</span>' +
@@ -2118,8 +2208,10 @@ function renderVerdict(){
       '<div class="sit">' + names[g.s === null ? "null" : g.s] + '</div>' +
       '<div class="sit" style="margin-top:6px">' +
         (lockedPass
-          ? T("目前 App 可在完成自己的分頁後產生獨立 PDF。","This App may generate its own PDF after completing its own tabs.")
-          : T("目前 App 未符合共用內容要求。","This App does not meet the shared-content requirements.")) +
+          ? T("目前App是凍結Group成員，可在完成自己的分頁後按同一snapshot產生獨立PDF。","This App is a frozen Group member and may generate its own PDF from the same snapshot after completing its own tabs.")
+          : (!groupEligible
+            ? T("目前App／Policy在鎖定後才加入，只保存為Pending；Group解鎖前不可產生PDF。","This App/Policy was added after lock and remains Pending; it cannot generate a PDF until the Group unlocks.")
+            : T("目前App未符合共用內容要求。","This App does not meet the shared-content requirements."))) +
       '</div>';
     if(!g.ok && g.need.length){
       v.innerHTML += '<div class="sit" style="margin-top:9px">' + T("尚欠:","Outstanding:") + '</div><ul class="need">' +
@@ -2219,12 +2311,9 @@ function render(){
   var g = gate();
   var ca = curAppState();
 
-  // A policy-change warning is sticky: navigation, OK and Next Page do not
-  // clear it. The warning clears only when the latest form is actively
-  // revalidated inside Edit Mode and passes. An outstanding PDF suppresses
-  // change-only warnings because the shared form is locked read-only.
-  if(lk && ca.policyChangePending) ca.policyChangePending = false;
-  if(!lk && st.editing && ca.policyChangePending && g.ok) ca.policyChangePending = false;
+  // A Group policy-change warning is sticky. Navigation and Next Page do not
+  // clear it. A valid OK from Edit Mode acknowledges it for the whole Group.
+  if(lk) st.appRefs.forEach(function(ref){ stateFor(ref).policyChangePending = false; });
 
   var fb = $("formbody");
   if(fb){
@@ -2241,17 +2330,19 @@ function render(){
   if($("addp")) $("addp").disabled = roForm() || st.detMode === "del";
 
   // Confirmed intended behaviour: completion follows the valid current content.
-  // OK leaves the edit view; it is not a separate completion/save gate.
+  // OK is not a save/completion gate. It only becomes a Group-level review
+  // acknowledgement when a policy-change warning exists and validation passes.
   // Concurrent completion follows declaration/form validity only. An Over Max
   // result remains visible but does not change the tab status or PDF gate.
-  var concurrentDone = g.ok && (lk || !ca.policyChangePending);
+  var groupEligible = canCreatePdfInCurrentGroup();
+  var concurrentDone = g.ok && groupEligible && (lk || !ca.policyChangePending);
   var quotationDone = policyExists(st.curRef);
   var allTabsDone = concurrentDone && quotationDone && curTabs().basic && curTabs().extended;
 
-  // Each App owns its own PDF/signing state. Another App's active PDF locks the
-  // shared content read-only, but does not block an eligible App from generating its own PDF.
+  // Existing frozen Group members may generate independent PDFs. An App/Policy
+  // added after lock is Pending and cannot start a PDF flow until Group unlock.
   var myActivePdf = ca.pdf.done && !ca.submitted;
-  var canPdf = myActivePdf || (!ca.submitted && allTabsDone);
+  var canPdf = myActivePdf || (!ca.submitted && allTabsDone && groupEligible);
   $("genpdf").disabled = !canPdf;
   renderPdfStatus(canPdf);
 
@@ -2361,10 +2452,16 @@ function renderPdfStatus(canPdf){
     return;
   }
   if(lk && lk.ref !== st.curRef){
+    if(!currentInFrozenGroup()){
+      el.innerHTML = '<span class="no">' + T("等待Concurrent Group解鎖","Pending Concurrent Group unlock") + '</span> · ' +
+        T("本申請／Policy於第一份PDF後新增，現時不可加入Group或產生PDF。",
+          "This Application/Policy was added after the first PDF and cannot join the Group or generate a PDF yet.");
+      return;
+    }
     el.innerHTML = (canPdf
-      ? '<span class="ok">' + T("共用內容已鎖定，但本申請驗證通過 ✓","Shared content locked, but this application passed ✓") + '</span> · ' +
-        T("可產生本申請自己的 PDF","ready to generate this application's own PDF")
-      : '<span class="no">' + T("共用內容已鎖定","Shared content locked") + '</span> · ' +
+      ? '<span class="ok">' + T("已凍結Group成員，本申請驗證通過 ✓","Frozen Group member; this application passed ✓") + '</span> · ' +
+        T("可按凍結Group snapshot產生本申請PDF","ready to generate this application's PDF from the frozen Group snapshot")
+      : '<span class="no">' + T("整個Concurrent Group已鎖定","Entire Concurrent Group locked") + '</span> · ' +
         T("請先完成本申請的要求","complete this application's requirements first"));
     return;
   }
@@ -2377,10 +2474,19 @@ function log(z,e){
 }
 
 /* ---------- events ---------- */
-// Switching A/B keeps the shared AC11, AC7.2 and policy-selection values.
-// gate() evaluates only the fields applicable to the currently active option/situation.
+// The first change to Yes / Option B selects every currently auto-searched
+// Policy once at Concurrent Group level. Later A/B switching retains selection.
+// gate() evaluates only the fields applicable to the active option/situation.
 $("chA").addEventListener("change", function(){ if(roForm()){ render(); return; } st.opt = "A"; render(); });
-$("chB").addEventListener("change", function(){ if(roForm()){ render(); return; } st.opt = "B"; render(); });
+$("chB").addEventListener("change", function(){
+  if(roForm()){ render(); return; }
+  if(!st.yesInitialized){
+    cardsList().forEach(function(p){ st.sel[p.ref] = true; });
+    st.yesInitialized = true;
+  }
+  st.opt = "B";
+  render();
+});
 
 document.querySelectorAll("#ac11 .opt").forEach(function(l){
   l.addEventListener("click", function(ev){
@@ -2412,6 +2518,7 @@ function nextUnusedAppRef(){
 }
 function addApplication(){
   if(st.detMode === "del") return;
+  var hadLock = hasAnyPdf();
   var ref = nextUnusedAppRef(); if(!ref) return;
   st.appRefs.push(ref);
   st.curRef = ref;
@@ -2422,8 +2529,12 @@ function addApplication(){
   ca.policySnapshot = policyListSignature();
   enterConcurrent();
   render();
-  log("已建立新的空白Application並先開啟Concurrent；Quotation保持未完成，須稍後加入一張Policy。",
-      "A new empty Application was created and Concurrent opened first. Quotation remains incomplete until one Policy is added.");
+  log(hadLock
+      ? "已建立新的空白Application並先開啟Concurrent。此App在鎖定期間屬Pending，不加入凍結Group，亦不可產生PDF；Quotation仍未完成。"
+      : "已建立新的空白Application並先開啟Concurrent；Quotation保持未完成，須稍後加入一張Policy。",
+      hadLock
+      ? "A new empty Application was created and Concurrent opened first. It remains Pending outside the frozen Group and cannot generate a PDF until unlock; Quotation is incomplete."
+      : "A new empty Application was created and Concurrent opened first. Quotation remains incomplete until one Policy is added.");
 }
 function addCurrentPolicy(){
   if(!appExists(st.curRef) || policyExists(st.curRef) || st.detMode === "del") return;
@@ -2433,11 +2544,11 @@ function addCurrentPolicy(){
   syncCounts();
   render();
   log(hadLock
-      ? "已在Quotation加入Policy。Outstanding PDF保持凍結；最新Concurrent List會於refresh顯示更新，不新增change-only Warning。"
-      : "已在Quotation加入Policy。重新進入Concurrent或按Preview & Sign時會偵測Policy List更新。",
+      ? "已在Quotation加入Policy並保存為Pending。鎖定期間它不加入或顯示於凍結Concurrent Group，也不可產生PDF；所有Outstanding PDF完成後才可在下一次refresh加入。"
+      : "已在Quotation加入Policy。重新進入Concurrent或按Start Signing時會偵測Policy List更新。",
       hadLock
-      ? "Policy added in Quotation. Outstanding PDFs remain frozen; the latest Concurrent List will show the update at refresh without a change-only Warning."
-      : "Policy added in Quotation. Re-enter Concurrent or press Preview & Sign to detect the Policy List update.");
+      ? "Policy added in Quotation and saved as Pending. During the lock it does not join or appear in the frozen Concurrent Group and cannot generate a PDF; it may join at the next refresh after all outstanding PDFs end."
+      : "Policy added in Quotation. Re-enter Concurrent or press Start Signing to detect the Policy List update.");
 }
 function deleteCurrentPolicy(){
   var ca = curAppState();
@@ -2450,10 +2561,10 @@ function deleteCurrentPolicy(){
   syncCounts();
   render();
   log(hasAnyPdf()
-      ? "已從Owner App的Quotation刪除Policy。舊PDF保持不變；最新Concurrent List會於refresh更新。"
+      ? "已從Owner App的Quotation刪除Policy。刪除已保存為Pending；凍結Group表格及所有舊PDF維持不變，直至Group解鎖後refresh。"
       : "已從Quotation刪除Policy；Application保留，Quotation變成未完成。",
       hasAnyPdf()
-      ? "Policy deleted from its owner App's Quotation. Existing PDFs stay unchanged; the latest Concurrent List updates at refresh."
+      ? "Policy deleted from its owner App's Quotation. The deletion is saved as Pending; the frozen Group table and all existing PDFs remain unchanged until refresh after unlock."
       : "Policy deleted from Quotation. The Application remains and Quotation becomes incomplete.");
 }
 function deleteCurrentApplication(){
@@ -2486,13 +2597,13 @@ $("deleteApp").addEventListener("click", deleteCurrentApplication);
 document.querySelectorAll(".sitbtn button").forEach(function(b){
   b.addEventListener("click", function(){
     var s = b.getAttribute("data-sit");
-    st.a11 = {}; st.a11oth = ""; st.a72 = {}; st.sel = {}; st.manual = [];
+    st.a11 = {}; st.a11oth = ""; st.a72 = {}; st.sel = {}; st.manual = []; st.yesInitialized = false;
     st.appStates = {}; st.lateRefs = []; st.editing = false;
     st.curRef = POLICIES[0].ref;
     if(s === "1"){ st.opt = "A"; st.appRefs = [POLICIES[0].ref]; st.policyRefs = st.appRefs.slice(); }
     if(s === "2"){ st.opt = "A"; st.appRefs = POLICIES.slice(0,3).map(function(p){return p.ref;}); st.policyRefs = st.appRefs.slice(); }
-    if(s === "3"){ st.opt = "B"; st.appRefs = POLICIES.slice(0,4).map(function(p){return p.ref;}); st.policyRefs = st.appRefs.slice(); st.sel[POLICIES[0].ref] = true; st.sel[POLICIES[1].ref] = true; }
-    if(s === "4"){ st.opt = "B"; st.appRefs = [POLICIES[0].ref]; st.policyRefs = st.appRefs.slice(); }
+    if(s === "3"){ st.opt = "B"; st.yesInitialized = true; st.appRefs = POLICIES.slice(0,4).map(function(p){return p.ref;}); st.policyRefs = st.appRefs.slice(); st.sel[POLICIES[0].ref] = true; st.sel[POLICIES[1].ref] = true; }
+    if(s === "4"){ st.opt = "B"; st.yesInitialized = true; st.appRefs = [POLICIES[0].ref]; st.policyRefs = st.appRefs.slice(); }
     st.shownPolicyRefs = st.policyRefs.slice();
     syncCounts();
     st.detMode = "add";
@@ -2561,8 +2672,20 @@ $("editrec").addEventListener("click", function(){
   openEdit();
   log("已進入全螢幕編輯模式。完成後按「OK」返回顯示模式。", "Entered full-screen edit mode. Press OK when done to return to display.");
 });
-// OK is never disabled — always returns to display; any remaining error shows as the page alert there
-$("editok").addEventListener("click", function(){ commitEdit(); log(gate().ok ? "已按 OK — 返回顯示模式,內容完整。" : "已按 OK — 返回顯示模式,但內容仍有錯誤。", gate().ok ? "OK pressed — returned to display mode; content is complete." : "OK pressed — returned to display mode, but the content still has errors."); });
+// OK never saves the form. If a Group policy-list warning is pending, a valid
+// OK is the explicit review acknowledgement and clears that warning in every
+// unsubmitted App in the Group.
+$("editok").addEventListener("click", function(){
+  var valid = gate().ok;
+  var acknowledged = commitEdit();
+  if(acknowledged){
+    log("已按 OK並確認最新Policy List；整個Concurrent Group的Policy-change <!> 已清除。",
+        "OK acknowledged the latest Policy List; the policy-change <!> was cleared for the entire Concurrent Group.");
+  } else {
+    log(valid ? "已按 OK — 返回顯示模式,內容完整。" : "已按 OK — 返回顯示模式,但內容仍有錯誤；Group warning未清除。",
+        valid ? "OK pressed — returned to display mode; content is complete." : "OK pressed — returned to display mode, but errors remain; the Group warning was not cleared.");
+  }
+});
 $("editback").addEventListener("click", function(){ closeEdit(); log("已離開編輯；目前輸入內容已保留,完成狀態按現有內容判斷。", "Left edit; current input is retained and completion follows the current content."); });
 
 $("genpdf").addEventListener("click", function(){
@@ -2570,26 +2693,15 @@ $("genpdf").addEventListener("click", function(){
   if(ca.pdf.done && !ca.submitted){ ca.signPageOpen = true; render(); return; }   // reopen only this App's own PDF
   if($("genpdf").disabled) return;
 
-  // Preview & Sign enters the Submit page only. No PDF exists yet.
-  // The latest list is reloaded here, but Max/Total is not recalculated.
-  // With an outstanding PDF, shared content is locked: show the latest list,
-  // do not create a policy-change warning, and continue if normal form gates pass.
-  var hadLock = locked();
-  var refreshed = refreshPolicyList("preview-sign");
-  if(!hadLock && refreshed.changed){
-    ca.policyChangePending = true;
-    render();
-    log("已重新載入最新保單清單；偵測到更新。請先開啟 Concurrent Submission 查看最新資料。",
-        "The latest policy list has been reloaded and a change was detected. Open Concurrent Submission to review the latest information first.");
-    return;
-  }
-  ca.policyChangePending = false;
+  // Preview & Sign is navigation only. It does not refresh the Policy List,
+  // compare snapshots, or recalculate Total/Max. Existing section completion
+  // still controls whether the navigation button is enabled.
   var g = gate();
   var tabsReady = curTabs().basic && curTabs().extended;
   if(!g.ok || !tabsReady){
     render();
-    log("已重新載入最新保單清單；目前表格或本申請分頁仍未符合 PDF 要求。",
-        "The latest policy list has been reloaded; the form or this App's tabs do not currently meet the PDF requirements.");
+    log("目前Concurrent內容或本申請分頁尚未完成。",
+        "The current Concurrent content or this application's sections are incomplete.");
     return;
   }
   ca.previewReady = true;
@@ -2739,14 +2851,22 @@ function renderSignPage(){
   block.hidden = !ca.signBlock;
   if(ca.signBlock){
     var validationFail = ca.signBlockReason === "validation";
-    document.querySelector(".signblock-msg").innerHTML = validationFail
-      ? T("Start Signing前重新載入的最新資料未符合section／Concurrent要求，因此未產生PDF。請返回Application覆核最新資料。",
-          "The latest data reloaded before Start Signing does not meet the section or Concurrent requirements, so no PDF was generated. Return to the Application and review the latest data.")
-      : T("系統已在開始簽署前重新計算一併投保保費。最新總額超出可負擔上限，因此未產生PDF。請返回覆核資料。",
-          "The concurrent premium was recalculated before signing. The latest total exceeds the affordability maximum, so no PDF was generated. Return and review the data.");
+    var groupLockFail = ca.signBlockReason === "group-lock";
+    var policyChangeFail = ca.signBlockReason === "policy-change";
+    document.querySelector(".signblock-msg").innerHTML = policyChangeFail
+      ? T("Concurrent Policy List已改變，因此未產生PDF。請返回Concurrent Submission，覆核重新載入的Policy List，並按OK確認變更。",
+          "The Concurrent Policy List has changed, so no PDF was generated. Return to Concurrent Submission, review the refreshed Policy List, and press OK to acknowledge the changes.")
+      : (groupLockFail
+      ? T("此Application／Policy在第一份PDF產生後才加入，現時只保存為Pending，不能加入已凍結的Concurrent Group或產生PDF。請等待所有Outstanding PDF完成後返回Concurrent覆核。",
+          "This Application/Policy was added after the first PDF and is saved as Pending. It cannot join the frozen Concurrent Group or generate a PDF until all outstanding PDFs are completed; then return to Concurrent for review.")
+      : (validationFail
+        ? T("Start Signing前重新載入的最新資料未符合section／Concurrent要求，因此未產生PDF。請返回Application覆核最新資料。",
+            "The latest data reloaded before Start Signing does not meet the section or Concurrent requirements, so no PDF was generated. Return to the Application and review the latest data.")
+        : T("系統已在開始簽署前重新計算一併投保保費。最新總額超出可負擔上限，因此未產生PDF。請返回覆核資料。",
+            "The concurrent premium was recalculated before signing. The latest total exceeds the affordability maximum, so no PDF was generated. Return and review the data.")));
     var c = ca.pdf.calc || st.calc || {total:0,limit:0};
-    $("signblockCalc").hidden = validationFail;
-    $("signblockCalc").innerHTML = validationFail ? "" :
+    $("signblockCalc").hidden = validationFail || groupLockFail || policyChangeFail;
+    $("signblockCalc").innerHTML = (validationFail || groupLockFail || policyChangeFail) ? "" :
       '<div class="sbc-row"><span>' + T("最新總額","Latest total") + '</span><b>HKD ' + money(c.total) + '</b></div>' +
       '<div class="sbc-row"><span>' + T("可負擔上限","Affordability maximum") + '</span><b>HKD ' + money(c.limit) + '</b></div>' +
       '<div class="sbc-row"><span>' + T("結果","Result") + '</span><b style="color:var(--red)">' + T("超出上限","Over maximum") + '</b></div>';
@@ -2841,17 +2961,32 @@ $("finishSign").addEventListener("click", function(){
   }
   var hadLock = locked();
   var refreshed = refreshPolicyList("start-signing");
-  if(!hadLock && refreshed.changed) ca.policyChangePending = true;
-  var c = recalculate("start-signing");            // second Max/Total trigger
-  var latestGate = gate();
-  var tabsReady = policyExists(st.curRef) && curTabs().basic && curTabs().extended;
-  if(!latestGate.ok || ca.policyChangePending || !tabsReady){
-    ca.signBlockReason = "validation";
+  if(!hadLock && refreshed.changed) markGroupPolicyChange();
+  if(hadLock && !canCreatePdfInCurrentGroup()){
+    ca.signBlockReason = "group-lock";
     ca.signBlock = true;
     ca.signDocOpen = false;
     render();
-    log("Start Signing前的最新資料未通過validation；PDF尚未產生。",
-        "The latest data failed validation before Start Signing; no PDF was generated.");
+    log("Start Signing已被阻止：本Application／Policy在Group鎖定後才加入，須等待所有Outstanding PDF完成。",
+        "Start Signing blocked: this Application/Policy was added after the Group lock and must wait until all outstanding PDFs are completed.");
+    return;
+  }
+  // Start Signing always checks and displays the latest result. Existing PDFs
+  // remain immutable because each one owns a separate generated snapshot.
+  var c = recalculate("start-signing");   // second Max/Total trigger
+  var latestGate = gate();
+  var tabsReady = policyExists(st.curRef) && curTabs().basic && curTabs().extended;
+  if(!latestGate.ok || ca.policyChangePending || !tabsReady){
+    ca.signBlockReason = ca.policyChangePending ? "policy-change" : "validation";
+    ca.signBlock = true;
+    ca.signDocOpen = false;
+    render();
+    log(ca.policyChangePending
+        ? "Start Signing偵測到Concurrent Policy List變更；已顯示Group <!>並阻止產生PDF。"
+        : "Start Signing前的最新資料未通過validation；PDF尚未產生。",
+        ca.policyChangePending
+        ? "Start Signing detected a Concurrent Policy List change; the Group <!> is shown and PDF generation was blocked."
+        : "The latest data failed validation before Start Signing; no PDF was generated.");
     return;
   }
   if(!c.pass){
@@ -2945,7 +3080,7 @@ $("identseg").addEventListener("click", function(e){
 });
 
 $("rst").addEventListener("click", function(){
-  st = { opt:null, det:1, shownDet:1, sel:{}, curRef:POLICIES[0].ref, a11:{}, a11oth:"", a72:{},
+  st = { opt:null, yesInitialized:false, det:1, shownDet:1, sel:{}, curRef:POLICIES[0].ref, a11:{}, a11oth:"", a72:{},
          aff:{nla:800000, ndi:100000, mog:5000, cdi:50, ca:50}, pm:{},
          manual:[], mseq:0,
          calc:null, affOK:true,
@@ -3062,7 +3197,8 @@ $("lz").addEventListener("click", function(){ setLang("zh"); });
 $("le").addEventListener("click", function(){ setLang("en"); });
 
 function applyDefaults(){
-  st.sel = {}; st.sel[POLICIES[0].ref] = true;   // the first/original app card is ticked by default
+  st.sel = {};
+  st.yesInitialized = false;
   st.shownPolicyRefs = st.policyRefs.slice();
   syncCounts();
   // Create App A's independent baseline now. Other Apps receive the same
@@ -3073,14 +3209,13 @@ function applyDefaults(){
 // (re)entering the Concurrent tab refreshes detected policies and recalculates
 // Max/Total. Option (A/B) is NEVER auto-set — the user always chooses.
 function enterConcurrent(){
-  var ca = curAppState();
   var hasLock = locked();
   var refreshed = refreshPolicyList("concurrent-tab");
-  // Without an outstanding PDF, a detected policy-list change keeps this
-  // section in Warning until the latest form passes inside Edit Mode.
-  // Navigation, OK and Next Page never clear the change-only warning.
-  if(hasLock) ca.policyChangePending = false;
-  else if(refreshed.changed) ca.policyChangePending = true;
+  // Without an outstanding PDF, a detected change raises one shared Group
+  // warning. It remains until a valid OK acknowledges the reviewed list.
+  if(!hasLock && refreshed.changed) markGroupPolicyChange();
+  // During Group Lock the displayed list and calculation use the first-PDF
+  // frozen snapshot. Backend changes remain Pending until unlock.
   recalculate("concurrent-tab");
 }
 
