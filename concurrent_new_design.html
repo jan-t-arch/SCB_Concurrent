@@ -34,6 +34,20 @@ body[data-lang="en"] .zh{display:none}
   font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer}
 .langtog button[aria-pressed="true"]{background:var(--grn);color:#fff}
 
+/* ---------- top-level Demo / Rules tabs ---------- */
+.main-tabs-shell{background:#fff;border-bottom:1px solid var(--line)}
+.main-tabs{max-width:1880px;margin:0 auto;padding:0 24px;display:flex;align-items:flex-end;gap:24px}
+.main-tabs button{position:relative;border:0;background:transparent;padding:12px 3px 11px;color:var(--mut);font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.5px;cursor:pointer}
+.main-tabs button::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:transparent;border-radius:3px 3px 0 0}
+.main-tabs button[aria-selected="true"]{color:var(--red)}
+.main-tabs button[aria-selected="true"]::after{background:var(--red)}
+body[data-main-tab="demo"] .stage>.rules,body[data-main-tab="demo"] .rules-host{display:none}
+body[data-main-tab="rules"] .wrap{display:none}
+.rules-host{display:none;max-width:1880px;width:100%;margin:0 auto;padding:18px 24px}
+body[data-main-tab="rules"] .rules-host{display:block}
+.rules-host>.rules{display:block;width:100%;margin:0}
+@media(max-width:720px){.main-tabs{padding:0 16px;gap:18px}.rules-host{padding:14px 12px}}
+
 .wrap{display:grid;grid-template-columns:minmax(520px,560px) minmax(0,1fr);gap:24px;padding:18px 24px;align-items:start;justify-content:center;max-width:1880px;margin:0 auto}
 @media(max-width:1320px){.wrap{grid-template-columns:1fr}}
 
@@ -208,12 +222,12 @@ body[data-lang="en"] .zh{display:none}
   background:var(--amb-bg);border:1px solid var(--amb-line);color:#7A4E0B}
 .banner b{color:var(--amb)}
 #topTable .banner{background:transparent;border:0;border-radius:0;padding:0;margin:12px 0 10px;color:#7A4E0B}
-#countBanner{background:transparent;border:0;border-radius:0;padding:0;margin:10px 0;color:#7A4E0B}
+#countBanner{background:#FFF8E8;border:1px solid #F1C96E;border-radius:6px;padding:10px 13px;margin:10px 0 14px;color:#8A5705}
 .cardempty{margin:0 0 11px;color:var(--red-dk);font-size:12px;font-weight:800;line-height:1.5}
 .cardempty[hidden]{display:none}
 .curreq{font-size:12px;font-weight:700;color:var(--red-dk);line-height:1.5;margin:0 0 10px}
 .curreq[hidden]{display:none}
-.ipad-affnotice{font-size:12px;font-weight:700;color:var(--red-dk);line-height:1.5;margin:2px 0 12px}
+.ipad-affnotice{font-size:12px;font-weight:600;color:var(--red-dk);line-height:1.5;margin:8px 0 12px;padding:0;background:transparent;border:0}
 .ipad-affnotice[hidden]{display:none}
 
 /* AC18 table */
@@ -296,20 +310,21 @@ table.ac18 tr:last-child td{border-bottom:0}
 .rolock .choice:hover,.rolock .opt:hover,.rolock .pcard:hover{border-color:#E5E9E7}
 .rolock .choice{background:#F4F6F5;border-color:#E5E9E7}
 .rolock .choice.on{background:#E8EDEB;border-color:#CBD5D0}
-.rolock .opt{background:transparent;border-color:transparent;padding:3px 0;margin-bottom:1px}
+.rolock .opt{background:#F6F7F7;border-color:transparent;padding:9px 12px;margin-bottom:7px}
 .rolock .opt:hover{border-color:transparent}
-.rolock .opt.on{background:transparent;border-color:transparent}
-/* display: reason blocks become plain (no card border / amber bg), tighter spacing */
-.rolock .reason.req{border-color:transparent;background:transparent}
-.rolock .reason{padding:0;margin-top:12px}
-.rolock .reason .rq{margin-bottom:2px}
-.rolock .reason .tag{margin-bottom:5px}
+.rolock .opt.on{background:var(--grn-bg);border-color:var(--grn-sel)}
+/* display: keep the same readable reason hierarchy while preventing edits */
+.rolock .reason.req{border-color:transparent;background:#fff}
+.rolock .reason{padding:0;margin-top:22px}
+.rolock .reason .rq{margin-bottom:14px}
+.rolock .reason .tag{margin-bottom:10px}
 .rolock .choice input,.rolock .opt input{accent-color:#6B7A75}
-.rolock .pcard{opacity:1;background:#FAFBFB;border-color:#E5E9E7}
-.rolock .pcard.on{border-color:#CBD5D0;background:#F1F4F3}
-.rolock .pcard .badge{color:#5C6B67}
-.rolock .pcard.on .badge .bx{background:#6B7A75;border-color:#6B7A75}
-.rolock .pcard.curcard{box-shadow:0 0 0 2px #F1F4F3,0 0 0 3px #9AB0AA}
+.rolock .pcard{opacity:1;background:#fff;border-color:#D8DEDC}
+.rolock .pcard.on{border-color:var(--grn-sel);background:var(--grn-bg)}
+.rolock .pcard .badge{color:var(--grn-sel)}
+.rolock .pcard:not(.on) .badge{color:var(--mut)}
+.rolock .pcard.on .badge .bx{background:var(--grn-sel);border-color:var(--grn-sel)}
+.rolock .pcard.curcard{box-shadow:none}
 .rolock .mcard{opacity:1}
 .rolock .addbtn,.rolock .mdel{display:none}
 .rolock input:disabled,.rolock select:disabled{background:transparent;border:0;color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1;padding-left:0;font-weight:700}
@@ -457,43 +472,44 @@ table.ac18 tr:last-child td{border-bottom:0}
   font-family:var(--sans);font-size:13.5px;font-weight:800;letter-spacing:.4px;cursor:pointer}
 .lockdlg .lockok:hover{background:var(--red-dk)}
 /* current-policy badge on a card */
-.pcard .curtag{margin-left:8px;font-size:10px;font-weight:800;color:#fff;background:var(--grn-sel);border-radius:999px;padding:2px 9px;letter-spacing:.3px}
-.pcard .pdftag{margin-left:8px;font-size:10px;font-weight:800;color:#fff;background:var(--mut);border-radius:999px;padding:2px 9px;letter-spacing:.3px}
+.pcard .curtag{margin-left:auto;font-size:9.5px;font-weight:800;color:#fff;background:var(--red);border-radius:999px;padding:5px 12px;letter-spacing:.3px;text-transform:uppercase}
+.pcard .pdftag{margin-left:auto;font-size:9.5px;font-weight:800;color:#fff;background:var(--mut);border-radius:999px;padding:5px 10px;letter-spacing:.3px}
 .pcard.pdfgen{opacity:.82;cursor:default}
 .pcard.pdfgen .badge{color:var(--mut)}
-.pcard.curcard{box-shadow:0 0 0 2px var(--grn-bg),0 0 0 3px var(--grn-sel)}
+.pcard.curcard{box-shadow:none}
 
 /* policy cards */
-.pcard{border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;cursor:pointer;background:#fff}
+.pcard{border:1.5px solid #D8DEDC;border-radius:7px;padding:15px 17px;margin-bottom:12px;cursor:pointer;background:#fff}
 .pcard.on{border-color:var(--grn-sel);background:var(--grn-bg)}
-.pcard .row1{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.pcard .row1{display:flex;align-items:center;gap:9px;margin-bottom:12px}
 .pcard .badge{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--grn-sel)}
 .pcard .badge .bx{width:15px;height:15px;border:1.6px solid var(--mut2);border-radius:3px;display:grid;place-items:center;font-size:10px;color:transparent}
 .pcard.on .badge .bx{background:var(--grn-sel);border-color:var(--grn-sel);color:#fff}
 .pcard:not(.on) .badge{color:var(--mut)}
 .pcard .ref{margin-left:auto;font-size:10.5px;color:var(--mut2);background:var(--panel);border-radius:999px;padding:3px 9px}
-.pcard .k{font-size:10.5px;color:var(--mut2)}
-.pcard .nm{font-size:13px;font-weight:800;margin:1px 0 8px}
-.pcard .pd{font-size:12.5px;font-weight:700;margin:1px 0 7px}
-.pcard .meta{display:flex;gap:18px;flex-wrap:wrap;font-size:11.5px}
-.pcard .meta span b{font-weight:800}
-.pcard .meta .lbl{color:var(--mut2);margin-right:4px}
+.pcard .k{font-size:10px;color:var(--mut2);margin-bottom:2px}
+.pcard .nm{font-size:14px;font-weight:800;margin:1px 0 10px}
+.pcard .pd{font-size:12.5px;font-weight:800;margin:1px 0 13px;line-height:1.45}
+.pcard .meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;border-top:1px solid #DDE3E1;padding-top:11px;font-size:11px}
+.pcard .meta>span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pcard .meta span b{font-weight:800;overflow-wrap:anywhere}
+.pcard .meta .lbl{color:var(--mut2);margin:0;font-size:9.5px}
 
-.addwrap{margin-top:14px}
+.addwrap{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .addwrap .q{font-size:12.5px;font-weight:800}
 .addwrap .n{font-size:11px;color:var(--mut);margin:4px 0 9px;line-height:1.5}
-.addbtn{background:#fff;border:1.5px solid var(--red);color:var(--red);border-radius:999px;
+.addbtn{background:var(--red);border:1.5px solid var(--red);color:#fff;border-radius:999px;
   padding:7px 17px;font-family:var(--sans);font-size:12.5px;font-weight:800;cursor:pointer}
 .addbtn:hover{background:#FDF2F4}
 
 /* reason blocks */
-.reason{border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin:16px 0 0;background:#fff}
-.reason.req{border-color:var(--amb-line);background:#FFFDF7}
-.reason .rq{font-size:12.5px;font-weight:800;margin-bottom:3px}
-.reason .tag{font-size:10.5px;font-weight:800;color:var(--amb);letter-spacing:.3px;margin-bottom:9px}
+.reason{border:0;border-radius:0;padding:0;margin:22px 0 0;background:#fff}
+.reason.req{border-color:transparent;background:#fff}
+.reason .rq{font-size:14px;font-weight:800;margin-bottom:14px;border-left:4px solid #36BFC2;padding:6px 0 6px 10px}
+.reason .tag{font-size:10.5px;font-weight:800;color:var(--amb);letter-spacing:.3px;margin:-10px 0 10px 14px}
 .opt{display:block;border:1.4px solid var(--line);border-radius:9px;padding:9px 12px;margin-bottom:7px;cursor:pointer;font-size:12.3px;background:transparent}
 .opt:hover{border-color:#BCCFC9}
-.opt.on{border-color:var(--grn-sel);background:transparent}
+.opt.on{border-color:var(--grn-sel);background:var(--grn-bg)}
 .opt input{margin:0 9px 0 0;accent-color:var(--grn-sel);vertical-align:middle}
 .opt .t{display:inline-block;vertical-align:middle;width:calc(100% - 28px);line-height:1.4}
 .othbox{width:100%;margin-top:2px;border:1.4px solid var(--line);border-radius:8px;padding:8px 10px;
@@ -539,6 +555,10 @@ table.ac18 tr:last-child td{border-bottom:0}
 .mcard .mlbl{color:var(--mut2);font-weight:700;margin-right:8px;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px}
 .mcard .mtop{display:flex;align-items:center;margin-bottom:9px}
 .mcard .mtitle{font-size:13px;font-weight:800;color:var(--ink)}
+.mcard .mstate{margin-left:9px;border-radius:999px;padding:3px 7px;font-size:9px;font-weight:800;letter-spacing:.2px;background:#EEF1F0;color:var(--mut)}
+.mcard .mstate.complete{background:var(--grn-bg);color:var(--grn-dk)}
+.mcard .mstate.incomplete{background:#FFF1E2;color:#B56600}
+.mcard .mstate.draft{background:#EAF4F6;color:#247583}
 .mcard .mdel{margin-left:auto;background:none;border:0;color:var(--red);font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;padding:2px 4px}
 .mcard .mdel:hover{text-decoration:underline}
 .mcard .mlabel{font-size:11px;color:var(--mut2);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px}
@@ -588,12 +608,13 @@ table.ac18 tr:last-child td{border-bottom:0}
 
 /* iPad Total section */
 .totalsec{margin-top:18px}
-.totgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.totgrid{display:grid;grid-template-columns:1fr;gap:0;margin-bottom:0;border:1px solid var(--line);border-radius:10px;padding:12px 15px;background:#fff}
 @media(max-width:560px){.totgrid{grid-template-columns:1fr}}
-.totcard{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#fff}
-.totcard .tk{font-size:13px;font-weight:800;color:var(--ink);border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:9px}
-.totcard .tccur{font-size:10.5px;color:var(--mut2);margin-bottom:2px}
-.totcard .tcval{font-size:14px;font-weight:800;color:var(--ink)}
+.totcard{border:0;border-radius:0;padding:8px 0;background:transparent;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+.totcard+.totcard{border-top:1px solid #EEF1F0}
+.totcard .tk{font-size:12px;font-weight:800;color:var(--ink);border:0;padding:0;margin:0;grid-column:1}
+.totcard .tccur{display:none}
+.totcard .tcval{font-size:14px;font-weight:800;color:var(--ink);grid-column:2;grid-row:1;text-align:right}
 .fxbox{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff;font-size:12px;color:var(--ink)}
 .fxbox .fxh{display:flex;align-items:center;gap:7px;margin-bottom:8px}
 .fxbox .fxi{color:#2E9AA8;font-size:14px}
@@ -662,7 +683,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
 #pwgate .err{color:var(--red);font-size:12.5px;margin-top:10px;min-height:16px}
 </style>
 </head>
-<body data-lang="en">
+<body data-lang="en" data-main-tab="demo">
 <div id="pwgate">
   <div class="box">
     <h3>Concurrent Submission</h3>
@@ -707,7 +728,14 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
   </div>
 </div>
 
-<div class="wrap">
+<div class="main-tabs-shell">
+  <nav class="main-tabs" role="tablist" aria-label="Prototype sections">
+    <button id="mainTabDemo" type="button" role="tab" aria-selected="true" aria-controls="demoPrototype"><span class="zh">示範原型</span><span class="en">DEMO PROTOTYPE</span></button>
+    <button id="mainTabRules" type="button" role="tab" aria-selected="false" aria-controls="rulesPanel"><span class="zh">規則</span><span class="en">RULES</span></button>
+  </nav>
+</div>
+
+<div class="wrap" id="demoPrototype" role="tabpanel" aria-labelledby="mainTabDemo">
 
   <!-- ================= control rail ================= -->
   <aside class="rail">
@@ -921,13 +949,6 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
           <!-- ===== Option B: detected selectable cards ===== -->
           <section id="secB" hidden>
             <div class="h2"><span class="zh">一併投保保單顯示區</span><span class="en">Concurrent Policy Display Section</span></div>
-            <p class="lede" style="font-size:12.3px">
-              <span class="zh">請選取所有由同一客戶、於同日、經同一銷售人員簽署的一併投保申請。</span>
-              <span class="en">Please select all applicable concurrent applications signed by the same client on the same day from the same sales staff.</span>
-            </p>
-
-            <div class="banner" id="countBanner"></div>
-
             <p class="cardempty" id="cardEmptyWarn" hidden>
               <span class="zh">⚠ 請最少選取一張保單；已選取的保單清單不可為空。</span>
               <span class="en">⚠ Please select at least one policy. The selected policy list cannot be empty.</span>
@@ -958,14 +979,14 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
             </div>
             <div class="tag">AC11 · <span class="zh">必填</span><span class="en">MANDATORY</span></div>
             <label class="opt" data-a11="needs">
-              <input type="radio" name="ac11-choice" value="needs"/>
+              <input type="checkbox" value="needs"/>
               <span class="t">
                 <span class="zh">不同的保險需要,以及為日後傳承規劃的變更提供靈活性</span>
                 <span class="en">different insurance needs and flexibility for future change in legacy planning</span>
               </span>
             </label>
             <label class="opt" data-a11="other">
-              <input type="radio" name="ac11-choice" value="other"/>
+              <input type="checkbox" value="other"/>
               <span class="t"><span class="zh">其他原因,請註明:</span><span class="en">Other reasons, please specific:</span></span>
             </label>
             <input class="othbox" id="a11oth" hidden placeholder=""/>
@@ -976,11 +997,11 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
             <div class="rq"><span class="zh">取消選取交易的原因</span><span class="en">Reasons for de-select the transaction</span></div>
             <div class="tag">AC7.2 · <span class="zh">必填</span><span class="en">MANDATORY</span></div>
             <label class="opt" data-a72="pending">
-              <input type="radio" name="ac72-choice" value="pending"/>
+              <input type="checkbox" value="pending"/>
               <span class="t"><span class="zh">待客戶進一步考慮</span><span class="en">Pending client's further consideration</span></span>
             </label>
             <label class="opt" data-a72="redundant">
-              <input type="radio" name="ac72-choice" value="redundant"/>
+              <input type="checkbox" value="redundant"/>
               <span class="t"><span class="zh">多餘個案</span><span class="en">Redundant case</span></span>
             </label>
           </section>
@@ -992,12 +1013,12 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <div class="totcard">
                 <div class="tk">Monthly Premium (HKD)</div>
                 <div class="tccur">HKD</div>
-                <div class="tcval" id="totMonthly">0.00</div>
+                <div class="tcval" id="totMonthly">—</div>
               </div>
               <div class="totcard">
                 <div class="tk">Single Premium (HKD)</div>
                 <div class="tccur">HKD</div>
-                <div class="tcval" id="totSingle">0.00</div>
+                <div class="tcval" id="totSingle">—</div>
               </div>
             </div>
             <div class="ipad-affnotice" id="ipadAffNotice" hidden></div>
@@ -1044,8 +1065,8 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
           <span class="ep-ttl"><span class="zh">編輯此記錄 — 一併投保呈交</span><span class="en">Edit this record — Concurrent Submission</span></span>
         </div>
         <div class="ep-info">
-          <span class="zh">你正在編輯共用記錄。此頁的更改會反映於所有相關申請。完成後按底部「OK」返回。</span>
-          <span class="en">You are editing the shared record. Changes here apply to all related applications. Press OK at the bottom when done.</span>
+          <span class="zh">你正在編輯Concurrent Group的共用Draft。按底部「OK」保存全部更改；按「Back」會放棄本次未保存內容。</span>
+          <span class="en">You are editing the shared Concurrent Group Draft. Press OK to save all changes; Back discards this unsaved Draft.</span>
         </div>
         <div class="ep-host" id="edithost"></div>
         <div class="ep-bot"><button class="ep-ok" id="editok">OK</button></div>
@@ -1203,8 +1224,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
       </ol>
     </div>
 
-    <div class="rules">
-      <h2><span class="zh">系統規則 — 開發參考</span><span class="en">System Rules — Development Reference</span></h2>
+    <div class="rules" id="rulesPanel">
       <p class="rules-intro">
         <span class="zh">本表只記錄已確認的系統業務規則、觸發點及預期行為。未確認項目不會列作規則；英文內容為標準，中文內容與英文保持一致。</span>
         <span class="en">This table records confirmed system business rules, triggers and expected behaviour only. Unresolved items are not treated as rules. English is the governing version and the Chinese content follows it.</span>
@@ -1230,6 +1250,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">Concurrent Submission答案必須由同一組內所有相關 Application共用。</span><span class="en">Concurrent Submission answers must be shared by all related applications in the group.</span></li>
                 <li><span class="zh">共享資料包括 declaration option、Policy Selection、AC11、AC7.2及 Manual Policy。</span><span class="en">Shared data includes the declaration option, Policy Selection, AC11, AC7.2 and Manual Policies.</span></li>
+                <li><span class="zh">只有按OK後的整份Concurrent Draft才成為共享已保存內容；Saved Incomplete Manual Policy亦跨App顯示，但不屬有效Policy List。</span><span class="en">Only the whole Concurrent Draft committed by OK becomes saved shared content. A Saved Incomplete Manual Policy is also visible across Apps but is not part of the effective Policy List.</span></li>
                 <li><span class="zh">任何相關 Application開啟 Concurrent Submission時，必須讀取同一份共享內容。</span><span class="en">Every related application must read the same shared content when Concurrent Submission is opened.</span></li>
                 <li><span class="zh">Policy List變更確認亦屬Group-level行為；任一相關Application在Edit Mode內按有效的OK，可確認同一份已覆核清單並清除整個Group的同類「&lt;!&gt;」。</span><span class="en">Policy List change acknowledgement is also Group-level. A valid OK in Edit Mode from any related Application acknowledges the same reviewed list and clears that type of “&lt;!&gt;” for the whole Group.</span></li>
               </ul></td>
@@ -1241,6 +1262,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">Section completion、PDF generation、signing、submission及 submission-success blocker必須按 Application獨立保存。</span><span class="en">Section completion, PDF generation, signing, submission and the submission-success blocker must be stored independently per application.</span></li>
                 <li><span class="zh">切換 Application不得複製、清除或繼承另一份 Application的狀態。</span><span class="en">Switching applications must not copy, clear or inherit another application's state.</span></li>
+                <li><span class="zh">Add Application只建立空白App及更新Control Panel的App List，不可自動切換目前App或改變目前畫面。只有用戶按目標App按鈕才切換；一般目標App須開啟Concurrent Submission Preview／read-only mode，不可自動進入Edit Mode。已有PDF或已Submitted App仍按其獨立lifecycle畫面返回。</span><span class="en">Add Application only creates the empty App and updates the Control Panel App List; it must not switch the current App or change the current screen. Switching occurs only when the user presses the target App button. A normal target App opens Concurrent Submission in Preview/read-only mode and must not enter Edit Mode automatically. An App with an existing PDF or a submitted App still returns according to its independent lifecycle screen.</span></li>
                 <li><span class="zh">Delete Policy只移除Owner App的Quotation Policy，App本身必須保留；Delete App則連同其Policy、PDF及signing progress一併刪除。</span><span class="en">Delete Policy removes only the owner App's Quotation Policy and keeps the App; Delete App cascades to its Policy, PDF and signing progress.</span></li>
               </ul></td>
             </tr>
@@ -1251,8 +1273,10 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">除同一Concurrent Group首次把User Declaration改為Yes／Option B時執行一次預設Select All外，在Option A及Option B之間切換必須保留已輸入的共享答案及Policy selections。</span><span class="en">Except for the one-time default Select All when User Declaration is first changed to Yes/Option B within the Concurrent Group, switching between Option A and Option B must retain the shared answers and Policy selections.</span></li>
                 <li><span class="zh">隱藏或目前不適用的欄位不可參與當前 validation。</span><span class="en">Hidden or currently inapplicable fields must not participate in the current validation.</span></li>
-                <li><span class="zh">Completion必須根據目前有效內容判斷，包括仍在 Edit Mode內的內容。</span><span class="en">Completion must be derived from the current valid content, including content still in Edit Mode.</span></li>
-                <li><span class="zh">OK及Next Page均不是Save或completion gate；Next Page只負責導航。一般情況下OK只退出Edit Mode，但如存在Group Policy-list-change「&lt;!&gt;」，有效的OK亦代表用戶已覆核最新清單。</span><span class="en">Neither OK nor Next Page is a Save or completion gate, and Next Page only navigates. Normally OK only exits Edit Mode; when a Group policy-list-change “&lt;!&gt;” exists, a valid OK also acknowledges that the latest list has been reviewed.</span></li>
+                <li><span class="zh">進入Edit Mode時，系統必須以最後已儲存的共享內容建立獨立Draft；編輯每個答案只修改Draft，不可逐項自動儲存。</span><span class="en">Entering Edit Mode must create an isolated Draft from the last saved shared content. Editing individual answers changes the Draft only and must not auto-save field by field.</span></li>
+                <li><span class="zh">OK是整份Concurrent Draft的Save action：一次過儲存declaration、selection、AC11、AC7.2及Manual Policies，即使內容未完整亦可保存。Back必須放棄整份未保存Draft並還原進入Edit Mode前的內容。</span><span class="en">OK is the Save action for the entire Concurrent Draft: it atomically saves the declaration, selections, AC11, AC7.2 and Manual Policies, even if the content is incomplete. Back must discard the whole unsaved Draft and restore the content from before Edit Mode.</span></li>
+                <li><span class="zh">Completion必須根據最後已儲存的適用內容判斷；Edit Mode內可顯示Draft的即時validation作提示，但未按OK的Draft不可成為其他Application讀取的正式狀態。</span><span class="en">Completion must be derived from the last saved applicable content. Draft validation may be shown live within Edit Mode, but an uncommitted Draft must not become the official state read by another Application.</span></li>
+                <li><span class="zh">Next Page只負責導航，不會保存Draft、確認Policy List變更或清除Warning。</span><span class="en">Next Page only navigates; it does not save the Draft, acknowledge a Policy List change or clear a Warning.</span></li>
               </ul></td>
             </tr>
 
@@ -1261,15 +1285,16 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶選擇Option A或Option B；系統偵測多張Policy，或用戶只選取部分Policy。</span><span class="en">The user selects Option A or Option B; multiple Policies are detected, or the user selects only part of the Policy List.</span></td>
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">Option A必須保留原文「No further concurrent application/this is not last application of concurrent submission of client」。系統把它解讀為：目前Application在本次獨立簽署，其他Application稍後處理，因此本次視為No Concurrent Submission。</span><span class="en">Option A must retain the wording “No further concurrent application/this is not last application of concurrent submission of client”. The system interprets it as signing the current Application alone in this signing batch while other Applications are handled later; this batch is treated as No Concurrent Submission.</span></li>
-                <li><span class="zh">Option A只把目前App Policy納入Total、Max及PDF；如系統偵測其他Policy，AC7.2 Reasons for de-select the transaction為必填。</span><span class="en">Option A includes only the current App Policy in Total, Max and PDF. If other Policies are detected, AC7.2 Reasons for de-select the transaction is mandatory.</span></li>
-                <li><span class="zh">Option B的Selected Policy List不可為空；空白時顯示inline red validation並阻止產生新PDF。</span><span class="en">The Option B Selected Policy List must not be empty; an empty list shows inline red validation and blocks creation of a new PDF.</span></li>
+                <li><span class="zh">Option A只把目前App Policy納入Total、Max及PDF；如系統偵測其他Policy（包括Complete Manual Policy），AC7.2 Reasons for de-select the transaction為必填。Complete Manual Policy只證明另有同日Policy，不會因Option A而被納入本次簽署。</span><span class="en">Option A includes only the current App Policy in Total, Max and PDF. If other Policies are detected, including a Complete Manual Policy, AC7.2 Reasons for de-select the transaction is mandatory. A Complete Manual Policy establishes that another same-day Policy exists but is not included in the current signing batch under Option A.</span></li>
+                <li><span class="zh">Option B的有效Included Policy List不可為空；至少一張已選取的auto-searched Policy或一張已完成並按OK保存的Manual Policy方可滿足。空白時顯示inline red validation並阻止產生新PDF。</span><span class="en">The effective Included Policy List for Option B must not be empty. At least one selected auto-searched Policy or one complete, OK-saved Manual Policy is required. An empty list shows inline red validation and blocks creation of a new PDF.</span></li>
                 <li><span class="zh">同一Concurrent Group首次把User Declaration改為Yes／Option B時，系統必須預設選取當刻Policy List內所有auto-searched Policies；Manual Policy不屬此預設選取範圍。</span><span class="en">When User Declaration is first changed to Yes/Option B within a Concurrent Group, every auto-searched Policy in the Policy List at that moment must be selected by default; Manual Policies are outside this default selection.</span></li>
                 <li><span class="zh">其後由Yes／Option B改為No／Option A再改回Yes／Option B時，不可再次執行Select All，原有Policy selections必須保持不變。首次Yes後才新搜尋到的Policy亦保持未選取，直至用戶明確選取。</span><span class="en">If the declaration is subsequently changed from Yes/Option B to No/Option A and back to Yes/Option B, Select All must not run again and the previous Policy selections must remain unchanged. A Policy first detected after the initial Yes also remains unselected until the user explicitly selects it.</span></li>
                 <li><span class="zh">首次Yes狀態及Policy selections屬Concurrent Group共享資料；切換Application不可把另一Application當作新的首次Yes。重新載入已保存的Yes答案亦不可重新執行預設選取。</span><span class="en">The first-Yes state and Policy selections are shared at Concurrent Group level; switching Applications must not treat another Application as a new first Yes. Reloading an already-saved Yes answer must not run the default selection again.</span></li>
                 <li><span class="zh">Current Application的 Policy Card不屬強制選取項目；任何符合資格的 Policy Card均可滿足非空要求。</span><span class="en">The Current Application's Policy Card is not mandatory; any eligible Policy Card may satisfy the non-empty requirement.</span></li>
+                <li><span class="zh">「Current Policy不必被選取」只適用於Option B的selection；Current Application本身仍須在Quotation保留有效Policy，並在Start Signing重新確認其存在。</span><span class="en">“The Current Policy need not be selected” applies only to Option B selection. The Current Application must still retain a valid Policy in Quotation, whose existence is rechecked at Start Signing.</span></li>
                 <li><span class="zh">AC11及 AC7.2是兩組獨立問題；當兩組同時適用時，兩組均必須分別完成。</span><span class="en">AC11 and AC7.2 are independent question groups; when both apply, both groups must be completed separately.</span></li>
-                <li><span class="zh">每組答案均使用 radio button，組內只可選一項；選擇另一項時必須自動取消原有選項。</span><span class="en">Each group uses radio buttons and allows exactly one answer; selecting another answer must automatically clear the previous choice in that group.</span></li>
-                <li><span class="zh">AC11選擇「其他原因」時，說明文字為必填；改選另一項後可保留已輸入文字，但該文字不可參與目前 validation、計算或PDF內容。</span><span class="en">When AC11 “Other reasons” is selected, the explanatory text is mandatory. If another answer is selected, the entered text may be retained but must not participate in current validation, calculation or PDF content.</span></li>
+                <li><span class="zh">AC11及AC7.2均使用checkbox並允許多選；問題適用時，每組至少須選取一項。選取或取消其中一項不可自動清除同組其他已選答案。</span><span class="en">AC11 and AC7.2 use checkboxes and allow multiple selections. When a question applies, at least one answer is required in each group. Selecting or clearing one answer must not automatically clear another selected answer in the same group.</span></li>
+                <li><span class="zh">AC11選擇「其他原因」時，說明文字為必填；取消「其他原因」後可保留已輸入文字，但該文字不可參與目前validation、計算或PDF內容。PDF須顯示所有已選取的AC11及AC7.2答案。</span><span class="en">When AC11 “Other reasons” is selected, the explanatory text is mandatory. After “Other reasons” is cleared, the entered text may be retained but must not participate in current validation, calculation or PDF content. The PDF must display every selected AC11 and AC7.2 answer.</span></li>
                 <li><span class="zh">Policy被刪除並於 refresh checkpoint從最新清單移除時，其 shared selection tick亦須清除；不可讓已刪除 Policy繼續參與 gate或計算。</span><span class="en">When a deleted policy is removed from the latest list at a refresh checkpoint, its shared selection tick must also be cleared; a deleted policy must not continue to participate in the gate or calculation.</span></li>
               </ul></td>
             </tr>
@@ -1280,7 +1305,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">無論是否有Outstanding PDF，系統均須在兩個checkpoint重新搜尋最新Policy List及Policy lifecycle status。沒有Outstanding PDF時，搜尋結果可更新顯示清單；有Outstanding PDF時，只在後台識別Pending差異，不可更新已凍結Group清單或任何已產生PDF。</span><span class="en">At both checkpoints, the system must re-search the latest Policy List and lifecycle status whether or not an outstanding PDF exists. Without an outstanding PDF, the displayed list may be updated; with an outstanding PDF, differences are identified only as Pending in the backend and must not update the frozen Group list or any generated PDF.</span></li>
                 <li><span class="zh">需要偵測新增／刪除 Policy、同時新增及刪除、Quotation ID不同、status改變，以及Premium、Pay Term、Type、Frequency、pt等重要資料改變。</span><span class="en">The system must detect added policies, removed policies, simultaneous additions and removals, a changed Quotation ID, status changes, and material changes to Premium, Pay Term, Type, Frequency or pt.</span></li>
-                <li><span class="zh">Manual Policy新增、刪除或重要資料修改亦屬 Policy List更新。</span><span class="en">Adding, removing or materially changing a Manual Policy is also a Policy List update.</span></li>
+                <li><span class="zh">Manual Policy只在按OK後比較「有效清單」變更：Incomplete→Complete視為Add、Complete重要資料修改視為Update、Complete→Incomplete或Delete Complete視為Remove；新增／修改／刪除Incomplete Manual Policy均不構成Policy List Change。</span><span class="en">Manual Policy changes are compared against the effective list only after OK: Incomplete→Complete is Add, a material change to a Complete row is Update, and Complete→Incomplete or deleting a Complete row is Remove. Adding, changing or deleting an Incomplete Manual Policy is not a Policy List Change.</span></li>
                 <li><span class="zh">每次顯示Policy List時，如目前Application是該清單的Group成員，其自己的Policy必須排列在最上方；其他Policy維持原有搜尋次序。鎖定後新增而尚未加入Group的Current App／Policy不可在凍結清單顯示；解鎖並加入後才排首位。此排序只影響顯示，不可改變selection、validation或計算。</span><span class="en">Whenever the Policy List is displayed, the current Application's own Policy must appear at the top if it is a member of that list. A Current App/Policy added after lock and not yet admitted to the Group must not appear in the frozen list; once admitted after unlock, it appears first. This ordering affects display only and must not change selection, validation or calculation.</span></li>
                 <li><span class="zh">Preview &amp; Sign只進入Submit Page，不屬Policy List refresh或Max／Total recalculation checkpoint。</span><span class="en">Preview &amp; Sign only opens the Submit Page and is not a Policy List refresh or Max/Total recalculation checkpoint.</span></li>
               </ul></td>
@@ -1294,8 +1319,8 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
                 <li><span class="zh">只新增空白Application不會改變Policy List，因此Concurrent不顯示change warning；該新App只在Quotation顯示Warning。其後在Quotation加入Policy才構成Policy List更新。</span><span class="en">Adding an empty Application does not change the Policy List, so Concurrent shows no change warning; only the new App's Quotation shows Warning. Adding its Policy later is the Policy List change.</span></li>
                 <li><span class="zh">如果用戶已進入Submit Page，而資料在Preview與Start Signing之間改變，Start Signing必須停止、不可產生PDF，顯示專屬橙色Policy List Change錯誤，並要求用戶返回Concurrent Submission覆核最新資料及按OK確認。</span><span class="en">If the user has entered the Submit Page and the data changes between Preview and Start Signing, Start Signing must stop without generating a PDF, show a dedicated orange Policy List Change error, and require the user to return to Concurrent Submission, review the latest data and press OK to acknowledge it.</span></li>
                 <li><span class="zh">只進入、離開或再次進入Concurrent Submission，以及按Save或Next Page，均不可自動清除Policy change Warning。單純令Form變成Pass亦不可自動清除。</span><span class="en">Entering, leaving or re-entering Concurrent Submission, and pressing Save or Next Page, must not automatically clear the Policy change Warning. Merely making the form pass must not clear it automatically either.</span></li>
-                <li><span class="zh">用戶須進入Edit Mode覆核最新內容；只有當正常Concurrent validation通過後按OK，才可把最新signature確認為整個Group的reviewed snapshot，並一次過清除所有相關未提交Application的同類「&lt;!&gt;」。OK不是Save action。</span><span class="en">The user must review the latest content in Edit Mode. Only pressing OK after normal Concurrent validation passes acknowledges the latest signature as the Group's reviewed snapshot and clears that type of “&lt;!&gt;” for all related unsubmitted Applications at once. OK is not a Save action.</span></li>
-                <li><span class="zh">如Form仍然Fail，按OK只退出Edit Mode並保留現有輸入；Group Warning不得清除。其他section或validation warning亦不可被Concurrent OK清除。</span><span class="en">If the form still fails, OK only exits Edit Mode and retains the current input; the Group Warning must remain. Concurrent OK must not clear warnings from other sections or validations.</span></li>
+                <li><span class="zh">用戶須進入Edit Mode覆核最新內容；OK會先整批保存Draft。只有保存後正常Concurrent validation通過，才可把最新effective signature確認為整個Group的reviewed snapshot，並一次過清除所有相關未提交Application的同類「&lt;!&gt;」。</span><span class="en">The user must review the latest content in Edit Mode. OK first saves the entire Draft. Only when normal Concurrent validation passes after that save may the latest effective signature become the Group's reviewed snapshot and clear that type of “&lt;!&gt;” for all related unsubmitted Applications at once.</span></li>
+                <li><span class="zh">如保存後Form仍然Fail，OK仍保存共享內容並退出Edit Mode，但Group Warning不得清除；未通過的normal validation及其他section Warning亦必須保留。Back則不保存任何Draft變更。</span><span class="en">If the saved form still fails, OK still saves the shared content and exits Edit Mode, but the Group Warning must remain; failed normal validation and Warnings from other sections must also remain. Back saves none of the Draft changes.</span></li>
               </ul></td>
             </tr>
 
@@ -1326,7 +1351,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
                 <li><span class="zh">Option A的PDF只顯示目前App Policy，並把Multiple applications within the same day答案記錄為No；其他偵測到但留待稍後處理的Policy不可加入本次PDF表格。</span><span class="en">For Option A, the PDF displays only the current App Policy and records Multiple applications within the same day as No; other detected Policies handled later must not appear in this PDF table.</span></li>
                 <li><span class="zh">Outstanding PDF期間，只有第一份PDF產生時已在凍結Group內的Application可再產生Option A PDF；Current App Policy須來自凍結Group snapshot及其仍有效的Owner App Quotation。鎖定後新增的App／Policy不可產生PDF。</span><span class="en">While a PDF is outstanding, only an Application already present in the frozen Group when the first PDF was generated may create an Option A PDF. Its Current App Policy must come from the frozen Group snapshot and its still-valid owner App Quotation. An App/Policy added after lock cannot generate a PDF.</span></li>
                 <li><span class="zh">如系統需要 audit，完整 detected policy list及每張保單的選取狀態可保留在內部 snapshot，但不可輸出為客戶 PDF的額外 rows或 Included Yes／No欄。</span><span class="en">If required for audit, the full detected policy list and each policy's selection status may remain in the internal snapshot, but must not be output as extra customer-PDF rows or an Included Yes/No column.</span></li>
-                <li><span class="zh">Option B的PDF只保存有效並已納入本次Concurrent Submission的Manual Policy；Option A不把Manual Policy加入客戶PDF表格。declaration答案、選取狀態、calculation pt及exchange-rate snapshot須按產生當刻保存；如需audit，未納入的Manual Policy只可保留於內部snapshot。</span><span class="en">An Option B PDF retains only valid Manual Policies included in the current Concurrent Submission; Option A does not add Manual Policies to the customer PDF table. Declaration answers, selections, the calculation pt and the exchange-rate snapshot are retained as at generation time; excluded Manual Policies may be retained only in the internal snapshot if required for audit.</span></li>
+                <li><span class="zh">Option B的PDF表格必須顯示所有已完成、按OK保存並納入本次Concurrent Submission的Manual Policy，並標示為「Manually Added／手動新增」；未保存或Incomplete Manual Policy不可顯示。Option A不把Manual Policy加入客戶PDF表格。declaration答案、選取狀態、calculation pt及exchange-rate snapshot須按產生當刻保存；如需audit，未納入的Manual Policy只可保留於內部snapshot。</span><span class="en">The Option B PDF table must display every Manual Policy that is complete, saved by OK and included in the current Concurrent Submission, identified as “Manually Added / 手動新增”. Unsaved or Incomplete Manual Policies must not be displayed. Option A does not add Manual Policies to the customer PDF table. Declaration answers, selections, the calculation pt and the exchange-rate snapshot are retained as at generation time; excluded Manual Policies may be retained only in the internal snapshot if required for audit.</span></li>
                 <li><span class="zh">PDF產生後的 Policy ADD／DEL或資料修改不可改變已產生 PDF的表格或 Total。</span><span class="en">Policy ADD/DEL or data changes after PDF generation must not alter the generated PDF table or totals.</span></li>
                 <li><span class="zh">其他 Application的後續操作不可修改已產生 PDF的內容或 signing status。</span><span class="en">Subsequent actions in another application must not modify the generated PDF content or signing status.</span></li>
               </ul></td>
@@ -1337,6 +1362,8 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td class="condition" data-label="Trigger / Condition"><span class="zh">Policy資料、背景 calculation inputs或選取內容改變。</span><span class="en">Policy data, background calculation inputs or selected content changes.</span></td>
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">Max及 Total Premium不可因一般輸入或 Policy List變動而即時重新計算。</span><span class="en">Max and Total Premium must not recalculate in real time merely because input or the Policy List changes.</span></li>
+                <li><span class="zh">只有已選取的auto-searched Policy及已完成並按OK保存的有效Manual Policy可參與Total／Max；未保存Draft及Incomplete Manual Policy必須排除。</span><span class="en">Only selected auto-searched Policies and effective Manual Policies that are complete and saved by OK may participate in Total/Max. Unsaved Drafts and Incomplete Manual Policies must be excluded.</span></li>
+                <li><span class="zh">尚未選擇Option A／B時沒有有效計算基礎；Total及Affordability Result必須顯示「—／Awaiting declaration option」，不可用0.00冒充新Policy的Premium或有效Total。真正完成選擇後計算得出的合法0仍可顯示。</span><span class="en">Before Option A/B is selected, no valid calculation basis exists. Total and the Affordability Result must show “— / Awaiting declaration option”, not 0.00 that could be mistaken for a new Policy premium or a valid Total. A legitimate zero calculated after a completed selection may still be displayed.</span></li>
                 <li><span class="zh">無論是否有Outstanding PDF，只在進入Concurrent Submission及按Start Signing時執行check。鎖定期間顯示及後續既有Group成員的檢查只使用第一份PDF建立的凍結Group list／selection；後台Pending ADD／DEL不可改變Group Total／Max或任何PDF snapshot。</span><span class="en">Whether or not an outstanding PDF exists, checks occur only when Concurrent Submission is entered and when Start Signing is pressed. During the lock, display and checks for later existing Group members use only the frozen Group list/selection created by the first PDF; Pending backend ADD/DEL must not change Group Total/Max or any PDF snapshot.</span></li>
                 <li><span class="zh">Preview &amp; Sign不讀取最新Policy List，亦不重新計算Max／Total。</span><span class="en">Preview &amp; Sign does not read the latest Policy List and does not recalculate Max or Total.</span></li>
               </ul></td>
@@ -1349,6 +1376,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
                 <li><span class="zh">判斷採用 strict &lt;；只有 Total &lt; Maximum才 Pass。</span><span class="en">The comparison uses strict &lt;; only Total &lt; Maximum passes.</span></li>
                 <li><span class="zh">Total = Maximum或 Total &gt; Maximum均為 Fail。</span><span class="en">Total = Maximum and Total &gt; Maximum both fail.</span></li>
                 <li><span class="zh">Concurrent Submission顯示Over Max時只屬提示，不可令section incomplete或阻止進入Submit Page；真正blocking只在Start Signing。</span><span class="en">An Over Max result shown in Concurrent Submission is informational; it must not make the section incomplete or block entry to the Submit Page. Actual blocking occurs only at Start Signing.</span></li>
+                <li><span class="zh">Concurrent Submission的Over-Max提示只顯示紅色文字，不使用alert box、邊框或底色。</span><span class="en">The Over-Max notice in Concurrent Submission is displayed as red text only, without an alert box, border or background.</span></li>
               </ul></td>
             </tr>
 
@@ -1357,6 +1385,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶在 Sign Page按 Start Signing。</span><span class="en">The user presses Start Signing on the Sign Page.</span></td>
               <td data-label="Expected System Behaviour"><ul>
                 <li><span class="zh">Start Signing必須重新搜尋Policy List、執行section／Concurrent validation，並按當前有效snapshot重新檢查Max及Total。沒有Outstanding PDF時使用最新搜尋結果；有Outstanding PDF時，只有既有Group成員可使用第一份PDF的凍結Group snapshot執行自己的獨立檢查。</span><span class="en">Start Signing must re-search the Policy List, perform section/Concurrent validation, and recheck Max and Total against the currently effective snapshot. Without an outstanding PDF it uses the latest search result; with an outstanding PDF, only an existing Group member may perform its independent check using the frozen Group snapshot created by the first PDF.</span></li>
+                <li><span class="zh">重新搜尋後必須確認Current Application的Owner Quotation仍有Policy。如找不到，須顯示專屬橙色Policy Not Found錯誤、保持Quotation Incomplete且不得產生PDF；這不表示Option B必須選取Current Policy。</span><span class="en">After re-searching, the system must confirm that the Current Application's owner Quotation still has a Policy. If not found, it shows a dedicated orange Policy Not Found error, keeps Quotation Incomplete and generates no PDF. This does not mean Option B must select the Current Policy.</span></li>
                 <li><span class="zh">如Current Application／Policy在Group鎖定後才加入，Start Signing必須以橙色Group-lock訊息阻止，且不得產生PDF；Option A不可繞過此限制。</span><span class="en">If the Current Application/Policy was added after the Group lock, Start Signing must be blocked with an orange Group-lock message and no PDF may be generated; Option A cannot bypass this restriction.</span></li>
                 <li><span class="zh">Pass時才產生及freeze PDF並開啟PDF文件簽署頁；Fail時不得產生PDF。</span><span class="en">Only a Pass generates and freezes the PDF and opens the PDF document signing page; a Fail must not generate a PDF.</span></li>
                 <li><span class="zh">Start Signing本身不可直接把狀態設為 Signing Complete；只有在 PDF文件頁按 Finish Signing後才完成簽署並返回 Submit Page。</span><span class="en">Start Signing must not directly set Signing Complete; signing completes only after Finish Signing is pressed on the PDF document page, after which the user returns to the Submit Page.</span></li>
@@ -1369,10 +1398,17 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Rule ID"><span class="rule-id">SYS-12</span><span class="rule-name"><span class="zh">Manual Policy</span><span class="en">Manual Policy</span></span></td>
               <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶手動新增或修改未顯示於 detected list的 Policy。</span><span class="en">The user manually adds or changes a policy not shown in the detected list.</span></td>
               <td data-label="Expected System Behaviour"><ul>
-                <li><span class="zh">Manual Policy必須具有有效 Type及 Premium；未填妥時 Concurrent validation Fail。</span><span class="en">A Manual Policy must have a valid Type and Premium; an incomplete policy fails Concurrent validation.</span></li>
+                <li><span class="zh">Manual Policy是Concurrent Group-level共享資料，用於補回auto-detection找不到的Policy；它不屬於目前App或任何Quotation，亦不受「每個App最多一張Quotation Policy」限制。用戶可重複Add並保存多張Manual Policy。</span><span class="en">A Manual Policy is shared Concurrent Group-level data used for a Policy missed by auto-detection. It is not owned by the current App or any Quotation and is not restricted by the one-Quotation-Policy-per-App rule. The user may repeatedly Add and save multiple Manual Policies.</span></li>
+                <li><span class="zh">新增Manual Policy後可留空部分必填欄位並按OK保存為Saved Incomplete；它須在所有相關App顯示，但blank Premium顯示Not provided，不可當作0。</span><span class="en">After adding a Manual Policy, required fields may remain blank and OK may save it as Saved Incomplete. It must be visible in every related App, but a blank Premium is shown as Not provided and must not be treated as zero.</span></li>
+                <li><span class="zh">Complete條件為：已選Type、Premium &gt; 0；Regular另須pt &gt; 0。Incomplete Manual Policy觸發normal Concurrent validation並阻止Start Signing，但不可計入有效Included Policy List、selection count、Total／Max、PDF或Policy-change signature。</span><span class="en">Complete requires a selected Type and Premium &gt; 0; Regular additionally requires pt &gt; 0. An Incomplete Manual Policy triggers normal Concurrent validation and blocks Start Signing, but is excluded from the effective Included Policy List, selection count, Total/Max, PDF and the Policy-change signature.</span></li>
+                <li><span class="zh">Complete Manual Policy屬已知的其他同日Policy，必須參與Situation及適用問題判斷：目前Policy加一張Complete Manual Policy，在Option A為Situation 2並要求AC7.2；在Option B為Situation 3並要求AC11（如只納入部分Policy亦要求AC7.2）。Incomplete Manual Policy不改變Situation。</span><span class="en">A Complete Manual Policy is a known other same-day Policy and must participate in Situation and applicable-question determination: the Current Policy plus one Complete Manual Policy is Situation 2 under Option A and requires AC7.2; it is Situation 3 under Option B and requires AC11 (and AC7.2 as well if only part of the Policies is included). An Incomplete Manual Policy does not change the Situation.</span></li>
+                <li><span class="zh">Option A不可把Complete Manual Policy納入Total／Max／客戶PDF表格；Option B則把所有Complete、按OK保存的Manual Policy納入有效Included Policy List、Total／Max及PDF。</span><span class="en">Option A must exclude Complete Manual Policies from Total/Max and the customer PDF table. Option B includes every Complete, OK-saved Manual Policy in the effective Included Policy List, Total/Max and PDF.</span></li>
                 <li><span class="zh">Regular Manual Policy固定使用 Monthly Frequency，UI不提供 Frequency dropdown。</span><span class="en">A Regular Manual Policy always uses Monthly Frequency and the UI does not provide a Frequency dropdown.</span></li>
                 <li><span class="zh">Regular使用 Monthly Premium及 pt參與計算；Single使用 Single Premium。</span><span class="en">Regular uses Monthly Premium and pt in the calculation; Single uses Single Premium.</span></li>
+                <li><span class="zh">只在OK保存後判斷effective-list transition：新增Incomplete／Incomplete仍Incomplete／Delete Incomplete不算Changed；Incomplete→Complete算Add；Complete重要資料修改算Update；Complete→Incomplete及Delete Complete算Remove並觸發Group-level「&lt;!&gt;」。</span><span class="en">Effective-list transitions are evaluated only after OK: adding Incomplete, Incomplete remaining Incomplete, and deleting Incomplete are not Changed; Incomplete→Complete is Add; a material change to Complete is Update; Complete→Incomplete and deleting Complete are Remove and trigger the Group-level “&lt;!&gt;”.</span></li>
+                <li><span class="zh">未按OK的Manual Policy只是Draft；Back須還原原有已保存清單。按OK可保存Incomplete資料，但normal validation Fail時不得藉此清除現有Group Warning。</span><span class="en">A Manual Policy not committed by OK is Draft only, and Back must restore the previously saved list. OK may save Incomplete data, but a normal validation failure must not clear an existing Group Warning.</span></li>
                 <li><span class="zh">Manual Policy修改只在下一個 calculation checkpoint反映到 Max／Total。</span><span class="en">Manual Policy changes affect Max and Total only at the next calculation checkpoint.</span></li>
+                <li><span class="zh">Outstanding PDF鎖定期間不可新增、修改或刪除Manual Policy；已凍結Manual Policy內容及任何PDF snapshot不得被改寫。</span><span class="en">Manual Policies cannot be added, changed or deleted while an outstanding PDF locks the Group; frozen Manual Policy content and every PDF snapshot must remain unchanged.</span></li>
               </ul></td>
             </tr>
 
@@ -1404,7 +1440,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
               <td data-label="Rule ID"><span class="rule-id">SYS-15</span><span class="rule-name"><span class="zh">Application／Policy生命週期</span><span class="en">Application / Policy lifecycle</span></span></td>
               <td class="condition" data-label="Trigger / Condition"><span class="zh">用戶Add Application、於Quotation Add／Delete Policy，或Delete App。</span><span class="en">The user adds an Application, adds/deletes a Policy in Quotation, or deletes an App.</span></td>
               <td data-label="Expected System Behaviour"><ul>
-                <li><span class="zh">新Application先以空白狀態建立並首先開啟Concurrent；Quotation為Incomplete。每個Application最多一張Policy，Policy只能在其Owner App的Quotation Add／Delete。</span><span class="en">A new Application is created empty and opens Concurrent first, with Quotation incomplete. Each Application may contain at most one Policy, managed only from its owner App's Quotation.</span></li>
+                <li><span class="zh">新Application以空白狀態建立，Quotation為Incomplete；建立後只新增App按鈕並保持目前App畫面不變。用戶其後按該App按鈕時，才在Preview／read-only mode開啟其Concurrent Submission。每個Application最多一張Policy，Policy只能在其Owner App的Quotation Add／Delete。</span><span class="en">A new Application is created empty with Quotation incomplete; creation only adds its App button and keeps the current App screen unchanged. Only when the user later presses that App button does its Concurrent Submission open in Preview/read-only mode. Each Application may contain at most one Policy, managed only from its owner App's Quotation.</span></li>
                 <li><span class="zh">如建立Application或加入Policy時Group已鎖定，資料可保存但只屬Pending，不加入凍結Group亦不可產生PDF；解鎖後須在下一次Concurrent refresh載入並覆核。</span><span class="en">If an Application is created or a Policy is added while the Group is locked, it may be saved but remains Pending; it neither joins the frozen Group nor generates a PDF, and must be loaded and reviewed at the next Concurrent refresh after unlock.</span></li>
                 <li><span class="zh">Delete Policy不等於Delete App；Delete App則cascade刪除其Policy、未提交PDF及signing progress。</span><span class="en">Delete Policy is not Delete App; Delete App cascades to its Policy, unsubmitted PDF and signing progress.</span></li>
                 <li><span class="zh">Owner App已有PDF時不可單獨Delete其Policy；但只要尚未Submit，整個App仍可Delete，包括已簽署但未Submit的App。</span><span class="en">A Policy cannot be deleted separately when its owner App has a PDF; however, the whole App may still be deleted before submission, including after signing is complete.</span></li>
@@ -1421,7 +1457,7 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
                 <li><span class="zh">只新增空白Application不算Policy List改變，因此不觸發Concurrent「&lt;!&gt;」；其後在該Application的Quotation加入Policy才觸發。</span><span class="en">Adding an empty Application alone is not a Policy List change and does not trigger Concurrent “&lt;!&gt;”; adding its Policy later in Quotation does trigger it.</span></li>
                 <li><span class="zh">「&lt;!&gt;」是Group-level狀態；偵測到變更後，同一Group所有未提交Application的Concurrent Tab均須顯示「&lt;!&gt;」，不可與Completed tick同時出現。</span><span class="en">“&lt;!&gt;” is a Group-level state. Once a change is detected, the Concurrent Tab of every unsubmitted Application in the Group must show “&lt;!&gt;”, never together with the Completed tick.</span></li>
                 <li><span class="zh">離開Concurrent Tab、按Next Page或只令Form變成Pass均不可自動清除「&lt;!&gt;」。用戶須在Edit Mode覆核最新清單；正常Concurrent validation通過後，從任一相關Application按OK，才可更新Group snapshot並一次過清除全Group同類「&lt;!&gt;」。</span><span class="en">Leaving the Concurrent Tab, pressing Next Page or merely making the form pass must not automatically clear “&lt;!&gt;”. The user must review the latest list in Edit Mode; after normal Concurrent validation passes, pressing OK from any related Application updates the Group snapshot and clears that type of “&lt;!&gt;” across the whole Group at once.</span></li>
-                <li><span class="zh">OK不是Save或一般completion gate；validation Fail時按OK不得清除「&lt;!&gt;」，亦不可清除其他section或其他原因的Warning。</span><span class="en">OK is not a Save or general completion gate. Pressing OK while validation fails must not clear “&lt;!&gt;”, nor may it clear another section's Warning or a Warning caused by another reason.</span></li>
+                <li><span class="zh">OK是整份Concurrent Draft的Save action，但只有保存後normal validation通過才可確認最新Group snapshot及清除「&lt;!&gt;」。validation Fail時OK仍保存內容，但不得清除「&lt;!&gt;」、其他section Warning或其他原因的Warning；Back及Next Page均不保存或清除。</span><span class="en">OK is the Save action for the whole Concurrent Draft, but only a normal-validation Pass after saving may acknowledge the latest Group snapshot and clear “&lt;!&gt;”. On validation Fail, OK still saves the content but must not clear “&lt;!&gt;”, another section's Warning or a Warning caused by another reason. Back and Next Page neither save nor clear it.</span></li>
                 <li><span class="zh">任何適用Section顯示「&lt;!&gt;」時，該Application不可開始新的PDF流程；Start Signing重新載入資料後如觸發「&lt;!&gt;」，必須停止並要求重新確認。Preview &amp; Sign本身不重新載入資料。</span><span class="en">While any applicable section shows “&lt;!&gt;”, that application cannot start a new PDF flow. If reloading at Start Signing triggers “&lt;!&gt;”, processing must stop and require reconfirmation. Preview &amp; Sign itself does not reload data.</span></li>
                 <li><span class="zh">有Outstanding PDF時仍執行搜尋，但只記錄後台Pending差異；凍結Group table、selection及confirmed snapshot均不可更新，亦不顯示用戶無法解除的change-only「&lt;!&gt;」。所有Outstanding PDF解除後，下一次refresh如仍有差異，才載入最新清單並在全Group顯示「&lt;!&gt;」。</span><span class="en">When an outstanding PDF exists, searching still runs but records only Pending backend differences. The frozen Group table, selection and acknowledged snapshot must not update, and no unresolvable change-only “&lt;!&gt;” is shown. After every outstanding PDF ends, the next refresh loads the latest list and shows “&lt;!&gt;” across the Group if a difference remains.</span></li>
               </ul></td>
@@ -1433,6 +1469,8 @@ html.locked body>*:not(#pwgate){filter:blur(6px);pointer-events:none;user-select
 
   </div>
 </div>
+
+<div class="rules-host" id="rulesHost" role="tabpanel" aria-labelledby="mainTabRules" aria-hidden="true"></div>
 
 <script id="html2canvas-bundle">
 /*!
@@ -1509,7 +1547,7 @@ var st = { opt:null, yesInitialized:false, det:1, shownDet:1, sel:{}, curRef:POL
            aff:{nla:800000, ndi:100000, mog:5000, cdi:50, ca:50}, pm:{},
            manual:[], mseq:0,
            calc:null, affOK:true,
-           lateRefs:[], editing:false, appStates:{},
+           lateRefs:[], editing:false, editBackup:null, appStates:{},
            appRefs:[POLICIES[0].ref], policyRefs:[POLICIES[0].ref], shownPolicyRefs:[POLICIES[0].ref],
            detMode:"add", pendingRemovedRefs:[] };
 
@@ -1617,46 +1655,86 @@ function selectedList(useLatest){
   }
   return base.filter(function(p){ return st.sel[p.ref]; });
 }
-// D1: a manual card is incomplete if no mode chosen, or amount not filled
-function mIncomplete(m){ return !m.mode || !(m.amt > 0); }
+// Manual Policy lifecycle: an incomplete row may be saved and shared, but only
+// a fully completed + OK-saved row enters the effective policy signature,
+// calculation and PDF. Regular Manual Policies also require a positive pt.
+function mIncomplete(m){ return !m.mode || !(m.amt > 0) || (m.mode === "monthly" && !(m.pt > 0)); }
 function anyManualIncomplete(){ return st.manual.some(mIncomplete); }
+function manualIsSaved(m){ return m.saved !== false; }
+function manualEffective(m){ return manualIsSaved(m) && !mIncomplete(m); }
+function completeManualCount(){ return st.manual.filter(function(m){ return !mIncomplete(m); }).length; }
 
 // Any outstanding PDF freezes the complete Concurrent Group. Existing frozen
 // members may generate their own PDFs; post-lock Apps/Policies remain pending.
 function locked(){ return !!activeLock(); }
 // the form is read-only unless we are inside the edit panel and not locked
 function roForm(){ return !st.editing || locked(); }
-// open/close the full-screen edit panel by relocating the live form node (keeps listeners)
+function cloneData(v){ return JSON.parse(JSON.stringify(v)); }
+function editableSharedSnapshot(){
+  return cloneData({
+    opt:st.opt, yesInitialized:st.yesInitialized, sel:st.sel,
+    a11:st.a11, a11oth:st.a11oth, a72:st.a72,
+    manual:st.manual, mseq:st.mseq
+  });
+}
+function restoreEditableSharedSnapshot(s){
+  st.opt=s.opt; st.yesInitialized=s.yesInitialized; st.sel=s.sel;
+  st.a11=s.a11; st.a11oth=s.a11oth; st.a72=s.a72;
+  st.manual=s.manual; st.mseq=s.mseq;
+}
+// Edit Mode works on an isolated draft. The live object is used as the draft
+// while the iPad is modal; Back restores the captured committed snapshot and
+// OK atomically commits the draft for the whole Concurrent Group.
 function openEdit(){
   if(locked()) return;
   // selection is shared & carried over — do NOT auto-select here.
   // Previously-ticked policies stay ticked; a newly-detected card (incl. the current app) stays unticked
   // until the user ticks it. (Ticking the current-app card is optional — no longer required by the gate; see open questions.)
+  st.editBackup = {
+    shared:editableSharedSnapshot(),
+    policySignature:policyListSignature()
+  };
   st.editing = true; render();
 }
-function closeEdit(){ st.editing = false; render(); }
-// Data changes are live and do not need OK to save. When a Group policy-list
-// warning exists, a valid OK also acknowledges the reviewed list for the whole
-// Concurrent Group; otherwise OK only leaves Edit Mode.
-function commitEdit(){
-  var acknowledged = false;
-  if(gate().ok && groupPolicyChangePending()){
-    acknowledgeGroupPolicyList();
-    acknowledged = true;
-  }
+function closeEdit(){
+  if(st.editBackup) restoreEditableSharedSnapshot(st.editBackup.shared);
+  st.editBackup = null;
   st.editing = false;
   render();
-  return acknowledged;
+}
+// OK always saves the whole draft, even when it is incomplete. Only a valid OK
+// may additionally acknowledge and clear an existing Group change warning.
+function commitEdit(){
+  st.manual.forEach(function(m){ m.saved = true; });
+  var valid = gate().ok;
+  var acknowledged = false;
+  if(valid && groupPolicyChangePending()){
+    acknowledgeGroupPolicyList();
+    acknowledged = true;
+  }else{
+    // The editing App has reviewed its own committed shared change. Other Apps
+    // retain their previous signatures and can detect an effective Manual
+    // Policy Add/Delete/Update at their next refresh checkpoint.
+    curAppState().policySnapshot = policyListSignature();
+  }
+  var beforeSignature = st.editBackup ? st.editBackup.policySignature : null;
+  var effectiveChanged = beforeSignature !== null && beforeSignature !== policyListSignature();
+  st.editBackup = null;
+  st.editing = false;
+  render();
+  return {acknowledged:acknowledged, valid:valid, effectiveChanged:effectiveChanged};
 }
 
 /* ---------- situation + gate ---------- */
-// effective number of OTHER same-day policies visible now — excludes submitted ones and the current app itself
+// Effective number of OTHER known same-day Policies. Complete Manual Policies
+// represent policies missed by auto-detection, so they affect Situation and
+// AC7.2/AC11 applicability even though Option A excludes them from its batch.
 function effDet(){
   var sub = locked() ? [] : submittedSet();
   var activeCount = live().filter(function(p){ return sub.indexOf(p.ref) < 0; }).length;
   // Situation is derived from the number of active Policies, not from whether
   // the currently opened (possibly empty) App owns one of them.
-  return Math.max(activeCount - 1, 0);
+  return Math.max(activeCount - 1, 0) + completeManualCount();
 }
 function situation(){
   if(!st.opt) return null;
@@ -1665,19 +1743,16 @@ function situation(){
 }
 function selCount(){ return cardsList().filter(function(p){ return st.sel[p.ref]; }).length; }
 function allSelected(){ var l = cardsList(); return l.length > 0 && l.every(function(p){ return st.sel[p.ref]; }); }
-function singleChoice(obj, keys){
-  var chosen = keys.filter(function(k){ return !!obj[k]; });
-  return chosen.length === 1 ? chosen[0] : null;
-}
-function a11Choice(){ return singleChoice(st.a11, ["needs","other"]); }
-function a72Choice(){ return singleChoice(st.a72, ["pending","redundant"]); }
+function selectedChoices(obj, keys){ return keys.filter(function(k){ return !!obj[k]; }); }
+function a11Choices(){ return selectedChoices(st.a11, ["needs","other"]); }
+function a72Choices(){ return selectedChoices(st.a72, ["pending","redundant"]); }
 function a11Filled(){
-  var choice = a11Choice();
-  if(!choice) return false;
-  if(choice === "other" && !st.a11oth.trim()) return false;
+  var choices = a11Choices();
+  if(!choices.length) return false;
+  if(st.a11.other && !st.a11oth.trim()) return false;
   return true;
 }
-function a72Filled(){ return !!a72Choice(); }
+function a72Filled(){ return a72Choices().length > 0; }
 
 function gate(){
   var s = situation(), need = [];
@@ -1687,7 +1762,9 @@ function gate(){
   if(anyManualIncomplete()) need.push(T("完成或刪除未填妥的手動保單","Complete or remove the unfinished manual policy"));
   // Option B: at least one policy must be selected. This does not specifically
   // require the current App; any applicable policy card can satisfy the rule.
-  var emptyPolicySelection = cardsShown && selCount() === 0;
+  // A fully completed Manual Policy represents a missing auto-detected policy
+  // and therefore satisfies the non-empty Option B inclusion requirement.
+  var emptyPolicySelection = cardsShown && selCount() === 0 && completeManualCount() === 0;
   if(emptyPolicySelection) need.push(T("最少選取一張保單；已選取保單清單不可為空","Select at least one policy; the selected policy list cannot be empty"));
   // E4: the current-policy card must be ticked whenever the selectable cards are shown
   // (E4 removed: ticking the current app's own policy is now optional, not mandatory for the gate)
@@ -1732,17 +1809,16 @@ function renderCards(){
     d.innerHTML =
       '<div class="row1"><span class="badge"><span class="bx">&#10003;</span>' +
         '<span>' + (on ? T("已選取","Selected") : T("未選取","Not selected")) + '</span></span>' +
-        (isCur ? '<span class="curtag">' + T("本申請保單 Current policy","Current policy") + '</span>' : '') +
         (pdfGen ? '<span class="pdftag">' + T("已產生 PDF","PDF generated") + '</span>' : '') +
+        (isCur ? '<span class="curtag">' + T("本申請保單","Current policy") + '</span>' : '') +
         '</div>' +
       '<div class="k">Life Proposed / Proposer</div>' +
       '<div class="nm">' + p.lp + " / " + p.po + '</div>' +
-      '<div class="k">Product Description</div>' +
-      '<div class="pd">' + p.prod + '</div>' +
+      '<div class="pd">' + p.prod + ' <span>(Premium ' + p.cur + " " + money(p.prem) + ')</span></div>' +
       '<div class="meta">' +
-        '<span><span class="lbl">Premium</span><b>' + p.cur + " " + money(p.prem) + '</b></span>' +
         '<span><span class="lbl">Pay Term</span><b>' + p.term + '</b></span>' +
         '<span><span class="lbl">SI Generated</span><b>' + p.si + '</b></span>' +
+        '<span><span class="lbl">App Ref</span><b>' + p.ref + '</b></span>' +
       '</div>';
     // A PDF status tag does not add a card-level restriction. Editability is
     // controlled only by the shared form's display/edit mode and PDF lock.
@@ -1754,27 +1830,32 @@ function renderCards(){
 function renderManualCards(){
   var wrap = $("manualcards"); if(!wrap) return; wrap.innerHTML = "";
   var ro = roForm();
-  // display (read-only) shows completed policies only; unfinished cards appear only in edit mode
-  var list = ro ? st.manual.filter(function(m){ return !mIncomplete(m); }) : st.manual;
+  // Half-saved Manual Policies are shared Group records too. Display mode keeps
+  // them visible as Incomplete, while excluding them from effective calculations.
+  var list = st.manual;
   if($("manualHd")) $("manualHd").hidden = !(ro && list.length > 0);   // "Add manually:" heading only in display when there are entries
   list.forEach(function(m, idx){
     var d = document.createElement("div");
     var isMon = m.mode === "monthly", isSin = m.mode === "single";
+    var incomplete = mIncomplete(m);
+    var stateClass = !manualIsSaved(m) ? "draft" : (incomplete ? "incomplete" : "complete");
+    var stateText = !manualIsSaved(m) ? T("未保存Draft","Unsaved draft") :
+      (incomplete ? T("已保存 · 未完成","Saved · Incomplete") : T("已保存 · 完成","Saved · Complete"));
     if(ro){
       // display: plain text, no inputs / no box / no red / no delete
-      d.className = "mcard ro";
-      var modeTxt = isMon ? T("定期供款 Regular","Regular") : (isSin ? T("整付保費 Single","Single") : "—");
-      var amtTxt = "HKD " + money(m.amt || 0) + (isMon && m.pt ? (" · pt " + m.pt) : "");
+      d.className = "mcard ro" + (incomplete ? " incomplete" : "");
+      var modeTxt = isMon ? T("定期供款 Regular","Regular") : (isSin ? T("整付保費 Single","Single") : T("未提供","Not provided"));
+      var amtTxt = m.amt > 0 ? ("HKD " + money(m.amt) + (isMon && m.pt ? (" · pt " + m.pt) : "")) : T("未提供","Not provided");
       d.innerHTML =
-        '<div class="mtop"><div class="mtitle">' + T("保單 ","Policy ") + (idx + 1) + '</div></div>' +
+        '<div class="mtop"><div class="mtitle">' + T("手動保單 ","Manual Policy ") + (idx + 1) + '</div><span class="mstate ' + stateClass + '">' + stateText + '</span></div>' +
         '<div class="mline"><span class="mlbl">' + T("付款模式","Payment mode") + '</span>' + modeTxt + '</div>' +
         '<div class="mline"><span class="mlbl">' + T("金額","Amount") + '</span>' + amtTxt + '</div>';
       wrap.appendChild(d);
       return;
     }
-    d.className = "mcard" + (mIncomplete(m) ? " incomplete" : "");
+    d.className = "mcard" + (incomplete ? " incomplete" : "");
     var html =
-      '<div class="mtop"><div class="mtitle">' + T("保單 ","Policy ") + (idx + 1) + '</div>' +
+      '<div class="mtop"><div class="mtitle">' + T("手動保單 ","Manual Policy ") + (idx + 1) + '</div><span class="mstate ' + stateClass + '">' + stateText + '</span>' +
         '<button class="mdel" data-mid="' + m.id + '">' + T("刪除","Delete") + '</button></div>' +
       '<div class="mlabel">' + T("付款模式","Payment mode") + '</div>' +
       '<div class="mmode">' +
@@ -1799,28 +1880,29 @@ function renderManualCards(){
   if(ro) return;   // no interactive controls to wire in display mode
   // wire manual card controls
   wrap.querySelectorAll('.mdel').forEach(function(b){ b.addEventListener("click", function(e){ e.stopPropagation();
-    var id = +this.dataset.mid; st.manual = st.manual.filter(function(x){ return x.id !== id; }); st.detMode = "del";
-    acknowledgeCurrentPolicyList(); render(); }); });
+    var id = +this.dataset.mid; st.manual = st.manual.filter(function(x){ return x.id !== id; });
+    render(); }); });
   wrap.querySelectorAll('input[type="radio"][data-mid]').forEach(function(r){ r.addEventListener("change", function(){
-    var m = mById(+this.dataset.mid); if(m){ if(m.mode !== this.value) m.amt = 0; m.mode = this.value; if(m.mode==="monthly"){ m.freq = "monthly"; if(!m.pt) m.pt = 10; } }
-    acknowledgeCurrentPolicyList(); render(); }); });
+    var m = mById(+this.dataset.mid); if(m){ if(m.mode !== this.value) m.amt = null; m.mode = this.value; m.saved = false; if(m.mode==="monthly"){ m.freq = "monthly"; if(!m.pt) m.pt = 10; } }
+    render(); }); });
   wrap.querySelectorAll('.m-amt').forEach(function(i){
     i.addEventListener("input", function(){
-      var m = mById(+this.dataset.mid); if(!m) return; m.amt = parseFloat(this.value) || 0;
-      acknowledgeCurrentPolicyList();
+      var m = mById(+this.dataset.mid); if(!m) return; var v = parseFloat(this.value); m.amt = isFinite(v) ? v : null; m.saved = false;
       var card = this.closest('.mcard'); if(card) card.classList.toggle('incomplete', mIncomplete(m));  // live red border
     });
     i.addEventListener("change", function(){ render(); });   // full sync (tab ⚠ / PDF gate) on blur
   });
   wrap.querySelectorAll('.m-pt').forEach(function(i){
-    i.addEventListener("input", function(){ var m = mById(+this.dataset.mid); if(m){ m.pt = parseFloat(this.value) || 0; acknowledgeCurrentPolicyList(); } });
+    i.addEventListener("input", function(){ var m = mById(+this.dataset.mid); if(m){ var v=parseFloat(this.value); m.pt=isFinite(v)?v:null; m.saved=false; } });
     i.addEventListener("change", function(){ render(); });
   });
 }
 function mById(id){ return st.manual.filter(function(x){ return x.id === id; })[0]; }
 function renderBanner(){
-  var n = selCount();
-  $("countBanner").innerHTML = "<b>" + n + " " + T("份申請已選取。","applications selected.") + "</b> " +
+  var n = selCount() + (st.opt === "B" ? completeManualCount() : 0);
+  var banner = $("countBanner");
+  if(!banner) return;
+  banner.innerHTML = "<b>" + n + " " + T("份申請已選取。","applications selected.") + "</b> " +
     T("請確保已選取所有適用的一併投保申請,以免需要重做。",
       "Please ensure all applicable concurrent applications are selected to avoid rework.");
   // show only when the current app's own card is visible, not yet ticked, and still editable
@@ -1925,7 +2007,9 @@ function policyListSignature(){
       pm.freq == null ? p.freq : pm.freq,
       pm.pt == null ? p.pt : pm.pt];
   });
-  var manual = st.manual.map(function(m){
+  // Only a fully completed row that has been committed by OK is an effective
+  // Manual Policy change. Half-saved rows persist but are excluded here.
+  var manual = st.manual.filter(manualEffective).map(function(m){
     return [m.id,m.mode,m.amt,m.pt];
   });
   return JSON.stringify({policies:refs,manual:manual});
@@ -1979,6 +2063,7 @@ function groupPolicyChangePending(){
 // Manual edits are intentional shared-form changes. The current App has seen
 // them; a later refresh may raise a Group warning until valid OK acknowledges it.
 function acknowledgeCurrentPolicyList(){
+  if(st.editing) return; // draft changes are not acknowledged until OK commits them
   curAppState().policySnapshot = policyListSignature();
 }
 
@@ -1987,13 +2072,14 @@ function aggList(useLatest){
   var out = selectedList(!!useLatest).map(function(p){ var m = pmOf(p); return {
     ref:p.ref, isCur:p.ref === st.curRef, prod:p.prod, amt:hkd(p),
     type:m.type, freq:m.freq, pt:m.pt }; });
-  // append manual policies (added on-screen via + Add Policy) once a mode is chosen
+  // Append only complete, OK-saved Group-level Manual Policies. They represent
+  // policies that auto-detection could not find and are not owned by this App.
   st.manual.forEach(function(m){
     if(st.opt === "A") return;                   // Option A signs only the current App in this batch
-    if(!m.mode) return;                       // incomplete card contributes nothing yet
+    if(!manualEffective(m)) return;              // half-saved rows never contribute
     out.push({ ref:"m" + m.id, isCur:false, manual:true,
       prod: T("手動保單","Manual policy"),
-      amt: m.amt || 0,                        // manual amounts entered directly in HKD
+      amt: m.amt,                                // manual amounts entered directly in HKD
       type: m.mode === "monthly" ? "regular" : "single",
       freq: "monthly", pt: m.pt });            // Regular manual premium is always monthly
   });
@@ -2037,11 +2123,11 @@ function buildPdfSnapshot(byApp){
     });
   });
   st.manual.forEach(function(m){
-    if(!m.mode || !(m.amt > 0)) return;
+    if(!manualEffective(m)) return;
     var regular = m.mode === "monthly";
     rows.push({
-      app:"Manual Policy " + m.id, ref:"MANUAL-" + m.id, current:false,
-      product:"Manual Policy / 手動保單", type:regular ? "regular" : "single",
+      app:"Manually Added / 手動新增", ref:"MANUAL-" + m.id, current:false, manual:true,
+      product:"Manual Policy " + m.id + " / 手動保單 " + m.id, type:regular ? "regular" : "single",
       currency:"HKD", originalPremium:m.amt, frequency:"monthly", pt:m.pt,
       included:st.opt === "B", monthly:regular ? m.amt : 0, single:regular ? 0 : m.amt
     });
@@ -2062,8 +2148,8 @@ function buildPdfSnapshot(byApp){
     totalMonthly:includedRows.reduce(function(sum,r){ return sum + r.monthly; },0),
     totalSingle:includedRows.reduce(function(sum,r){ return sum + r.single; },0),
     calculationPt:grpPt(includedRows),
-    a11:{choice:a11Choice(),otherText:a11Choice() === "other" ? (st.a11oth || "") : ""},
-    a72:{choice:a72Choice()},
+    a11:{choices:a11Choices(),otherText:st.a11.other ? (st.a11oth || "") : ""},
+    a72:{choices:a72Choices()},
     fx:{USD:FX_MAP.USD,AUD:FX_MAP.AUD,SGD:FX_MAP.SGD,updated:FX_UPDATED}
   };
 }
@@ -2128,15 +2214,16 @@ function recalculate(trigger, storeResult){
   var single = list.reduce(function(s,x){
     return s + (x.type === "regular" ? monthlyVal(x)*x.pt*12 : x.amt);
   }, 0);
+  var basisReady = !!st.opt;
   var pass = total < limit;                       // strict <
   var result = {
     trigger:trigger, pt:pt, maxSingle:mS, maxMonthly:mM,
     mode:mode, total:total, limit:limit, limName:limName,
-    monthly:monthly, single:single, pass:pass
+    monthly:monthly, single:single, pass:pass, basisReady:basisReady
   };
   if(storeResult){
     st.calc = result;
-    st.affOK = pass;                              // display/signing result only; not the PDF-generation gate
+    st.affOK = basisReady ? pass : null;          // no result until an option provides a calculation basis
   }
   return result;
 }
@@ -2144,18 +2231,30 @@ function recalculate(trigger, storeResult){
 function renderAffordResult(){
   var c = st.calc || {
     pt:1, maxSingle:0, maxMonthly:0, mode:"C", total:0, limit:0,
-    limName:"maxSingle", monthly:0, single:0, pass:true
+    limName:"maxSingle", monthly:0, single:0, pass:true, basisReady:false
   };
   $("aff_pt").textContent = c.pt + " yr";
   $("aff_ms").textContent = "HKD " + money(c.maxSingle);
   $("aff_mm").textContent = "HKD " + money(c.maxMonthly);
+
+  var box = $("a19out");
+  var note = $("ipadAffNotice");
+  if(!c.basisReady){
+    box.className = "aggverdict idle";
+    box.innerHTML =
+      '<div class="eyebrow2">' + T("上限檢查","Affordability max check") + '</div>' +
+      '<div class="status"><span class="ic">…</span>' + T("等待聲明選項","Awaiting declaration option") + '</div>' +
+      '<div class="avdetail"><div><span class="dl">' + T("總額","Total") + '</span> —</div>' +
+      '<div class="cmp">' + T("選擇Option A或Option B後，系統會在下一個計算checkpoint顯示實際結果。","Select Option A or Option B; the actual result appears at the next calculation checkpoint.") + '</div></div>';
+    if(note) note.hidden = true;
+    return;
+  }
 
   var mode = c.mode, total = c.total, limit = c.limit, limName = c.limName, pass = c.pass;
   var modeTxt = mode + (mode==="A"?T(" · 全單筆"," · all single"):mode==="B"?T(" · 全供款"," · all regular"):T(" · 混合"," · mixed"));
   var totalTxt = "HKD " + money(total) + (mode==="B" ? " /" + T("月","mth") : "");
 
   var sym = total < limit ? " < " : (total > limit ? " > " : " = ");
-  var box = $("a19out");
   box.className = "aggverdict " + (pass ? "pass" : "block");
   box.innerHTML =
     '<div class="eyebrow2">' + T("上限檢查","Affordability max check") + '</div>' +
@@ -2167,7 +2266,6 @@ function renderAffordResult(){
       '<div class="cmp">' + "HKD " + money(total) + sym + "HKD " + money(limit) + " (" + limName + ")</div>" +
     '</div>';
 
-  var note = $("ipadAffNotice");
   if(note){
     if(!pass){
       note.hidden = false;
@@ -2182,9 +2280,9 @@ function renderAffordResult(){
 
 /* iPad Total section — per-policy, no cross-policy pt sharing */
 function renderTotal(){
-  var c = st.calc || {monthly:0,single:0};
-  $("totMonthly").textContent = money(c.monthly);
-  $("totSingle").textContent = money(c.single);
+  var c = st.calc || {monthly:0,single:0,basisReady:false};
+  $("totMonthly").textContent = c.basisReady ? money(c.monthly) : "—";
+  $("totSingle").textContent = c.basisReady ? money(c.single) : "—";
 }
 
 function renderVerdict(){
@@ -2219,7 +2317,7 @@ function renderVerdict(){
     }
     return;
   }
-  // Gate status follows the current content; OK only leaves edit mode.
+  // Inside Edit Mode, the verdict previews the Draft. OK saves the whole Draft.
   if(g.ok){
     var editing = st.editing && !locked();
     v.className = "verdict " + (editing ? "idle" : "pass");
@@ -2228,7 +2326,7 @@ function renderVerdict(){
         (editing ? T("內容完整","Content complete") : T("已完成","Completed")) + '</div>' +
       '<div class="sit">' + names[g.s === null ? "null" : g.s] + '</div>' +
       '<div class="sit" style="margin-top:6px' + (editing ? "" : ";color:var(--grn-sel)") + '">' +
-        (editing ? T("已填妥，按「OK」返回顯示模式。","Content is complete — press OK to return to display mode.") : T("沒有未填的必填項。","Nothing outstanding.")) + '</div>';
+        (editing ? T("Draft已填妥，按「OK」保存整份內容。","Draft is complete — press OK to save the entire content.") : T("沒有未填的必填項。","Nothing outstanding.")) + '</div>';
     return;
   }
   // errors in content → Error is found
@@ -2271,7 +2369,7 @@ function render(){
   var showCards = (st.opt === "B");                 // only option B shows selectable cards; option A = read-only top table only
   $("topTable").hidden = false;                      // read-only summary table always visible (above the question)
   $("secB").hidden = !showCards;
-  $("cardEmptyWarn").hidden = !(showCards && selCount() === 0);
+  $("cardEmptyWarn").hidden = !(showCards && selCount() === 0 && completeManualCount() === 0);
 
   var partial = (s === "3" && !allSelected());
   $("ac11").hidden = (s !== "3");                       // AC11 required for all of situation 3 (incl. all selected)
@@ -2327,13 +2425,14 @@ function render(){
   // "Next Page" is navigation — never disabled; a failed gate shows an error alert instead of blocking the button
   $("save").classList.remove("disabled");
   $("save").disabled = false;
-  if($("addp")) $("addp").disabled = roForm() || st.detMode === "del";
+  // Concurrent Manual Policy is Group-level and independent of the App-level
+  // Quotation Add/Delete phase. It remains reusable while the shared form is editable.
+  if($("addp")) $("addp").disabled = roForm();
 
-  // Confirmed intended behaviour: completion follows the valid current content.
-  // OK is not a save/completion gate. It only becomes a Group-level review
-  // acknowledgement when a policy-change warning exists and validation passes.
-  // Concurrent completion follows declaration/form validity only. An Over Max
-  // result remains visible but does not change the tab status or PDF gate.
+  // In Edit Mode, the same form renders Draft validation feedback. OK is the
+  // atomic Save action; Back restores the committed snapshot. A valid OK also
+  // acknowledges a Group policy-list warning. An Over Max result remains
+  // visible but does not change the tab status or PDF gate.
   var groupEligible = canCreatePdfInCurrentGroup();
   var concurrentDone = g.ok && groupEligible && (lk || !ca.policyChangePending);
   var quotationDone = policyExists(st.curRef);
@@ -2493,8 +2592,7 @@ document.querySelectorAll("#ac11 .opt").forEach(function(l){
     ev.preventDefault();
     if(roForm()) return;
     var k = l.getAttribute("data-a11");
-    st.a11 = {};
-    st.a11[k] = true;
+    st.a11[k] = !st.a11[k];
     render();
   });
 });
@@ -2505,8 +2603,7 @@ document.querySelectorAll("#ac72 .opt").forEach(function(l){
     ev.preventDefault();
     if(roForm()) return;
     var k = l.getAttribute("data-a72");
-    st.a72 = {};
-    st.a72[k] = true;
+    st.a72[k] = !st.a72[k];
     render();
   });
 });
@@ -2521,20 +2618,20 @@ function addApplication(){
   var hadLock = hasAnyPdf();
   var ref = nextUnusedAppRef(); if(!ref) return;
   st.appRefs.push(ref);
-  st.curRef = ref;
   var ca = stateFor(ref);
   ca.tab = "concurrent";
   ca.sectionTicks = {};
   DEFAULT_SECTION_TICKS.forEach(function(k){ ca.sectionTicks[k] = true; });
   ca.policySnapshot = policyListSignature();
-  enterConcurrent();
+  // Creating an App updates the control-panel App List only. Keep the currently
+  // opened App and screen untouched until the user explicitly opens the new App.
   render();
   log(hadLock
-      ? "已建立新的空白Application並先開啟Concurrent。此App在鎖定期間屬Pending，不加入凍結Group，亦不可產生PDF；Quotation仍未完成。"
-      : "已建立新的空白Application並先開啟Concurrent；Quotation保持未完成，須稍後加入一張Policy。",
+      ? "已建立新的空白Application並加入App List，但保持目前App畫面不變。新App在鎖定期間屬Pending；按其App按鈕才會開啟Concurrent Preview。"
+      : "已建立新的空白Application並加入App List，但保持目前App畫面不變。按其App按鈕才會開啟Concurrent Preview；Quotation仍未完成。",
       hadLock
-      ? "A new empty Application was created and Concurrent opened first. It remains Pending outside the frozen Group and cannot generate a PDF until unlock; Quotation is incomplete."
-      : "A new empty Application was created and Concurrent opened first. Quotation remains incomplete until one Policy is added.");
+      ? "A new empty Application was added to the App List without changing the current App screen. It remains Pending during the lock; open it explicitly to view Concurrent Preview."
+      : "A new empty Application was added to the App List without changing the current App screen. Open it explicitly to view Concurrent Preview; Quotation remains incomplete.");
 }
 function addCurrentPolicy(){
   if(!appExists(st.curRef) || policyExists(st.curRef) || st.detMode === "del") return;
@@ -2598,7 +2695,7 @@ document.querySelectorAll(".sitbtn button").forEach(function(b){
   b.addEventListener("click", function(){
     var s = b.getAttribute("data-sit");
     st.a11 = {}; st.a11oth = ""; st.a72 = {}; st.sel = {}; st.manual = []; st.yesInitialized = false;
-    st.appStates = {}; st.lateRefs = []; st.editing = false;
+    st.appStates = {}; st.lateRefs = []; st.editing = false; st.editBackup = null;
     st.curRef = POLICIES[0].ref;
     if(s === "1"){ st.opt = "A"; st.appRefs = [POLICIES[0].ref]; st.policyRefs = st.appRefs.slice(); }
     if(s === "2"){ st.opt = "A"; st.appRefs = POLICIES.slice(0,3).map(function(p){return p.ref;}); st.policyRefs = st.appRefs.slice(); }
@@ -2608,6 +2705,11 @@ document.querySelectorAll(".sitbtn button").forEach(function(b){
     syncCounts();
     st.detMode = "add";
     st.pendingRemovedRefs = [];
+    // Situation setup represents Apps that already exist in the Concurrent
+    // Group. Give every one its own baseline now, even before the user opens it,
+    // so a later effective Manual Policy change is not silently adopted as the
+    // unopened App's first snapshot.
+    st.appRefs.forEach(function(ref){ stateFor(ref); });
     curAppState().tab = "concurrent";   // demo jump resets every App's independent state
     render();
     var g = gate();
@@ -2617,12 +2719,11 @@ document.querySelectorAll(".sitbtn button").forEach(function(b){
 });
 
 $("addp").addEventListener("click", function(){
-  if(roForm() || st.detMode === "del") return;
-  st.manual.push({ id:++st.mseq, mode:null, amt:0, freq:"monthly", pt:10 });
-  acknowledgeCurrentPolicyList();
+  if(roForm()) return;
+  st.manual.push({ id:++st.mseq, mode:null, amt:null, freq:"monthly", pt:10, saved:false });
   render();
-  log("已在畫面加入一張保單,請選擇付款模式。",
-      "Added a policy on screen — please select a payment mode.");
+  log("已在Concurrent Draft加入一張手動保單。可繼續新增；完成後按OK保存整份Draft。",
+      "A Manual Policy was added to the Concurrent Draft. More may be added; press OK to save the whole draft.");
 });
 
 var TAB_ORDER = ["concurrent","basic","extended"];
@@ -2670,23 +2771,25 @@ $("editrec").addEventListener("click", function(){
     return;
   }
   openEdit();
-  log("已進入全螢幕編輯模式。完成後按「OK」返回顯示模式。", "Entered full-screen edit mode. Press OK when done to return to display.");
+  log("已進入全螢幕Edit Mode。所有更改暫存於Draft；按OK保存，按Back放棄。", "Entered full-screen Edit Mode. Changes remain in Draft; press OK to save or Back to discard.");
 });
-// OK never saves the form. If a Group policy-list warning is pending, a valid
-// OK is the explicit review acknowledgement and clears that warning in every
-// unsubmitted App in the Group.
+// OK atomically commits the shared draft. Incomplete data may be half-saved,
+// but only a valid commit acknowledges a Group policy-list warning.
 $("editok").addEventListener("click", function(){
-  var valid = gate().ok;
-  var acknowledged = commitEdit();
-  if(acknowledged){
-    log("已按 OK並確認最新Policy List；整個Concurrent Group的Policy-change <!> 已清除。",
-        "OK acknowledged the latest Policy List; the policy-change <!> was cleared for the entire Concurrent Group.");
+  var result = commitEdit();
+  if(result.acknowledged){
+    log("已按OK保存整份Concurrent Draft並確認最新Policy List；全Group的Policy-change <!> 已清除。",
+        "OK saved the whole Concurrent Draft and acknowledged the latest Policy List; the Group policy-change <!> was cleared.");
   } else {
-    log(valid ? "已按 OK — 返回顯示模式,內容完整。" : "已按 OK — 返回顯示模式,但內容仍有錯誤；Group warning未清除。",
-        valid ? "OK pressed — returned to display mode; content is complete." : "OK pressed — returned to display mode, but errors remain; the Group warning was not cleared.");
+    log(result.valid
+        ? "已按OK保存整份Concurrent Draft；內容完整。"
+        : "已按OK保存未完成Draft；已填內容保留，但section及Group warning不會被清除。",
+        result.valid
+        ? "OK saved the whole Concurrent Draft; the content is complete."
+        : "OK saved the incomplete Draft; entered data is retained, but section and Group warnings are not cleared.");
   }
 });
-$("editback").addEventListener("click", function(){ closeEdit(); log("已離開編輯；目前輸入內容已保留,完成狀態按現有內容判斷。", "Left edit; current input is retained and completion follows the current content."); });
+$("editback").addEventListener("click", function(){ closeEdit(); log("已放棄本次未保存Draft並回復進入Edit Mode前的內容。", "Discarded the unsaved Draft and restored the content from before Edit Mode."); });
 
 $("genpdf").addEventListener("click", function(){
   var ca = curAppState();
@@ -2853,7 +2956,11 @@ function renderSignPage(){
     var validationFail = ca.signBlockReason === "validation";
     var groupLockFail = ca.signBlockReason === "group-lock";
     var policyChangeFail = ca.signBlockReason === "policy-change";
-    document.querySelector(".signblock-msg").innerHTML = policyChangeFail
+    var policyMissingFail = ca.signBlockReason === "policy-missing";
+    document.querySelector(".signblock-msg").innerHTML = policyMissingFail
+      ? T("系統已在Start Signing時重新搜尋，但找不到本Application的Policy，因此未產生PDF。請返回Quotation覆核本申請。",
+          "The policy for this application can no longer be found. No PDF was generated. Please return to Quotation and review this application.")
+      : (policyChangeFail
       ? T("Concurrent Policy List已改變，因此未產生PDF。請返回Concurrent Submission，覆核重新載入的Policy List，並按OK確認變更。",
           "The Concurrent Policy List has changed, so no PDF was generated. Return to Concurrent Submission, review the refreshed Policy List, and press OK to acknowledge the changes.")
       : (groupLockFail
@@ -2863,10 +2970,10 @@ function renderSignPage(){
         ? T("Start Signing前重新載入的最新資料未符合section／Concurrent要求，因此未產生PDF。請返回Application覆核最新資料。",
             "The latest data reloaded before Start Signing does not meet the section or Concurrent requirements, so no PDF was generated. Return to the Application and review the latest data.")
         : T("系統已在開始簽署前重新計算一併投保保費。最新總額超出可負擔上限，因此未產生PDF。請返回覆核資料。",
-            "The concurrent premium was recalculated before signing. The latest total exceeds the affordability maximum, so no PDF was generated. Return and review the data.")));
+            "The concurrent premium was recalculated before signing. The latest total exceeds the affordability maximum, so no PDF was generated. Return and review the data."))));
     var c = ca.pdf.calc || st.calc || {total:0,limit:0};
-    $("signblockCalc").hidden = validationFail || groupLockFail || policyChangeFail;
-    $("signblockCalc").innerHTML = (validationFail || groupLockFail || policyChangeFail) ? "" :
+    $("signblockCalc").hidden = validationFail || groupLockFail || policyChangeFail || policyMissingFail;
+    $("signblockCalc").innerHTML = (validationFail || groupLockFail || policyChangeFail || policyMissingFail) ? "" :
       '<div class="sbc-row"><span>' + T("最新總額","Latest total") + '</span><b>HKD ' + money(c.total) + '</b></div>' +
       '<div class="sbc-row"><span>' + T("可負擔上限","Affordability maximum") + '</span><b>HKD ' + money(c.limit) + '</b></div>' +
       '<div class="sbc-row"><span>' + T("結果","Result") + '</span><b style="color:var(--red)">' + T("超出上限","Over maximum") + '</b></div>';
@@ -2894,15 +3001,17 @@ function renderPdfDocumentPage(){
     '<span class="pdf-check">' + check(!snap.multiple) + ' No / 否</span>';
 
   var reasons = [];
-  reasons.push('<div class="reason-line">' + check(snap.a11.choice === "needs") +
+  var a11Choices = snap.a11.choices || (snap.a11.choice ? [snap.a11.choice] : []);
+  var a72Choices = snap.a72.choices || (snap.a72.choice ? [snap.a72.choice] : []);
+  reasons.push('<div class="reason-line">' + check(a11Choices.indexOf("needs") >= 0) +
     '<span>Different insurance needs and flexibility for future legacy-planning changes / 不同的保險需要及日後傳承規劃的靈活性</span></div>');
-  reasons.push('<div class="reason-line">' + check(snap.a11.choice === "other") +
+  reasons.push('<div class="reason-line">' + check(a11Choices.indexOf("other") >= 0) +
     '<span>Other reasons / 其他原因' + (snap.a11.otherText ? ": " + escHtml(snap.a11.otherText) : "") + '</span></div>');
-  if(snap.a72.choice){
+  if(a72Choices.length){
     reasons.push('<div style="font-weight:800;margin-top:5px">Reasons for de-selection / 取消選取交易的原因</div>');
-    reasons.push('<div class="reason-line">' + check(snap.a72.choice === "pending") +
+    reasons.push('<div class="reason-line">' + check(a72Choices.indexOf("pending") >= 0) +
       '<span>Pending client’s further consideration / 待客戶進一步考慮</span></div>');
-    reasons.push('<div class="reason-line">' + check(snap.a72.choice === "redundant") +
+    reasons.push('<div class="reason-line">' + check(a72Choices.indexOf("redundant") >= 0) +
       '<span>Redundant case / 多餘個案</span></div>');
   }
   $("pdfReasonAnswers").innerHTML = reasons.join("");
@@ -2919,7 +3028,8 @@ function renderPdfDocumentPage(){
   snap.rows.filter(function(r){ return r.included; }).forEach(function(r){
     // App A/B/C are demo navigation aliases and must never appear in the
     // customer PDF. Keep only the real reference and the current-case marker.
-    var app = (r.current ? "<b>This Application / 本申請</b><br>" : "") + escHtml(r.ref);
+    var app = (r.current ? "<b>This Application / 本申請</b><br>" : "") +
+      (r.manual ? "<b>Manually Added / 手動新增</b><br>" : "") + escHtml(r.ref);
     var type = r.type === "regular" ? "Regular / 供款" : "Single / 整付";
     var freq = r.type === "regular" ? (" / " + escHtml(FREQ_LBL[r.frequency] || r.frequency)) : "";
     var details = type + "<br>" + escHtml(r.currency) + " " + money(r.originalPremium) + freq;
@@ -2969,6 +3079,18 @@ $("finishSign").addEventListener("click", function(){
     render();
     log("Start Signing已被阻止：本Application／Policy在Group鎖定後才加入，須等待所有Outstanding PDF完成。",
         "Start Signing blocked: this Application/Policy was added after the Group lock and must wait until all outstanding PDFs are completed.");
+    return;
+  }
+  // This is an existence check, not a selection rule. Option B may still omit
+  // the Current Policy from its selected rows, but the owner App must retain a
+  // valid Quotation Policy at the Start Signing checkpoint.
+  if(!policyExists(st.curRef)){
+    ca.signBlockReason = "policy-missing";
+    ca.signBlock = true;
+    ca.signDocOpen = false;
+    render();
+    log("Start Signing重新搜尋後找不到本Application的Policy；Quotation已變成Incomplete，PDF尚未產生。",
+        "The Current Application Policy was not found at Start Signing; Quotation is incomplete and no PDF was generated.");
     return;
   }
   // Start Signing always checks and displays the latest result. Existing PDFs
@@ -3062,10 +3184,14 @@ $("lockmask").addEventListener("click", function(e){ if(e.target === this) this.
 
 $("identseg").addEventListener("click", function(e){
   var b = e.target.closest("button[data-ref]"); if(!b) return;
-  st.editing = false;                       // leaving an App closes its temporary edit screen
+  // App List switching never saves a Draft. Restore the last committed shared
+  // content first, then open the target App in preview/read-only mode.
+  if(st.editing && st.editBackup) restoreEditableSharedSnapshot(st.editBackup.shared);
+  st.editBackup = null;
+  st.editing = false;
   st.curRef = b.getAttribute("data-ref");
   var ca = curAppState();
-  ca.tab = "concurrent";                    // entering from the App List starts on this App's Concurrent tab
+  ca.tab = "concurrent";                    // normal App List entry starts at Concurrent Preview
   // Only this App's own PDF/signing page can reopen. No action is inherited from the previous App.
   ca.signPageOpen = !!((ca.pdf.done || ca.previewReady) && !ca.submitted);
   if(!ca.signPageOpen) ca.signDocOpen = false;
@@ -3084,7 +3210,7 @@ $("rst").addEventListener("click", function(){
          aff:{nla:800000, ndi:100000, mog:5000, cdi:50, ca:50}, pm:{},
          manual:[], mseq:0,
          calc:null, affOK:true,
-         lateRefs:[], editing:false, appStates:{},
+         lateRefs:[], editing:false, editBackup:null, appStates:{},
          appRefs:[POLICIES[0].ref], policyRefs:[POLICIES[0].ref], shownPolicyRefs:[POLICIES[0].ref],
          detMode:"add", pendingRemovedRefs:[] };
   $("af_nla").value=800000; $("af_ndi").value=100000; $("af_mog").value=5000; $("af_cdi").value=50; $("af_ca").value=50;
@@ -3186,6 +3312,30 @@ async function downloadFullIpadCapture(){
   }
 }
 $("captureIpad").addEventListener("click", downloadFullIpadCapture);
+
+// Top-level navigation is presentation-only. Moving the single Rules panel to
+// its full-width host prevents duplication and does not recreate or reset st.
+var rulesPanelNode = $("rulesPanel"), rulesHostNode = $("rulesHost");
+if(rulesPanelNode && rulesHostNode) rulesHostNode.appendChild(rulesPanelNode);
+function setMainTab(tab){
+  var next = tab === "rules" ? "rules" : "demo";
+  document.body.dataset.mainTab = next;
+  $("mainTabDemo").setAttribute("aria-selected", String(next === "demo"));
+  $("mainTabRules").setAttribute("aria-selected", String(next === "rules"));
+  $("demoPrototype").setAttribute("aria-hidden", String(next !== "demo"));
+  $("rulesHost").setAttribute("aria-hidden", String(next !== "rules"));
+}
+$("mainTabDemo").addEventListener("click", function(){ setMainTab("demo"); });
+$("mainTabRules").addEventListener("click", function(){ setMainTab("rules"); });
+[$("mainTabDemo"),$("mainTabRules")].forEach(function(btn){
+  btn.addEventListener("keydown", function(ev){
+    if(ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+    ev.preventDefault();
+    var target = btn === $("mainTabDemo") ? $("mainTabRules") : $("mainTabDemo");
+    target.focus(); target.click();
+  });
+});
+setMainTab(document.body.dataset.mainTab);
 
 function setLang(l){
   document.body.dataset.lang = l;
