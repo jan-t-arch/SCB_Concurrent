@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Concurrent Submission Interactive Behavioral Specification v1.1</title>
+  <style>
+    :root{--ink:#183239;--muted:#63777c;--line:#d8e2e3;--paper:#fff;--wash:#eef3f3;--nav:#15323a;--teal:#1aa7a1;--teal2:#dff5f3;--blue:#2276a5;--blue2:#e8f2f8;--amber:#d88900;--amber2:#fff3d7;--red:#c53b52;--red2:#fdecef;--green:#25845d;--green2:#e7f5ed;--purple:#7459a6;--purple2:#f0ebfa;--shadow:0 10px 30px rgba(31,59,64,.10);--radius:14px}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);background:var(--wash);overflow:hidden}
+    button,input,select{font:inherit}button{cursor:pointer}
+    .app{height:100%;display:grid;grid-template-rows:62px 1fr}
+    .topbar{display:flex;align-items:center;gap:14px;padding:0 18px;background:var(--nav);color:#fff;box-shadow:0 2px 12px #15323a33;z-index:5}
+    .brand{min-width:360px}.brand strong{display:block;font-size:15px;letter-spacing:.01em}.brand span{font-size:10px;color:#b9d2d5}
+    .search-wrap{position:relative;flex:1;max-width:560px}.search-wrap input{width:100%;height:38px;border:1px solid #547078;background:#0f2930;color:#fff;border-radius:10px;padding:0 48px 0 34px;outline:none}.search-wrap input:focus{border-color:#6fd0cc;box-shadow:0 0 0 3px #1aa7a144}.search-icon{position:absolute;left:11px;top:10px;color:#9fc0c4}.search-count{position:absolute;right:10px;top:10px;color:#9fc0c4;font-size:11px}
+    .seg{display:flex;background:#0f2930;border:1px solid #49666e;border-radius:10px;padding:3px;gap:2px}.seg button{border:0;background:transparent;color:#bcd0d3;padding:7px 10px;border-radius:7px;font-size:11px}.seg button.active{background:#fff;color:var(--ink);font-weight:700}.version{font-size:10px;color:#b9d2d5;white-space:nowrap}
+    .shell{min-height:0;display:grid}.sidebar{background:#f8fbfb;border-right:1px solid var(--line);overflow:auto;padding:14px 12px}.side-head{display:flex;justify-content:space-between;align-items:center;margin:3px 5px 12px}.side-head strong{font-size:12px}.side-head span{font-size:10px;color:var(--muted)}
+    .nav-group{margin-bottom:14px}.nav-group h3{margin:0 7px 5px;font-size:9px;letter-spacing:.13em;color:#7a8d91;text-transform:uppercase}.nav-btn{width:100%;border:0;background:transparent;color:#40565b;text-align:left;display:grid;grid-template-columns:38px 1fr;gap:6px;padding:9px 8px;border-radius:9px;font-size:11px;line-height:1.25}.nav-btn:hover{background:#eaf2f2}.nav-btn.active{background:#dff3f2;color:#0c716e;font-weight:700}.nav-btn .code{font-family:ui-monospace,monospace;font-size:10px;color:#6f868a}.nav-btn.active .code{color:#0c716e}
+    .side-tools{position:sticky;bottom:-14px;background:linear-gradient(transparent,#f8fbfb 18%);padding:24px 4px 10px;display:grid;grid-template-columns:1fr 1fr;gap:6px}.side-tools button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px;font-size:10px;color:#40565b}
+    .main{min-width:0;min-height:0;overflow:auto;padding:18px}.workspace{min-height:100%;display:flex;flex-direction:column;gap:12px}.flow-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.eyebrow{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);font-weight:800}.flow-head h1{font-size:22px;margin:4px 0}.flow-head p{font-size:11px;color:var(--muted);margin:0;max-width:720px;line-height:1.5}.flow-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.tool-btn{border:1px solid var(--line);background:#fff;color:#42595e;border-radius:8px;padding:7px 10px;font-size:10px}.tool-btn:hover,.tool-btn.active{border-color:#77bbb8;background:#edf8f7;color:#0b6f6b}
+    .canvas-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);min-height:560px;display:flex;flex-direction:column;overflow:hidden}.canvas-meta{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--line);background:#fbfdfd}.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:9px;color:var(--muted)}.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}.status-pill{font-size:9px;border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:var(--muted)}
+    .canvas{position:relative;flex:1;min-height:510px;overflow:auto;background-image:linear-gradient(#eaf0f0 1px,transparent 1px),linear-gradient(90deg,#eaf0f0 1px,transparent 1px);background-size:24px 24px;background-position:-1px -1px}.diagram-stage{min-width:100%;min-height:100%;transform-origin:top left;padding:26px}.mermaid-host{width:max-content;min-width:100%;display:flex;justify-content:flex-start;align-items:flex-start}.mermaid-host svg{max-width:none!important;height:auto}.fallback{display:grid;grid-template-columns:repeat(4,minmax(190px,1fr));gap:34px 48px;align-items:stretch;min-width:1080px;padding:18px}.fallback-node{position:relative;border:2px solid #90aaad;background:#fff;border-radius:12px;padding:12px 13px;min-height:76px;box-shadow:0 4px 10px #284a4f12;font-size:10px;line-height:1.38}.fallback-node:after{content:'→';position:absolute;right:-35px;top:31%;font-size:22px;color:#97aaad}.fallback-node:nth-child(4n):after,.fallback-node:last-child:after{display:none}.fallback-node small{display:block;font-family:ui-monospace,monospace;color:#789095;margin-top:7px}.fallback-node.action{border-color:var(--blue);background:var(--blue2)}.fallback-node.checkpoint{border-color:var(--purple);background:var(--purple2)}.fallback-node.decision,.fallback-node.warning{border-color:var(--amber);background:var(--amber2)}.fallback-node.pass{border-color:var(--green);background:var(--green2)}.fallback-node.block{border-color:var(--red);background:var(--red2)}
+    .source-box{display:none;margin:20px;background:#10262c;color:#d8eeee;padding:18px;border-radius:12px;white-space:pre;overflow:auto;font:11px/1.55 ui-monospace,monospace;min-height:470px}.source-mode .mermaid-host,.source-mode .fallback{display:none}.source-mode .source-box{display:block}
+    .inspector{background:#fff;border-left:1px solid var(--line);overflow:auto}.inspect-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.inspect-top strong{font-size:12px}.inspect-id{font:10px ui-monospace,monospace;color:#fff;background:var(--nav);padding:4px 7px;border-radius:6px}.inspect-title{font-size:18px;line-height:1.25;margin:0 0 7px}.inspect-summary{font-size:11px;line-height:1.55;color:var(--muted);margin:0 0 15px}.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}.chip{font-size:9px;padding:4px 7px;border-radius:999px;background:#eef4f4;color:#496064;border:1px solid #dce7e8}.detail-list{display:grid;border:1px solid var(--line);border-radius:10px;overflow:hidden}.detail-row{padding:9px 10px;border-bottom:1px solid var(--line)}.detail-row:last-child{border:0}.detail-row label{display:block;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#87999c;font-weight:800;margin-bottom:3px}.detail-row div{font-size:10px;line-height:1.45}.related{margin-top:14px}.related h4{font-size:10px;margin:0 0 7px}.related button{border:1px solid var(--line);background:#fff;border-radius:7px;font-size:9px;padding:5px 7px;margin:0 4px 4px 0}.empty-inspect{border:1px dashed #b8c9cb;border-radius:12px;padding:20px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6}
+    .search-results{position:absolute;top:45px;left:0;right:0;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);max-height:430px;overflow:auto;display:none;z-index:20;padding:7px}.search-results.open{display:block}.result{padding:9px;border-radius:8px;display:grid;grid-template-columns:68px 1fr;gap:8px;border:0;background:#fff;width:100%;text-align:left}.result:hover{background:#edf6f6}.result-code{font:9px ui-monospace,monospace;color:#0d7772}.result strong{display:block;font-size:10px}.result span{display:block;font-size:9px;color:var(--muted);margin-top:2px}
+    .matrix-wrap{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:auto;box-shadow:var(--shadow)}table{width:100%;border-collapse:collapse;font-size:10px}th{position:sticky;top:0;background:var(--nav);color:#fff;text-align:left;padding:10px;white-space:nowrap}td{border-bottom:1px solid var(--line);padding:9px 10px;vertical-align:top;line-height:1.4}tr:hover td{background:#f4f9f9}
+    .scenario-grid{display:grid;grid-template-columns:330px 1fr;gap:14px}.scenario-panel,.scenario-result,.coverage-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}.field{margin-bottom:12px}.field label{display:block;font-size:9px;font-weight:800;color:#72868a;margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}.field select{width:100%;height:36px;border:1px solid #bdcbcd;border-radius:8px;background:#fff;padding:0 9px;color:var(--ink);font-size:11px}.run-btn{width:100%;border:0;background:var(--teal);color:#fff;border-radius:9px;padding:10px;font-weight:800;font-size:11px}.path{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:12px 0}.path span{font-size:10px;border:1px solid #a9c5c6;background:#f3fafa;border-radius:7px;padding:7px}.path b{color:#89a1a4}.outcome{border-left:4px solid var(--amber);background:var(--amber2);padding:12px;border-radius:0 9px 9px 0;font-size:11px;line-height:1.55}
+    .coverage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.metric{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}.metric strong{display:block;font-size:24px}.metric span{font-size:9px;color:var(--muted)}.bar{height:6px;background:#e5eeee;border-radius:999px;margin-top:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--teal)}.coverage-list{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}.coverage-item{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:9px 0;font-size:10px}.coverage-item:last-child{border:0}.coverage-item b{color:var(--green)}.callout{border:1px solid #bddcda;background:#edf8f7;border-radius:10px;padding:10px 12px;font-size:10px;color:#386267;line-height:1.45}.mobile-nav{display:none}
+    @media(max-width:760px){.topbar{padding:0 10px}.brand{min-width:0;flex:1}.brand span,.version,.topbar>.seg{display:none}.search-wrap{max-width:210px}.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:10px}.flow-head{display:block}.flow-actions{justify-content:flex-start;margin-top:10px}.fallback{grid-template-columns:repeat(2,minmax(180px,1fr));min-width:760px}.mobile-nav{display:block;position:fixed;left:10px;bottom:10px;z-index:15;border:0;border-radius:999px;background:var(--nav);color:#fff;padding:11px 15px;box-shadow:var(--shadow)}.coverage-grid{grid-template-columns:1fr 1fr}}
+  </style>
+  <style>
+    .mermaid-host .node{cursor:pointer}
+    .mermaid-host .node:focus{outline:3px solid #1aa7a166;outline-offset:4px}
+    .mermaid-host .nodeLabel,.mermaid-host .nodeLabel p,.mermaid-host .edgeLabel,.mermaid-host text{font-size:10px!important;line-height:1.3!important}
+    .zoom-readout{min-width:66px;text-align:center;font-variant-numeric:tabular-nums}
+    .shell{grid-template-columns:230px minmax(0,1fr) 420px}
+    .inspector{padding:0;background:#fbfdfd}
+    .inspect-body{padding:16px}.spec-section{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}.spec-section h3{font-size:10px;margin:0;padding:9px 11px;background:#f3f7f7;border-bottom:1px solid var(--line);letter-spacing:.03em}.spec-section .spec-content{padding:10px 12px;font-size:10px;line-height:1.55;color:#40565b}.spec-section ul{margin:0;padding-left:17px}.spec-section li+li{margin-top:5px}.rule-row{display:grid;grid-template-columns:84px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #e7eeee}.rule-row:last-child{border:0}.rule-code{font:9px ui-monospace,monospace;color:#0b7772}.tbc-card{border-left:4px solid var(--amber);background:var(--amber2);padding:10px;margin:8px 0;border-radius:0 8px 8px 0;font-size:10px;line-height:1.5}.tbc-card strong{display:block;color:#9b6100;margin-bottom:3px}.spec-note{font-size:9px;color:var(--muted);line-height:1.45;margin-top:8px}.coverage-ok{color:var(--green);font-weight:800}.coverage-tbc{color:var(--amber);font-weight:800}
+    .spec-actions{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0}.spec-actions button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 8px;font-size:9px;color:#3f585d}.mode-note{border:1px solid #cbdcdc;background:#f3f8f8;border-radius:9px;padding:9px 10px;font-size:10px;line-height:1.5;margin-bottom:10px}
+    .rule-bullet{position:relative;border-left:3px solid #8fbdbb;background:#f7fbfb;border-radius:0 8px 8px 0;padding:9px 10px;margin:7px 0;font-size:10px;line-height:1.5;scroll-margin:90px}.rule-bullet>.rule-code{display:inline-block;margin-bottom:3px}.rule-heading{display:flex;gap:8px;align-items:flex-start;margin-bottom:5px}.behavior-rule>div+div{margin-top:4px}.rule-exception{color:#76623b;background:#fff8e7;padding:5px 7px;border-radius:6px}.rule-links{font:8px ui-monospace,monospace;color:#7b8f92}.rule-bullet.focused{border-left-color:var(--teal);background:#e4f7f5;box-shadow:0 0 0 2px #1aa7a133}.rule-bullet.focused:before{content:'Selected flow step';display:block;color:#08736f;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+    @media(max-width:1240px){.shell{grid-template-columns:210px minmax(0,1fr)}.inspector{position:fixed;right:0;top:62px;bottom:0;width:420px;transform:translateX(100%);transition:.2s;z-index:12;box-shadow:-12px 0 30px #1b3b4033}.inspector.open{transform:none}}
+  </style>
+</head>
+<body data-mode="dev">
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><strong>Concurrent Submission · Interactive Behavioral Specification</strong><span>8 consolidated flows + Developer Rules · v1.1</span></div>
+    <div class="search-wrap"><span class="search-icon">⌕</span><input id="globalSearch" placeholder="Search behavior, field, state, Rule ID…"><span class="search-count" id="searchCount">⌘K</span><div class="search-results" id="searchResults"></div></div>
+    <div class="seg" id="modeSeg"><button data-mode="dev" class="active">Developer</button><button data-mode="test">Test</button></div>
+    <div class="seg" id="langSeg"><button data-lang="zh">中文</button><button data-lang="en" class="active">EN</button></div>
+    <div class="version">Draft v1.1 · 27 Aug 2026</div>
+  </header>
+  <div class="shell">
+    <aside class="sidebar" id="sidebar"><div class="side-head"><strong data-t="navigator">Flow Navigator</strong><span id="flowCount"></span></div><div id="nav"></div><div class="side-tools"><button data-view="matrix">▦ Matrices</button><button data-view="scenario">◇ Scenario</button><button data-view="coverage">✓ Coverage</button><button data-view="tbc">? TBC</button></div></aside>
+    <main class="main"><div class="workspace" id="workspace"></div></main>
+    <aside class="inspector" id="inspector"></aside>
+  </div>
+</div>
+<button class="mobile-nav" id="mobileNav">Flows</button>
+<script>
+const T={navigator:{en:'Flow Navigator',zh:'流程導覽'},trigger:{en:'Trigger',zh:'觸發點'},pre:{en:'Preconditions',zh:'前置狀態'},action:{en:'System action',zh:'系統處理'},snapshot:{en:'Snapshot impact',zh:'Snapshot影響'},calc:{en:'Calculation impact',zh:'計算影響'},result:{en:'UI / tab result',zh:'UI／Tab結果'},pdf:{en:'PDF / lock impact',zh:'PDF／Lock影響'},next:{en:'Next action',zh:'下一步'},exception:{en:'Exceptions',zh:'例外'},related:{en:'Related references',zh:'相關參考'}};
+let lang='en',mode='dev',selectedFlow='F00',currentView='flow',zoom=1,sourceMode=false,selectedBehaviorId='';
+const L=(x)=>typeof x==='string'?x:(x?.[lang]||x?.en||'');
+const groups=[
+ {name:{en:'00 · Master',zh:'00 · 主流程'},ids:['F00']},
+ {name:{en:'01 · Warning & Lock',zh:'01 · 警告及鎖定'},ids:['F01','F02']},
+ {name:{en:'02 · Policy & Declaration',zh:'02 · Policy及聲明'},ids:['F10','F20']},
+ {name:{en:'03 · Calculation',zh:'03 · 計算'},ids:['F30']},
+ {name:{en:'04 · PDF Lifecycle',zh:'04 · PDF生命週期'},ids:['F40']},
+ {name:{en:'05 · State Model',zh:'05 · 狀態模型'},ids:['S01']}
+];
+const f=(id,title,zh,summary,m,nodes=[])=>({id,title:{en:title,zh},summary:{en:summary,zh:summary},m,nodes});
+const legacyFlows=[
+f('F00','Presentation Overview','簡報概覽','Navigation-level end-to-end journey. Open F00X or a linked detail flow for decisions.',`flowchart LR
+ A[Enter or Re-enter App]:::checkpoint --> B[Complete Application data]:::action
+ B --> C[Open Concurrent]:::checkpoint
+ C --> D[Review declaration and Policies]:::action
+ D --> E{Concurrent result}:::decision
+ E -->|Complete| F[Preview and Sign]:::action
+ E -->|Change or validation warning| D
+ F --> G[Start Signing]:::checkpoint
+ G --> H{All latest gates pass?}:::decision
+ H -->|No| I[Block PDF and show next action]:::block
+ H -->|Yes| J[Generate one immutable PDF]:::pass
+ J --> K[Finish Signing]:::action
+ K --> L{Submit or Void?}:::decision
+ L -->|Submit| M[Submitted terminal state]:::pass
+ L -->|Void| N[Clear this App PDF]:::warning
+ N --> C
+ click A call inspectBehavior('BEH-CHK-001')
+ click C call openFlow('F01')
+ click D call openFlow('F20')
+ click G call openFlow('F40')
+ click J call openFlow('F42')
+ click M call openFlow('F43')
+ classDef action fill:#e8f2f8,stroke:#2276a5,color:#183239
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6,color:#183239
+ classDef decision fill:#fff3d7,stroke:#d88900,color:#183239
+ classDef block fill:#fdecef,stroke:#c53b52,color:#183239
+ classDef pass fill:#e7f5ed,stroke:#25845d,color:#183239
+ classDef warning fill:#fff3d7,stroke:#d88900,color:#183239`,['BEH-CHK-001','BEH-CHK-002','BEH-CHK-003','BEH-PDF-001','BEH-SUB-001']),
+f('F00X','Expanded End-to-End Logic','完整端到端邏輯','Large master map containing the essential branches; use pan, zoom and node inspection.',`flowchart TB
+ subgraph A[ENTRY AND SOURCE CHANGES]
+  A0[Enter or Re-enter App]:::checkpoint --> A1[Checkpoint retrieves current sources once]:::checkpoint
+  A2[Policy or Quotation change]:::action --> A5[Pending source revision]:::warning
+  A3[P or LP, FNA, Maximum or validation input]:::action --> A5
+  A4[Stored FX change]:::action --> A5
+ end
+ subgraph B[COMPARE AND WARNING]
+  A1 --> B0[Compare Policy List, Content and in-use FX]:::checkpoint
+  A5 --> B0
+  B0 --> B1{Relevant change?}:::decision
+  B1 -->|No| B2[Keep current acknowledged state]:::pass
+  B1 -->|Yes| B3{Outstanding PDF?}:::decision
+  B3 -->|No| B4[Apply latest snapshot, recalculate, Group warning]:::warning
+  B3 -->|Yes| B5[Keep Frozen snapshot and set Group Latch]:::block
+ end
+ subgraph C[DECLARATION AND VALIDATION]
+  B2 --> C0[Concurrent Preview or Edit]:::action
+  B4 --> C0
+  C0 --> C1{Option A, B or C?}:::decision
+  C1 -->|A| C2[Current Policy only; AC7.2 if required]:::action
+  C1 -->|B| C3[Selected auto Policies plus Complete Manual]:::action
+  C1 -->|C| C4[Deferred tick; Start Signing blocked]:::warning
+  C2 --> C5{Validation passes?}:::decision
+  C3 --> C5
+  C5 -->|No| C6[Validation warning remains]:::block
+  C5 -->|Yes| C7[Back or OK saves Snapshot; no save warning]:::pass
+ end
+ subgraph D[AFFORDABILITY]
+  C7 --> D0[Build Basis and Included List]:::action
+  D0 --> D1[Case and Applicable PT]:::action
+  D1 --> D2[Auto-Policy Candidates and Applicable Maximum]:::action
+  D2 --> D3[Aggregate Premium using Applied FX]:::action
+  D3 --> D4{Aggregate strictly below Maximum?}:::decision
+ end
+ subgraph E[PREVIEW AND START SIGNING]
+  D4 -->|Yes| E0[Preview and Sign: navigation only]:::action
+  E0 --> E1[Start Signing checkpoint]:::checkpoint
+  E1 --> E2{Current App already has PDF?}:::decision
+  E2 -->|Yes| E3[Reopen same PDF and signing state]:::pass
+  E2 -->|No| E4[Run latest change, lock, option, sections, validation, list and Max gates]:::checkpoint
+  E4 --> E5{All pass?}:::decision
+  E5 -->|No| E6[Block with matching message]:::block
+ end
+ subgraph F[PDF LIFECYCLE]
+  E5 -->|Yes| F0[Generate immutable Current App PDF]:::pass
+  F0 --> F1[One signing card with included Policy summary]:::action
+  F1 --> F2[Finish Signing; do not auto-submit]:::action
+  F1 -->|Void before Submit| F4[Clear only owner PDF and signing state]:::warning
+  F2 --> F3{Submit or Void?}:::decision
+  F3 -->|Submit| F5[Submitted terminal state]:::pass
+  F3 -->|Void| F4
+  B5 -->|Old PDF continues| F1
+ end
+ click A0 call openFlow('F01')
+ click B0 call openFlow('F02')
+ click B1 call openFlow('F03')
+ click B4 call openFlow('F04')
+ click B5 call openFlow('F05')
+ click C1 call openFlow('F20')
+ click C3 call openFlow('F22')
+ click D0 call openFlow('F30')
+ click D3 call openFlow('F33')
+ click E1 call openFlow('F40')
+ click E3 call openFlow('F41')
+ click F0 call openFlow('F42')
+ click F5 call openFlow('F43')
+ classDef action fill:#e8f2f8,stroke:#2276a5,color:#183239
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6,color:#183239
+ classDef decision fill:#fff3d7,stroke:#d88900,color:#183239
+ classDef block fill:#fdecef,stroke:#c53b52,color:#183239
+ classDef pass fill:#e7f5ed,stroke:#25845d,color:#183239
+ classDef warning fill:#fff3d7,stroke:#d88900,color:#183239`,['BEH-CHK-001','BEH-ALR-001','BEH-LOCK-001','BEH-MAN-001','BEH-MAX-001','BEH-PDF-001']),
+f('F01','Three Checkpoints','三個Checkpoint','Only these actions retrieve authoritative external sources and apply formal comparisons.',`flowchart LR
+ A[Source data changes]:::action --> B[Remain Pending; no immediate Concurrent warning]:::warning
+ B --> C{Checkpoint action}:::decision
+ C -->|1| D[Enter or Re-enter App]:::checkpoint
+ C -->|2| E[Enter or re-click Concurrent]:::checkpoint
+ C -->|3| F[Start Signing]:::checkpoint
+ D --> G[Retrieve each source set once]:::action
+ E --> G
+ F --> G
+ G --> H[Continue to F02 compare engine]:::pass
+ click D call inspectBehavior('BEH-CHK-001')
+ click E call inspectBehavior('BEH-CHK-002')
+ click F call inspectBehavior('BEH-CHK-003')
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-CHK-001','BEH-CHK-002','BEH-CHK-003']),
+f('F02','Retrieve, Compare and Recalculate','讀取、比較及重算','Shared checkpoint engine for Policy, material-content and Stored-FX sources.',`flowchart LR
+ A[Checkpoint]:::checkpoint --> B[Retrieve current Policy and content source]:::action
+ A --> C[Retrieve full five-currency Stored FX set once]:::action
+ B --> D[Build Policy List and material source signatures]:::action
+ C --> E[Compare Stored and Applied rates to 6 decimals]:::action
+ D --> F{Relevant difference?}:::decision
+ E --> F
+ F -->|No| G[No Change warning and no authoritative rewrite]:::pass
+ F -->|Yes| H{Outstanding PDF?}:::decision
+ H -->|No| I[Apply latest data and recalculate]:::warning
+ H -->|Yes| J[Background compare; keep Frozen snapshot]:::block
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-ALR-001','BEH-FX-001','BEH-LOCK-001']),
+f('F03','Three Warning Classes','三類警告','Classifies every relevant source event and excludes pure no-op events.',`flowchart TB
+ A[Checkpoint compares latest sources]:::checkpoint --> B{Change class}:::decision
+ B --> C[1. Effective Policy List Change]:::action
+ B --> D[2. Content, Affordability or Validation Change]:::action
+ B --> E[3. Stored FX or Floating Rate Change]:::action
+ C --> F[Eligible Add, Remove, SI eligibility boundary, Submission]:::warning
+ D --> G[Quotation data, P or LP, Manual external, FNA, D3 D5 D6]:::warning
+ E --> H{Changed currency is used?}:::decision
+ H -->|Yes| I[Relevant change]:::warning
+ H -->|No| J[Keep Pending; no warning]:::pass
+ A --> K[No-op: blank App, order, remove expired, unused FX]:::pass
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-ALR-001','BEH-POL-004','BEH-SI-004','BEH-FX-002']),
+f('F04','Review and Acknowledgement','Review及確認','How an unlocked Group loads, reviews, saves and clears a Change warning.',`flowchart TB
+ A[First checkpoint finds relevant change]:::checkpoint --> B[Load latest Snapshot and recalculate]:::warning
+ B --> C[Show Group Change warning; Edit remains available]:::warning
+ C --> D{User action}:::decision
+ D -->|Back or OK in Edit| E[Save current Snapshot and return Preview]:::action
+ D -->|Second Concurrent Entry, no Edit| F{Validation passes?}:::decision
+ D -->|Next Page or merely leave| G[Do not acknowledge]:::block
+ E --> H[Clear Change warning for saved Snapshot]:::pass
+ F -->|Yes| H
+ F -->|No| I[Keep validation warning]:::block
+ H --> J{Newer source Snapshot exists?}:::decision
+ J -->|No| K[No Change warning]:::pass
+ J -->|Yes| L[Next checkpoint warns again]:::warning
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-ACK-001','BEH-ACK-002','BEH-MAN-002']),
+f('F05','Outstanding PDF and Group Latch','Outstanding PDF及Group Latch','Frozen-snapshot behavior, hard lock and conditional unlock.',`flowchart TB
+ A[Checkpoint while Outstanding PDF exists]:::checkpoint --> B{Relevant change found?}:::decision
+ B -->|No| C[Frozen shared Snapshot remains read-only with tick]:::pass
+ C --> D{Original Frozen Group Member?}:::decision
+ D -->|Yes| E[May generate its own independent PDF from same Snapshot]:::pass
+ D -->|No| F[Cannot join Frozen Group]:::block
+ B -->|Yes| G[Background compare only; do not apply latest data]:::block
+ G --> H[Set irreversible cycle Group Change Latch]:::block
+ H --> I[All unsubmitted Apps show warning; block every new PDF]:::block
+ I --> J[Existing PDFs may continue Sign, Submit or Void]:::action
+ J --> K[Last Outstanding PDF cleared]:::action
+ K --> L{Pending relevant difference?}:::decision
+ L -->|Yes| M[Release hard lock but retain warning; next checkpoint loads latest]:::warning
+ L -->|No| N[Unlock without a new warning]:::pass
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-LOCK-001','BEH-LOCK-002','BEH-LOCK-003']),
+f('F10','Effective Policy Eligibility','有效Policy資格','Determines whether an Application Policy enters auto-search and Maximum Basis.',`flowchart TB
+ A[Application Policy source]:::action --> B{App active and not Submitted or Deleted?}:::decision
+ B -->|No| X[Excluded]:::block
+ B -->|Yes| C{Quotation attached, active and complete?}:::decision
+ C -->|No| X
+ C -->|Yes| D{SI age within 30 days?}:::decision
+ D -->|No| X
+ D -->|Yes| E{Required data complete?}:::decision
+ E -->|No| X
+ E -->|Yes| F{P and LP identities match search scope?}:::decision
+ F -->|No| X
+ F -->|Yes| G[Eligible Policy: list and auto-Policy Maximum Basis]:::pass
+ X --> H[Concurrent still opens; zero Policies shows empty list]:::action
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-POL-001','BEH-POL-002']),
+f('F11','Quotation and SI Lifecycle','Quotation及SI生命週期','Attach, Remove, Reattach and all effective SI date outcomes.',`flowchart TB
+ A[Quotation event]:::action --> B{Event type}:::decision
+ B -->|Attach eligible| C[Policy Add at next checkpoint]:::warning
+ B -->|Remove eligible| D[Policy Remove; stable identity retained]:::warning
+ B -->|Reattach same Policy| E[New Quotation ID or revision; restore selection memory]:::warning
+ B -->|SI date change| F{Before and after eligibility}:::decision
+ F -->|Within 30 to another Within 30| G[Quotation data update; warning]:::warning
+ F -->|Within 30 to Over 30| D
+ F -->|Over 30 to Within 30| C
+ F -->|Over 30 to another Over 30| H[No Effective Change]:::pass
+ B -->|Remove already-expired Quotation| H
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-QUO-001','BEH-QUO-002','BEH-SI-001','BEH-SI-004']),
+f('F12','P, LP and Auto Client Search','P／LP及Auto Client Search','Identity and target-role behavior that changes search scope.',`flowchart TB
+ A[P or LP identity or role changes]:::action --> B{P equals LP?}:::decision
+ B -->|Yes| C[Applying matched customer to either role replaces both]:::action
+ B -->|No| D[Replace selected Proposer or Life Proposed only]:::action
+ D --> E{Matched person equals other role?}:::decision
+ E -->|Yes| F[Reject duplicate roles]:::block
+ E -->|No| G[Save stable Party IDs and increment Source Revision]:::warning
+ C --> G
+ G --> H[No immediate Concurrent warning]:::pass
+ H --> I[Next checkpoint re-searches; removed/add Policies follow identities]:::checkpoint
+ I --> J[Same display name only with same ID is no change]:::pass
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-ID-001','BEH-ID-002']),
+f('F13','Identity and Selection Memory','Identity及Selection Memory','Separates stable Policy identity, Quotation revision and recreated Application identity.',`flowchart TB
+ A[Policy becomes temporarily ineligible]:::action --> B[Remove card from current list]:::warning
+ B --> C[Keep selected or not-selected memory by stable Policy ID]:::pass
+ C --> D{Same Policy eligible again?}:::decision
+ D -->|Yes| E[Restore prior selection; do not auto-select or clear]:::pass
+ D -->|No; whole App deleted and recreated| F[Create new App, Policy and Quotation identities]:::action
+ F --> G[Do not inherit selection or configuration]:::warning
+ E --> H[Quotation ID or revision change still requires review]:::warning
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-SEL-001','BEH-SEL-002']),
+f('F20','Declaration Options A, B and C','聲明選項A、B及C','Shared declaration choices and their inclusion, validation and signing effects.',`flowchart TB
+ A[Concurrent declaration]:::action --> B{Select option}:::decision
+ B -->|A| C[Process Current Application alone]:::action
+ C --> D[Included List equals eligible Current Policy]:::action
+ D --> E[If another known Policy exists, AC7.2 required]:::warning
+ B -->|B| F[Select one or more auto Policies]:::action
+ F --> G[First B selects all then-visible auto Policies once]:::action
+ G --> H[Later new Policies stay unselected]:::warning
+ H --> I[Complete Manual Policies auto-include; Current Policy optional]:::pass
+ I --> J{Included List non-empty?}:::decision
+ J -->|No| K[Validation warning and Start Signing blocked]:::block
+ B -->|C| L[Supplement later; retain answers and show deferred tick]:::warning
+ L --> M[Start Signing blocked until changed to A or B]:::block
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-DEC-001','BEH-DEC-002','BEH-DEC-003']),
+f('F21','Situation, AC11 and AC7.2','Situation、AC11及AC7.2','Routes independent reason groups according to known Policies and selection extent.',`flowchart TB
+ A[Determine other known same-day Policies]:::action --> B{Declaration option}:::decision
+ B -->|A and no other known| C[No de-selection reason]:::pass
+ B -->|A and another known| D[Require AC7.2]:::warning
+ B -->|B| E{Multiple or partial selection?}:::decision
+ E -->|Multiple-app reason applicable| F[Require one AC11 radio answer]:::warning
+ E -->|De-selection reason applicable| G[Require one AC7.2 radio answer]:::warning
+ F --> H{Other selected?}:::decision
+ G --> H
+ H -->|Yes and text blank| I[Validation fail]:::block
+ H -->|No or text complete| J[Reason validation pass]:::pass
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-REA-001','BEH-REA-002']),
+f('F22','Manual Policy Lifecycle','Manual Policy生命週期','Only the supplied fields affect affordability; complete rows auto-include under Option B.',`flowchart TB
+ A[Add Policy available only in unlocked Option B Edit]:::action --> B[Create auto-saved Manual row; currency fixed HKD]:::action
+ B --> C{Payment Mode}:::decision
+ C -->|Regular| D[Require Amount greater than 0 and user PT greater than 0; Monthly]:::action
+ C -->|Single| E[Require Amount greater than 0; no PT field; internal PT equals 1]:::action
+ D --> F{Complete?}:::decision
+ E --> F
+ F -->|No| G[Saved Incomplete; excluded from Situation, Total, calculation and PDF]:::block
+ G --> H[Back or OK returns Preview; validation warning remains]:::warning
+ F -->|Yes| I[Auto-include under Option B; no checkbox]:::pass
+ I --> J[Influences Situation, Case, Group PT and Aggregate; no Candidate or Limiting Policy]:::action
+ J --> K[Back or OK saves Snapshot and recalculates; no Change warning for this save]:::pass
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-MAN-001','BEH-MAN-002','BEH-MAN-003']),
+f('F30','Policy Sets and Calculation Basis','Policy集合及計算基礎','Separates affordability basis from the Policies included in this PDF.',`flowchart TB
+ A[Latest checkpoint Snapshot]:::checkpoint --> B[Affordability Basis]:::action
+ A --> C[Effective Included List]:::action
+ B --> D[Every eligible auto-searched Policy, selected or not]:::action
+ B --> E[Option B Complete Manual: Case and Group PT only]:::action
+ C --> F[Option A: eligible Current Policy only]:::action
+ C --> G[Option B: selected auto Policies plus all Complete Manual]:::action
+ D --> H[Auto Policies create Candidate Maximums]:::pass
+ E --> I[Manual creates no Candidate and cannot be Limiting Policy]:::pass
+ F --> J[Drives Aggregate and PDF rows]:::pass
+ G --> J
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-BAS-001','BEH-BAS-002']),
+f('F31','Case and Applicable PT','Case及Applicable PT','Derives Case and the PT used by each auto Policy and the Group.',`flowchart TB
+ A[Affordability Basis]:::action --> B[Determine Regular or Single composition]:::action
+ B --> C[Single PT fixed at 1]:::pass
+ B --> D[Normal Regular uses Policy Pay Term]:::action
+ B --> E[Medical Regular uses D3 Medical Years]:::action
+ D --> F[Group PT uses applicable regular PT logic]:::action
+ E --> F
+ C --> G[Combine into Case A, B or C]:::action
+ F --> G
+ G --> H[Manual under Option B may affect Case and Group PT only]:::warning
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-PT-001','BEH-PT-002']),
+f('F32','Total and Applicable Maximum','Total及Applicable Maximum','Calculates candidates, selects the limiting auto Policy and applies strict comparison.',`flowchart TB
+ A[Customer, FNA, D3, D5 and D6 inputs]:::action --> B[Calculate a Candidate Maximum for each eligible auto Policy]:::action
+ B --> C[Apply D5 or D6 cap as MIN selected percentage and 30 percent]:::action
+ C --> D[Applicable Maximum equals minimum Candidate]:::action
+ D --> E[Limiting Policy equals auto Policy with minimum Candidate]:::pass
+ F[Effective Included List and Applied FX]:::action --> G[Calculate Monthly and Single Aggregate Premium]:::action
+ G --> H{Aggregate strictly below Applicable Maximum?}:::decision
+ H -->|Yes| I[Affordability pass; zero Total allowed]:::pass
+ H -->|No or equal| J[Over-Max block]:::block
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-MAX-001','BEH-MAX-002']),
+f('F33','Stored FX','本地儲存匯率','Five local reference currencies; relevance depends on Effective Included List usage.',`flowchart TB
+ A[Developer changes AUD, CAD, GBP, RMB or USD Stored Rate]:::action --> B[Changed row Pending only; Applied Rate and results unchanged]:::warning
+ B --> C[One of three checkpoints retrieves all five once]:::checkpoint
+ C --> D[Compare Stored vs Applied to six decimals]:::action
+ D --> E{At least one Included Policy uses currency?}:::decision
+ E -->|No| F[Keep Pending; no revision, warning, recalculation or latch]:::pass
+ E -->|Yes| G{Outstanding PDF?}:::decision
+ G -->|No| H[Apply rate; recalculate HKD equivalent and Aggregate; Group warning]:::warning
+ G -->|Yes| I[Keep Frozen rate, Total and Maximum; set Group Latch]:::block
+ J[HKD internal base equals 1 and is not a Simulator row]:::pass
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-FX-001','BEH-FX-002','BEH-FX-003']),
+f('F40','Preview and Start Signing Gates','Preview及Start Signing Gates','Preview is navigation; Start Signing is the third authoritative checkpoint.',`flowchart TB
+ A[Open Preview and Sign]:::action --> B[No retrieve, recalculation or PDF generation]:::pass
+ B --> C[Press Start Signing]:::checkpoint
+ C --> D{Current App already has unsubmitted PDF?}:::decision
+ D -->|Yes| E[Reopen same PDF or signing state]:::pass
+ D -->|No| F[Run Checkpoint 3 once]:::checkpoint
+ F --> G{New relevant change or Group Latch?}:::decision
+ G -->|Yes| X[Block and direct user to matching next action]:::block
+ G -->|No| H{Option A or B; sections and Concurrent validation pass?}:::decision
+ H -->|No| X
+ H -->|Yes| I{Effective Included List non-empty?}:::decision
+ I -->|No| X
+ I -->|Yes| J{Aggregate strictly below Applicable Maximum?}:::decision
+ J -->|No| X
+ J -->|Yes| K[Generate immutable PDF]:::pass
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-PRE-001','BEH-SIGN-001','BEH-PDF-002']),
+f('F41','Existing PDF Reopen','現有PDF重新開啟','Prevents duplicate PDFs and duplicate signing items for the Current Application.',`flowchart TB
+ A[Open Preview and Sign or press Start Signing]:::action --> B{Current Application has unsubmitted PDF?}:::decision
+ B -->|No| C[Continue normal latest gates]:::checkpoint
+ B -->|Yes, signing incomplete| D[Open the same generated PDF and signing state]:::pass
+ B -->|Yes, Signing Complete| E[Show one Signing Complete card; no Start or Continue Signing button]:::pass
+ D --> F[Do not generate a second PDF or another To Sign item]:::block
+ E --> F
+ G[Other Applications are opened and processed separately from App List]:::action
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-PDF-001','BEH-PDF-003']),
+f('F42','Generate and Sign PDF','產生及簽署PDF','One owner Application, one signing card and one immutable generation-time Snapshot.',`flowchart TB
+ A[All latest Start Signing gates pass]:::checkpoint --> B[Generate one PDF owned by Current Application]:::pass
+ B --> C[Freeze declaration, reasons, selection, rows, Total, PT and five Applied FX rates]:::action
+ C --> D[Preview page shows one Current App signing card]:::action
+ D --> E[Included Policies appear as summary and PDF rows, not separate signing cards]:::pass
+ D --> F{User action}:::decision
+ F -->|Continue Fill In| G[Return to previous form tab; no checkpoint]:::action
+ F -->|Void| H[Clear only this App PDF and signing state]:::warning
+ F -->|Complete document signing| I[Set Signing Complete; do not auto-submit]:::pass
+ I --> J[Hide Start or Continue Signing button entirely]:::pass
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-PDF-002','BEH-SIGN-002','BEH-VOID-001']),
+f('F43','Submit, Void and Delete','提交、Void及刪除','Application-level resolution and its effect on the shared Concurrent Group.',`flowchart TB
+ A[Current App has unsubmitted PDF]:::action --> B{Action}:::decision
+ B -->|Void before Submit| C[Clear only target PDF and signing state]:::warning
+ B -->|Delete whole unsubmitted owner App| D[Cascade App, Policy, PDF and signing state]:::warning
+ B -->|Submit after Signing Complete| E[Submit Current App only]:::pass
+ E --> F[Permanent overlay; no Void, edit or delete]:::block
+ E --> G[Submitted Policy leaves active auto-search for other Apps at next checkpoint]:::warning
+ C --> H{Last Outstanding PDF cleared?}:::decision
+ D --> H
+ E --> H
+ H -->|No| I[Keep Group read-only]:::action
+ H -->|Yes, pending relevant change| J[Release hard lock, retain warning, review next checkpoint]:::warning
+ H -->|Yes, no pending change| K[Unlock normally]:::pass
+ classDef action fill:#e8f2f8,stroke:#2276a5
+ classDef decision fill:#fff3d7,stroke:#d88900
+ classDef warning fill:#fff3d7,stroke:#d88900
+ classDef block fill:#fdecef,stroke:#c53b52
+ classDef pass fill:#e7f5ed,stroke:#25845d`,['BEH-SUB-001','BEH-VOID-001','BEH-DEL-001']),
+f('S01','Application State','Application狀態','Application lifecycle remains separate from Concurrent and PDF state.',`stateDiagram-v2
+ [*] --> Draft
+ Draft --> Active: Quotation complete
+ Active --> Draft: Remove Quotation
+ Active --> Deleted: Delete unsubmitted App
+ Active --> Submitted: Signing Complete and Submit
+ Submitted --> Submitted: Reject edit, Void or Delete
+ Deleted --> [*]`,['BEH-POL-001','BEH-DEL-001','BEH-SUB-001']),
+f('S02','Concurrent Indicator State','Concurrent Indicator狀態','Separates completion, validation warning, Change warning and frozen read-only states.',`stateDiagram-v2
+ [*] --> Incomplete
+ state "Incomplete" as Incomplete
+ state "Complete" as Complete
+ state "Change warning" as ChangeWarning
+ state "Validation warning" as ValidationWarning
+ state "Frozen complete" as FrozenTick
+ state "Group latch warning" as GroupLatchWarning
+ state "Deferred complete" as DeferredTick
+ Incomplete --> Complete: Validation pass and no unresolved warning
+ Complete --> ChangeWarning: Checkpoint finds relevant change
+ ChangeWarning --> Complete: Back or OK saves Snapshot
+ ChangeWarning --> ValidationWarning: Change cleared but validation fails
+ ValidationWarning --> Complete: Validation corrected and saved
+ Complete --> FrozenTick: Outstanding PDF and no change
+ FrozenTick --> GroupLatchWarning: Checkpoint finds relevant change
+ GroupLatchWarning --> ChangeWarning: Last PDF clears, then unlocked checkpoint loads latest
+ Incomplete --> DeferredTick: Option C
+ DeferredTick --> Incomplete: Change to A or B`,['BEH-ACK-001','BEH-LOCK-001','BEH-DEC-003']),
+f('S03','PDF and Signing State','PDF及簽署狀態','One unsubmitted PDF per Application; generation, signing and submission are distinct.',`stateDiagram-v2
+ [*] --> NoPDF
+ NoPDF --> Generated: Start Signing gates pass
+ Generated --> Signing: Open document signing
+ Signing --> SigningComplete: Finish Signing
+ Generated --> NoPDF: Void
+ Signing --> NoPDF: Void
+ SigningComplete --> NoPDF: Void before Submit
+ SigningComplete --> Submitted: Submit
+ Submitted --> Submitted: Terminal
+ Generated --> Generated: Reopen same PDF
+ SigningComplete --> SigningComplete: Reopen same state`,['BEH-PDF-001','BEH-PDF-002','BEH-SIGN-002','BEH-SUB-001'])
+];
+const flowClasses=`
+ classDef action fill:#e8f2f8,stroke:#2276a5,color:#183239
+ classDef checkpoint fill:#f0ebfa,stroke:#7459a6,color:#183239
+ classDef decision fill:#fff3d7,stroke:#d88900,color:#183239
+ classDef warning fill:#fff3d7,stroke:#d88900,color:#183239
+ classDef block fill:#fdecef,stroke:#c53b52,color:#183239
+ classDef pass fill:#e7f5ed,stroke:#25845d,color:#183239`;
+const vf=(id,title,zh,summary,m,nodes)=>f(id,title,zh,summary,m+flowClasses,nodes);
+const flows=[
+vf('F00','Presentation Overview','簡報概覽','Vertical end-to-end navigation across the seven detailed logic areas.',`flowchart TB
+ subgraph A[APPLICATION ENTRY]
+  direction TB
+  A1[Enter or Re-enter App]:::checkpoint --> A2[Checkpoint 1]:::checkpoint
+  A2 --> A3[Complete Application and Quotation]:::action
+ end
+ subgraph B[CONCURRENT REVIEW]
+  direction TB
+  B1[Open Concurrent]:::checkpoint --> B2[Checkpoint 2]:::checkpoint
+  B2 --> B3[Review Policies, declaration and affordability]:::action
+  B3 --> B4{Concurrent complete?}:::decision
+ end
+ subgraph C[START SIGNING]
+  direction TB
+  C1[Preview and Sign]:::action --> C2[Press Start Signing]:::checkpoint
+  C2 --> C3[Checkpoint 3 and latest gates]:::checkpoint
+  C3 --> C4{All gates pass?}:::decision
+ end
+ subgraph D[PDF AND RESOLUTION]
+  direction TB
+  D1[Generate one immutable Current-App PDF]:::pass --> D2[Sign document]:::action
+  D2 --> D3{Submit, Void or Delete?}:::decision
+  D3 -->|Submit| D4[Submitted terminal state]:::pass
+  D3 -->|Void or eligible Delete| D5[Clear owner PDF state]:::warning
+ end
+ A3 --> B1
+ B4 -->|Yes| C1
+ B4 -->|Warning or incomplete| B3
+ C4 -->|No| B3
+ C4 -->|Yes| D1
+ D5 --> B1
+ click A1 call openFlow('F01')
+ click B1 call openFlow('F01')
+ click B3 call openFlow('F20')
+ click C3 call openFlow('F40')
+ click D1 call openFlow('F40')`,['BEH-CHK-001','BEH-CHK-002','BEH-CHK-003','BEH-PDF-002','BEH-SUB-001']),
+vf('F01','Checkpoint, Change Detection & Acknowledgement','Checkpoint、Change偵測及確認','The complete lifecycle from a pending source event to comparison, warning, review and acknowledgement.',`flowchart TB
+ subgraph A[SOURCE EVENT]
+  direction TB
+  A1[Policy, content, validation input or Stored FX changes]:::action --> A2[Keep Pending]:::warning
+  A2 --> A3[No immediate Concurrent warning]:::pass
+ end
+ subgraph B[AUTHORITATIVE CHECKPOINT]
+  direction TB
+  B1{Which checkpoint?}:::decision
+  B1 -->|1| B2[Enter or Re-enter App]:::checkpoint
+  B1 -->|2| B3[Enter or re-click Concurrent]:::checkpoint
+  B1 -->|3| B4[Press Start Signing]:::checkpoint
+  B2 --> B5[Retrieve each authoritative source set once]:::action
+  B3 --> B5
+  B4 --> B5
+ end
+ subgraph C[COMPARE AND CLASSIFY]
+  direction TB
+  C1[Build Policy, material-content and five-rate signatures]:::action --> C2{Relevant difference?}:::decision
+  C2 -->|No| C3[No Change warning and no authoritative rewrite]:::pass
+  C2 -->|Yes| C4{Change class}:::decision
+  C4 --> C5[Effective Policy List]:::warning
+  C4 --> C6[Content, affordability or validation]:::warning
+  C4 --> C7[Stored FX for a used currency]:::warning
+ end
+ subgraph D[UNLOCKED REVIEW]
+  direction TB
+  D1[Apply latest Snapshot and recalculate]:::action --> D2[Show Group Change warning]:::warning
+  D2 --> DX{Source later restored to an earlier value?}:::decision
+  DX -->|Yes| DY[Keep warning; never auto-clear]:::warning
+  DX -->|No| D3[User reviews Concurrent]:::action
+  DY --> D3
+  D3 --> D4{Acknowledgement action}:::decision
+  D4 -->|Back or OK in Edit| D5[Save acknowledged Snapshot]:::pass
+  D4 -->|Second Concurrent Entry and validation pass| D5
+  D4 -->|Next Page or merely leave| D6[Do not acknowledge]:::block
+  D5 --> D7[Clear Change warning; retain validation warning if still failing]:::pass
+ end
+ A3 --> B1
+ B5 --> C1
+ C5 --> E1{Outstanding PDF?}:::decision
+ C6 --> E1
+ C7 --> E1
+ E1 -->|No| D1
+ E1 -->|Yes| E2[Continue to F02 Frozen and Latch logic]:::block
+ click B2 call inspectBehavior('BEH-CHK-001')
+ click B3 call inspectBehavior('BEH-CHK-002')
+ click B4 call inspectBehavior('BEH-CHK-003')
+ click C2 call inspectBehavior('BEH-ALR-001')
+ click D5 call inspectBehavior('BEH-ACK-001')
+ click DY call inspectBehavior('BEH-ACK-001')
+ click E2 call openFlow('F02')`,['BEH-CHK-001','BEH-CHK-002','BEH-CHK-003','BEH-ALR-001','BEH-ACK-001','BEH-ACK-002','BEH-POL-004','BEH-SI-004','BEH-FX-002']),
+vf('F02','Outstanding PDF, Frozen Snapshot & Group Latch','Outstanding PDF、Frozen Snapshot及Group Latch','Defines read-only behavior, group membership, relevant-change latching and conditional unlock.',`flowchart TB
+ subgraph A[FROZEN CYCLE]
+  direction TB
+  A1[At least one Outstanding PDF exists]:::checkpoint --> A2[Use generation-cycle Frozen Snapshot]:::action
+  A2 --> A3[Shared Concurrent content is read-only]:::block
+ end
+ subgraph B[CHECKPOINT RESULT]
+  direction TB
+  B1{Relevant change found?}:::decision
+  B1 -->|No| B2[Keep Frozen tick; no new warning]:::pass
+  B2 --> B3{Original Frozen Group Member?}:::decision
+  B3 -->|Yes| B4[May generate its own independent PDF from the Frozen Snapshot]:::pass
+  B3 -->|No| B5[Cannot join Frozen Group or generate PDF]:::block
+  B1 -->|Yes| B6[Background compare only]:::block
+  B6 --> B7[Do not apply latest membership, content, rates or results]:::block
+  B7 --> B8[Set irreversible cycle Group Change Latch]:::block
+  B8 --> B9[All unsubmitted Apps show warning; block every new PDF]:::block
+ end
+ subgraph C[RESOLVE OUTSTANDING PDFS]
+  direction TB
+  C1[Existing PDFs continue Sign, Submit or Void]:::action --> C2[Last Outstanding PDF clears]:::action
+  C2 --> C3{Pending relevant difference?}:::decision
+  C3 -->|Yes| C4[Release hard lock; retain warning]:::warning
+  C4 --> C5[Next checkpoint loads latest Snapshot for review]:::checkpoint
+  C3 -->|No| C6[Unlock normally without new warning]:::pass
+ end
+ A3 --> B1
+ B4 --> C1
+ B5 --> C1
+ B9 --> C1
+ click B1 call inspectBehavior('BEH-LOCK-001')
+ click B2 call inspectBehavior('BEH-LOCK-002')
+ click C2 call inspectBehavior('BEH-LOCK-003')`,['BEH-LOCK-001','BEH-LOCK-002','BEH-LOCK-003']),
+vf('F10','Policy Source, Eligibility, Identity & Selection','Policy來源、資格、Identity及Selection','Combines eligibility, Quotation and SI lifecycle, P/LP search identity and selection memory.',`flowchart TB
+ subgraph A[ELIGIBILITY]
+  direction TB
+  A1[Application Policy source]:::action --> A2{Active, unsubmitted and not deleted?}:::decision
+  A2 -->|No| AX[Exclude from Effective Policy List]:::block
+  A2 -->|Yes| A3{Quotation attached, active and complete?}:::decision
+  A3 -->|No| AX
+  A3 -->|Yes| A4{SI within 30 days and required data complete?}:::decision
+  A4 -->|No| AX
+  A4 -->|Yes| A5{P and LP match search scope?}:::decision
+  A5 -->|No| AX
+  A5 -->|Yes| A6[Eligible auto Policy]:::pass
+ end
+ subgraph B[QUOTATION AND SI]
+  direction TB
+  B1{Quotation event}:::decision
+  B1 -->|Attach eligible| B2[Policy Add at checkpoint]:::warning
+  B1 -->|Remove eligible| B3[Policy Remove; keep stable Policy identity]:::warning
+  B1 -->|Valid SI to valid SI| B4[Content revision; Policy remains eligible]:::warning
+  B1 -->|Valid to expired| B3
+  B1 -->|Expired to valid| B2
+  B1 -->|Expired to expired or remove expired| B5[No Effective Change]:::pass
+  B1 -->|Detach then reattach same Quotation ID| B6{Checkpoint occurred after Detach?}:::decision
+  B6 -->|No| B7[Compare final Snapshot only; same ID and content means no warning]:::pass
+  B6 -->|Yes| B8[Existing warning remains until Concurrent Confirm]:::warning
+ end
+ subgraph C[P AND LP SEARCH]
+  direction TB
+  C1[P or LP identity or role changes]:::action --> C2{P equals LP?}:::decision
+  C2 -->|Yes| C3[Matched replacement updates both roles]:::action
+  C2 -->|No| C4[Replace selected role only; reject duplicate person]:::action
+  C3 --> C5[Save stable Party IDs and source revision]:::warning
+  C4 --> C5
+  C5 --> C6[No immediate warning; next checkpoint re-searches]:::checkpoint
+ end
+ subgraph D[SELECTION MEMORY]
+  direction TB
+  D1[Policy becomes temporarily ineligible]:::action --> D2[Hide card but retain selection by stable Policy ID]:::pass
+  D2 --> D3{Same stable Policy eligible again?}:::decision
+  D3 -->|Yes| D4[Restore previous selection]:::pass
+  D3 -->|No, App deleted and recreated| D5[New App, Policy and Quotation identities]:::action
+  D5 --> D6[Do not inherit selection or configuration]:::warning
+ end
+ A6 --> B1
+ AX --> B1
+ B2 --> D1
+ B3 --> D1
+ C6 --> A1
+ click A6 call inspectBehavior('BEH-POL-001')
+ click AX call inspectBehavior('BEH-POL-002')
+ click B3 call inspectBehavior('BEH-QUO-002')
+ click B5 call inspectBehavior('BEH-POL-004')
+ click B6 call inspectBehavior('BEH-QUO-003')
+ click B8 call inspectBehavior('BEH-QUO-003')
+ click C1 call inspectBehavior('BEH-ID-001')
+ click D2 call inspectBehavior('BEH-SEL-001')`,['BEH-POL-001','BEH-POL-002','BEH-POL-004','BEH-QUO-001','BEH-QUO-002','BEH-QUO-003','BEH-SI-001','BEH-SI-004','BEH-ID-001','BEH-ID-002','BEH-SEL-001','BEH-SEL-002']),
+vf('F20','Declaration, Reasons & Manual Policy','聲明、原因及Manual Policy','Combines Options A/B/C, AC11, AC7.2 and complete/incomplete Manual Policy behavior.',`flowchart TB
+ subgraph A[DECLARATION OPTION]
+  direction TB
+  A1[Open editable Concurrent declaration]:::action --> A2{Select Option A, B or C}:::decision
+  A2 -->|A| A3[Current Application alone]:::action
+  A3 --> A4[Include eligible Current Policy only]:::action
+  A2 -->|B| A5[Selected auto Policies plus Complete Manual Policies]:::action
+  A5 --> A6[First B selects all then-visible auto Policies once]:::action
+  A6 --> A7[Later new auto Policies remain unselected; Current Policy optional]:::warning
+  A2 -->|C| A8[Retain answers; suspend mandatory concurrent questions]:::warning
+  A8 --> A9[Deferred tick; Start Signing blocked until A or B]:::block
+ end
+ subgraph B[REASONS]
+  direction TB
+  B1[Determine other known Policies and selection extent]:::action --> B2{Reason applicable?}:::decision
+  B2 -->|AC11| B3[Require exactly one AC11 radio answer]:::warning
+  B2 -->|AC7.2| B4[Require exactly one de-selection reason]:::warning
+  B3 --> B5{Other selected with text complete?}:::decision
+  B4 --> B5
+  B5 -->|No| B6[Validation warning]:::block
+  B5 -->|Yes| B7[Reason validation passes]:::pass
+ end
+ subgraph C[MANUAL POLICY]
+  direction TB
+  C1[Add Policy shown only in unlocked Option B Edit]:::action --> C2[Create auto-saved HKD Manual row]:::action
+  C2 --> C3{Regular or Single?}:::decision
+  C3 -->|Regular| C4[Require Amount and PT greater than 0]:::action
+  C3 -->|Single| C5[Require Amount greater than 0; hide PT; internal PT equals 1]:::action
+  C4 --> C6{Complete?}:::decision
+  C5 --> C6
+  C6 -->|No| C7[Saved Incomplete; exclude from Situation, Total, calculation and PDF]:::block
+  C7 --> C8[Validation warning remains under Option B]:::warning
+  C6 -->|Yes| C9[Auto-include under Option B; no checkbox]:::pass
+  C9 --> C10[Affect Situation, Case, Group PT and Aggregate only]:::action
+ end
+ A4 --> B1
+ A7 --> B1
+ A7 --> C1
+ B7 --> D1{Included List non-empty and all validation passes?}:::decision
+ C8 --> D1
+ C10 --> D1
+ D1 -->|No| D2[Concurrent warning and Start Signing blocked]:::block
+ D1 -->|Yes| D3[Back or OK saves local Snapshot; no Change warning for same save]:::pass
+ click A3 call inspectBehavior('BEH-DEC-001')
+ click A5 call inspectBehavior('BEH-DEC-002')
+ click A8 call inspectBehavior('BEH-DEC-003')
+ click B3 call inspectBehavior('BEH-REA-001')
+ click B4 call inspectBehavior('BEH-REA-002')
+ click C9 call inspectBehavior('BEH-MAN-001')
+ click C7 call inspectBehavior('BEH-MAN-002')`,['BEH-DEC-001','BEH-DEC-002','BEH-DEC-003','BEH-REA-001','BEH-REA-002','BEH-MAN-001','BEH-MAN-002','BEH-MAN-003']),
+vf('F30','Affordability, Maximum & Stored FX','負擔能力、Maximum及Stored FX','Combines policy sets, Case/PT, Candidate Maximum, Aggregate comparison and five-currency FX handling.',`flowchart TB
+ subgraph A[POLICY SETS]
+  direction TB
+  A1[Checkpoint Snapshot]:::checkpoint --> A2[Affordability Basis]:::action
+  A1 --> A3[Effective Included List]:::action
+  A2 --> A4[All eligible auto Policies regardless of selection]:::action
+  A2 --> A5[Complete Manual under B affects Case and Group PT only]:::action
+  A3 --> A6[Option A: eligible Current Policy]:::action
+  A3 --> A7[Option B: selected auto Policies plus Complete Manual]:::action
+ end
+ subgraph B[CASE, PT AND MAXIMUM]
+  direction TB
+  B1[Determine Case A, B or C]:::action --> B2[Applicable PT: Single 1; Regular Pay Term; Medical D3]:::action
+  B2 --> B3[Calculate Candidate Maximum for each eligible auto Policy]:::action
+  B3 --> B4[Apply D5 or D6 cap: minimum of selected and 30 percent]:::action
+  B4 --> B5[Applicable Maximum is minimum Candidate; auto Policy is Limiting Policy]:::pass
+ end
+ subgraph C[STORED FX]
+  direction TB
+  C1[Stored AUD, CAD, GBP, RMB or USD changes]:::action --> C2[Keep Pending until checkpoint]:::warning
+  C2 --> C3[Retrieve all five and compare Stored vs Applied to 6 decimals]:::checkpoint
+  C3 --> C4{Changed currency used by an Included Policy?}:::decision
+  C4 -->|No| C5[Keep Pending; no warning, recalculation or latch]:::pass
+  C4 -->|Yes, unlocked| C6[Apply rate and recalculate HKD equivalent]:::warning
+  C4 -->|Yes, Outstanding PDF| C7[Keep Frozen rate and set Group Latch]:::block
+ end
+ subgraph D[AGGREGATE GATE]
+  direction TB
+  D1[Aggregate Monthly and Single premiums using Applied FX]:::action --> D2{Aggregate strictly below Applicable Maximum?}:::decision
+  D2 -->|Yes| D3[Affordability passes; zero Total allowed]:::pass
+  D2 -->|No or equal| D4[Over-Max block]:::block
+ end
+ A4 --> B1
+ A5 --> B1
+ A6 --> D1
+ A7 --> D1
+ B5 --> D2
+ C5 --> D1
+ C6 --> D1
+ click A2 call inspectBehavior('BEH-BAS-001')
+ click A3 call inspectBehavior('BEH-BAS-002')
+ click B2 call inspectBehavior('BEH-PT-001')
+ click B4 call inspectBehavior('BEH-PT-002')
+ click B5 call inspectBehavior('BEH-MAX-001')
+ click C4 call inspectBehavior('BEH-FX-001')
+ click C5 call inspectBehavior('BEH-FX-002')
+ click C7 call inspectBehavior('BEH-FX-003')
+ click D2 call inspectBehavior('BEH-MAX-002')`,['BEH-BAS-001','BEH-BAS-002','BEH-PT-001','BEH-PT-002','BEH-MAX-001','BEH-MAX-002','BEH-FX-001','BEH-FX-002','BEH-FX-003']),
+vf('F40','Preview, Signing, PDF & Application Resolution','Preview、Signing、PDF及Application處理','Combines Start Signing gates, immutable PDF ownership, signing, Submit, Void and Delete.',`flowchart TB
+ subgraph A[PREVIEW AND LATEST GATES]
+  direction TB
+  A1[Open Preview and Sign]:::action --> A2[Navigation only: no retrieve, recalculate or PDF]:::pass
+  A2 --> A3[Press Start Signing]:::checkpoint
+  A3 --> A4{Current App already has unsubmitted PDF?}:::decision
+  A4 -->|Yes| A5[Reopen the same PDF and signing state]:::pass
+  A4 -->|No| A6[Run Checkpoint 3 once]:::checkpoint
+  A6 --> A7{All latest gates pass?}:::decision
+  A7 -->|No| A8[Block with matching message and next action]:::block
+ end
+ subgraph B[GENERATE AND SIGN]
+  direction TB
+  B1[Generate one PDF owned by Current Application]:::pass --> B2[Freeze declaration, reasons, rows, Total, PT and five Applied FX rates]:::action
+  B2 --> B3[Show one Current-App signing card]:::action
+  B3 --> B4[Included Policies are summary/PDF rows, not separate cards]:::pass
+  B4 --> B5{Signing action}:::decision
+  B5 -->|Continue Fill In| B6[Return to form; no checkpoint]:::action
+  B5 -->|Finish Signing| B7[Signing Complete; do not auto-submit]:::pass
+  B7 --> B8[Hide Start and Continue Signing buttons]:::pass
+ end
+ subgraph C[RESOLUTION]
+  direction TB
+  C1{Submit, Void or Delete?}:::decision
+  C1 -->|Submit after Signing Complete| C2[Submit Current App only]:::pass
+  C2 --> C3[Permanent terminal overlay; no edit, Void or Delete]:::block
+  C2 --> C4[Submitted Policy leaves active search at next checkpoint]:::warning
+  C1 -->|Void before Submit| C5[Clear only owner PDF and signing state]:::warning
+  C1 -->|Delete whole unsubmitted owner App| C6[Cascade App, Policy, PDF and signing state]:::warning
+  C5 --> C7[Re-evaluate last Outstanding PDF and pending change]:::checkpoint
+  C6 --> C7
+  C2 --> C7
+ end
+ A5 --> B3
+ A7 -->|Yes| B1
+ B6 --> A1
+ B8 --> C1
+ click A1 call inspectBehavior('BEH-PRE-001')
+ click A3 call inspectBehavior('BEH-SIGN-001')
+ click A5 call inspectBehavior('BEH-PDF-001')
+ click B1 call inspectBehavior('BEH-PDF-002')
+ click B7 call inspectBehavior('BEH-PDF-003')
+ click C2 call inspectBehavior('BEH-SUB-001')
+ click C5 call inspectBehavior('BEH-VOID-001')
+ click C6 call inspectBehavior('BEH-DEL-001')`,['BEH-PRE-001','BEH-SIGN-001','BEH-PDF-001','BEH-PDF-002','BEH-PDF-003','BEH-SUB-001','BEH-VOID-001','BEH-DEL-001']),
+f('S01','Combined Application, Concurrent & PDF State Model','Application、Concurrent及PDF綜合狀態模型','Three coordinated state tracks showing which transitions are independent and which establish or release the shared lock.',`stateDiagram-v2
+ direction TB
+ state Application {
+  direction TB
+  state "Draft" as Draft
+  state "Active" as Active
+  state "Deleted" as Deleted
+  state "Submitted" as Submitted
+  [*] --> Draft
+  Draft --> Active: Quotation complete
+  Active --> Draft: Remove Quotation
+  Active --> Deleted: Delete unsubmitted App
+  Active --> Submitted: Signing Complete and Submit
+  Submitted --> Submitted: Reject edit, Void or Delete
+ }
+ state Concurrent {
+  direction TB
+  state "Incomplete" as Incomplete
+  state "Complete" as Complete
+  state "Change warning" as ChangeWarning
+  state "Validation warning" as ValidationWarning
+  state "Frozen complete" as FrozenTick
+  state "Group latch warning" as GroupLatchWarning
+  state "Deferred complete" as DeferredTick
+  [*] --> Incomplete
+  Incomplete --> Complete: Validation passes
+  Complete --> ChangeWarning: Checkpoint finds relevant change
+  ChangeWarning --> Complete: Back or OK acknowledges
+  ChangeWarning --> ValidationWarning: Change cleared but validation fails
+  Complete --> FrozenTick: Outstanding PDF and no change
+  FrozenTick --> GroupLatchWarning: Relevant change at checkpoint
+  GroupLatchWarning --> ChangeWarning: Last PDF clears and pending change remains
+  Incomplete --> DeferredTick: Option C
+ }
+ state PDF {
+  direction TB
+  state "No PDF" as NoPDF
+  state "PDF generated" as Generated
+  state "Signing" as Signing
+  state "Signing complete" as SigningComplete
+  state "PDF submitted" as PDFSubmitted
+  [*] --> NoPDF
+  NoPDF --> Generated: Start Signing gates pass
+  Generated --> Signing: Open signing
+  Signing --> SigningComplete: Finish Signing
+  Generated --> NoPDF: Void
+  Signing --> NoPDF: Void
+  SigningComplete --> NoPDF: Void before Submit
+  SigningComplete --> PDFSubmitted: Submit
+  Generated --> Generated: Reopen same PDF
+  PDFSubmitted --> PDFSubmitted: Terminal
+ }`,['BEH-ACK-001','BEH-LOCK-001','BEH-DEC-003','BEH-PDF-001','BEH-PDF-002','BEH-SIGN-002','BEH-SUB-001'])
+];
+const oldToNew={F00:'F00',F00X:'F00',F01:'F01',F02:'F01',F03:'F01',F04:'F01',F05:'F02',F10:'F10',F11:'F10',F12:'F10',F13:'F10',F20:'F20',F21:'F20',F22:'F20',F30:'F30',F31:'F30',F32:'F30',F33:'F30',F40:'F40',F41:'F40',F42:'F40',F43:'F40',S01:'S01',S02:'S01',S03:'S01'};
+const byId=Object.fromEntries(flows.map(x=>[x.id,x]));
+const behaviors=[
+['BEH-CHK-001','Enter / Re-enter App checkpoint','進入／重新進入App checkpoint','Enter or re-enter an Application','Application exists','Retrieve Policy/content sources and all five Stored FX rates once; preserve current tab on Re-enter','Build latest checkpoint Snapshot','Recalculate relevant official results','Show warning only when a relevant difference is found','May set Group Latch if an Outstanding PDF exists','Review Concurrent when warned','Ordinary tab navigation is not this checkpoint','CS-INV-005 · CS-REF-001 · CS-FX-002','F01'],
+['BEH-CHK-002','Concurrent Entry checkpoint','進入Concurrent checkpoint','Enter or re-click Concurrent','Application may have zero eligible Policies','Retrieve and compare latest sources once','Load latest or keep Frozen Snapshot according to PDF state','Recalculate only when unlocked and relevant','Empty list is allowed; no blocking popup','Outstanding change uses background compare and Latch','Review or acknowledge latest Snapshot','Opening Edit alone is not a checkpoint','CS-ENTRY-001 · CS-REF-003','F01'],
+['BEH-CHK-003','Start Signing checkpoint','Start Signing checkpoint','Press Start Signing on Preview page','No duplicate current-App PDF','Retrieve, compare and recalculate once, then run all gates','Freeze only after all gates pass','Latest Total, PT, Case and Maximum','Block with reason or generate PDF','Relevant Outstanding change sets/keeps Latch','Follow the displayed next action','Preview page navigation alone is not a checkpoint','CS-PDF-002 · CS-FX-002','F40'],
+['BEH-ALR-001','Relevant change classification','相關Change分類','Checkpoint compares signatures','Source change may be pending','Classify Policy List, Content/Affordability/Validation or in-use FX','Apply latest or keep Frozen','Recalculate only relevant unlocked results','Group warning after checkpoint only','Outstanding relevant change sets Latch','Review latest Snapshot','Blank App, display order, expired removal and unused FX are no-op','CS-REF-002','F03'],
+['BEH-ACK-001','Back or OK saves Concurrent Snapshot','Back／OK保存Concurrent Snapshot','Back or OK in Edit Mode','Group unlocked','Save current shared Snapshot and return Preview','Acknowledge loaded Change Snapshot','Refresh calculation from saved local content without external retrieve','Clear Change warning for that Snapshot','No external retrieve or new Latch','Correct remaining validation errors if any','A newer source Snapshot warns at the next checkpoint','CS-INV-006 · CS-REF-004','F04'],
+['BEH-ACK-002','Second Concurrent Entry acknowledges','第二次Concurrent Entry確認','Re-enter Concurrent without Edit','Latest data loaded on first Entry and validation passes','Explicitly acknowledge current Snapshot','Update acknowledged revision','No additional source change means stable result','Clear Change warning','Unavailable during hard lock','None','Validation fail keeps warning','CS-REF-003 · CS-REF-004','F04'],
+['BEH-LOCK-001','Outstanding PDF plus relevant change','Outstanding PDF加相關Change','Checkpoint during Outstanding-PDF cycle','At least one generated, signing or signed-not-submitted PDF','Background compare; keep Frozen screen; set irreversible cycle Latch','Do not apply latest membership, fields, rates or results','Keep Frozen Total and Maximum','All unsubmitted Apps show warning; Edit unavailable','Block every new PDF','Resolve every Outstanding PDF','Restoring old data does not clear Latch','CS-REF-006 · CS-INV-009','F05'],
+['BEH-LOCK-002','Outstanding PDF with no change','Outstanding PDF但沒有Change','Checkpoint or navigation during frozen cycle','No new committed/material difference','Reuse Frozen shared Snapshot','Keep Frozen Snapshot','No new calculation','Read-only tick','Original frozen member may generate own PDF','Process PDFs independently','Newly added App cannot join Frozen Group','CS-REF-005 · CS-PDF-004','F05'],
+['BEH-LOCK-003','Last Outstanding PDF clears','最後一份Outstanding PDF解除','Submit, Void or delete unsubmitted owner App','Last outstanding document resolves','Release hard lock','Retain pending difference only when one exists','Latest data loads on next checkpoint when pending','Warning retained only for pending relevant difference','Existing immutable PDFs already resolved','Re-enter and review if warned','Void alone is not a Policy List Change','CS-REF-006 · CS-VOID-001','F05'],
+['BEH-POL-001','Eligible auto-searched Policy','有效auto-searched Policy','Checkpoint builds effective list','Active unsubmitted App; attached active complete Quotation; SI within 30 days; complete data; Party match','Include in list and auto-Policy Maximum Basis','Enter effective source signature','May affect Case, PT, Candidate and Maximum','Available for selection','May be frozen into PDF','Select according to Option B','Current Policy ordering is TBC','CS-UI-005','F10'],
+['BEH-POL-002','Zero eligible Policies','零張有效Policy','Concurrent Entry','No source Policy qualifies','Open Concurrent and show empty list','Save empty effective result','Display numeric zero totals from latest Snapshot','No blocking popup solely for count','Start Signing later follows declaration/list gates','Complete or attach eligible data','Option C still uses deferred tick','CS-ENTRY-001 · CS-UI-006','F10'],
+['BEH-POL-004','Remove already-expired Quotation','移除原本已Expired Quotation','User removes Quotation','Policy already excluded because SI over 30 days','No Effective Policy List change','Stable Policy identity retained','No recalculation','No Change warning','No Group Latch even with Outstanding PDF','None','Selection memory remains','CS-REF-002B','F11'],
+['BEH-QUO-001','Reattach with a new Quotation ID or revision','以新Quotation ID或Revision重新Attach','Attach after prior Quotation removal','Same stable Policy identity but a different Quotation ID or Material revision','Create the new Quotation revision and restore selection by stable Policy identity','New source revision','Recalculate at checkpoint','Change warning at checkpoint','Outstanding checkpoint sets Latch','Review latest data','The same ID and unchanged content follows BEH-QUO-003 timing rules','CS-DECL-005','F11'],
+['BEH-QUO-002','Remove eligible Quotation','移除有效Quotation','Remove attached eligible Quotation','Owner has no PDF and is not Submitted','Policy leaves effective list; Application and stable Policy remain','Preserve selection memory','Recalculate at next checkpoint','Policy List Change warning','Outstanding checkpoint sets Latch','Complete or reattach Quotation','Remove disabled when owner PDF exists','CS-DECL-005','F11'],
+['BEH-QUO-003','Detach and reattach the same Quotation ID','Detach後重新Attach同一Quotation ID','Remove an eligible Quotation and later reattach the same Quotation ID','Same Quotation ID and Material Content; timing is evaluated against the next checkpoint','Before any checkpoint, compare only the final Snapshot. If a checkpoint already detected the removal, keep the Change warning until Concurrent Confirm','No intermediate two-Policy Snapshot is created before a checkpoint; after a removal checkpoint, the latest comparison Snapshot contains two Policies','Recalculate only when a checkpoint detects an effective difference','Before checkpoint: final three vs previous three is No Effective Change. After warning: reattaching never clears it automatically','Outstanding-PDF Group Latch is never cleared by restoring the Quotation','Review Concurrent and click Confirm when a warning has already appeared','Different Quotation ID or Material Content follows the applicable Policy List or Content Change rule','CS-REF-002B · CS-REF-004','F11'],
+['BEH-SI-001','SI within 30 days changes to another valid date','SI在30日內改成另一有效日期','Edit SI generation date','Before and after are both within 30 days','Keep Policy in list but commit Quotation data revision','Latest source revision changes','Recalculate at next checkpoint','Content Change warning','Outstanding checkpoint sets Latch','Review latest Quotation','Not a pure list no-op','CS-REF-002B','F11'],
+['BEH-SI-004','SI remains expired or expired Quotation removed','SI仍Expired或移除Expired Quotation','Edit expired SI to another expired date or remove it','Policy already excluded','No Effective Change','No acknowledged signature impact','No recalculation','No warning','No Latch','None','Crossing back within 30 days is an Add','CS-REF-002B','F11'],
+['BEH-ID-001','P or LP identity/role change','P／LP身份或角色改變','Change relationship, person or matched target role','Stable Party IDs differ','Increment Source Revision; do not warn immediately','Next checkpoint rebuilds search scope','Recalculate after checkpoint','Group warning even if final list is same','Outstanding checkpoint sets Latch','Review the new search result','Display-name-only change with same ID is no-op','CS-REF-002A','F12'],
+['BEH-ID-002','Auto Client Search target role','Auto Client Search目標角色','Apply matched customer as Proposer or Life Proposed','Matched customer selected','P not equal LP: replace target only and reject duplicate; P equals LP: replace both','Save stable Party IDs','Re-search only at checkpoint','No immediate warning','May affect Group at checkpoint','Enter checkpoint','Default target is Life Proposed','CS-UI-009','F12'],
+['BEH-SEL-001','Selection memory for temporary ineligibility','暫時不合資格的Selection Memory','Policy leaves then re-enters eligibility','Stable Policy identity unchanged','Remove/re-add card while retaining explicit selection','Selection bound to Policy ID','Restored selection affects Included List at checkpoint','Quotation revision still warns','Frozen Snapshot unaffected until allowed','Review revision','Do not auto-select or clear','CS-DECL-005','F13'],
+['BEH-SEL-002','Delete App then recreate','刪除App後重建','Delete whole Application then create a new one','Old App unsubmitted','Create new App, Policy and Quotation identities','Clear old selection memory','New Policy evaluated normally','Add warning at checkpoint when eligible','May latch during Outstanding PDF','Select explicitly','No inherited configuration','CS-APP-002','F13'],
+['BEH-DEC-001','Option A','選項A','Select process Current Application alone','Current declaration editable','Include eligible Current Policy only; hide Add Policy','Retain shared answers','Affordability Basis keeps eligible auto Policies; Manual inactive','Require AC7.2 when another known Policy exists','Cannot add Manual','Complete applicable reason','Invalid Current Quotation blocks signing via ordinary gates','CS-DECL-001','F20'],
+['BEH-DEC-002','Option B','選項B','Select last application of concurrent submission','Current declaration editable','Use selected auto Policies plus every Complete Manual; Current Policy optional','First B initializes selection once','Build Aggregate and PDF list','Require non-empty list and applicable reasons','Add Policy shown only in unlocked Edit','Complete validation','Later new Policy remains unselected','CS-DECL-002 · CS-DECL-003','F20'],
+['BEH-DEC-003','Option C Supplement later','選項C稍後補充','Select Supplement later','Any saved answers/selections may exist','Suspend mandatory concurrent questions and show deferred tick','Retain unacknowledged changes separately','No signing calculation approval','Concurrent tab tick but signing eligibility blocked','No PDF generated','Change to A or B','Does not acknowledge existing Change state','CS-DECL-006 · CS-INV-008','F20'],
+['BEH-REA-001','AC11 reason','AC11原因','Situation/selection makes group reason applicable','Option B and applicable multiple scenario','Require exactly one radio answer; Other requires text','Save shared answer','No direct arithmetic effect','Validation warning when incomplete','PDF blocked','Complete answer','Hidden answers excluded','CS-DECL-004','F21'],
+['BEH-REA-002','AC7.2 de-selection reason','AC7.2取消選取原因','Another known Policy under A or partial selection under B','Reason applicable','Require exactly one radio answer; Other requires text','Save shared answer','No direct arithmetic effect','Validation warning when incomplete','PDF blocked','Complete answer','Manual Complete counts as another known Policy for Situation','CS-DECL-004','F21'],
+['BEH-MAN-001','Complete Manual Policy','完整Manual Policy','Required fields completed in Option B','Regular: Amount and PT positive; Single: Amount positive','Auto-include without checkbox; fixed HKD','Back/OK saves local Concurrent Snapshot','Affect Situation, Case/Group PT and Aggregate only','No Change warning for the same save','Included in Option B PDF; no Candidate or Limiting Policy','None','Inactive under A/C','CS-MAN-001 · CS-MAN-003','F22'],
+['BEH-MAN-002','Incomplete Manual Policy','未完整Manual Policy','Manual row missing required field','Option B','Keep Saved Incomplete; exclude from effective signature','Back/OK saves input but not effective Policy','No Situation, count, Total, Max or PDF effect','Validation warning remains','Start Signing blocked','Complete or delete row','Inactive and non-blocking under A/C','CS-MAN-002','F22'],
+['BEH-MAN-003','Single Manual PT','Single Manual PT','Select Single Payment Mode','Amount positive','Hide PT input; normalize internal PT to 1','Save PT=1 in calculation/PDF Snapshot','May affect Case and Aggregate under B','Complete when Amount valid','Included automatically under B','None','Frequency remains internal monthly representation only','CS-MAN-001','F22'],
+['BEH-BAS-001','Affordability Basis','負擔能力計算基礎','Build checkpoint calculation inputs','Eligible source data','Include every eligible auto Policy regardless of selection; under B include Complete Manual for Case/PT only','Checkpoint Snapshot','Auto Policies create Candidate Maximums','Displayed in Max Check','Frozen in generated PDF calculation','Inspect limiting Policy','Manual never creates Candidate','CS-CALC-002 · CS-CALC-004','F30'],
+['BEH-BAS-002','Effective Included List','有效Included List','Apply declaration and selection','Option A or B','A: Current Policy; B: selected auto Policies plus Complete Manual','Saved Concurrent Snapshot','Drives Aggregate Premium','B must be non-empty','Rows frozen in Current App PDF','Select or complete at least one Policy','Current Policy optional under B','CS-INV-002 · CS-INV-003','F30'],
+['BEH-PT-001','Applicable PT','適用PT','Checkpoint calculation','Policy types known','Single=1; Normal Regular=Pay Term; Medical Regular=D3','Save PT inputs/results','Drives Candidate Maximum and Group Case','Display traceable PT','Freeze generation-time PT','Correct source fields','Medical cannot be Single','CS-CALC-003 · CS-CALC-007','F31'],
+['BEH-PT-002','D5/D6 30% cap','D5／D6 30%上限','Cap condition applies','Selected percentage available','Applied percentage = MIN(selected,30%)','Save applied rate','50 becomes 30; 20 remains 20','Show selected and capped values','Freeze calculated result','None','Never raise a value below 30','CS-CALC-005','F32'],
+['BEH-MAX-001','Applicable Maximum','適用Maximum','Calculate all eligible auto-Policy Candidates','Case, PT, FNA, customer, D5/D6 available','Choose minimum Candidate and Limiting auto Policy','Save checkpoint calculation','Manual has no Candidate','Display numeric Maximum','Start Signing compares Aggregate strictly below it','Correct inputs if Over Max','Equality fails','CS-CALC-004','F32'],
+['BEH-MAX-002','Aggregate Premium comparison','Aggregate Premium比較','Checkpoint or saved Concurrent calculation','Effective Included List ready','Convert premiums using Applied FX and aggregate Monthly/Single','Save numeric Total','Compare Aggregate < Applicable Maximum','Always show 0.00 rather than unknown','Block on equal or over; zero allowed','Reduce or correct included premium','FX does not directly rewrite HKD-derived Maximum inputs','CS-UI-006 · CS-CALC-004','F32'],
+['BEH-FX-001','Stored FX checkpoint retrieval','Stored FX checkpoint讀取','One of three checkpoints','Five Stored/Applied rates exist','Retrieve AUD,CAD,GBP,RMB,USD once and compare to 6 decimals','Apply only relevant unlocked differences','May change HKD equivalent and Aggregate','Warning only for in-use changed currency','Freeze or latch according to PDF state','Review result','HKD fixed base 1 not shown','CS-FX-001 · CS-FX-002','F33'],
+['BEH-FX-002','Unused currency changes','未使用貨幣改變','Stored Rate differs','Policy count for currency is zero','Keep row Pending; do not apply','Applied Rate unchanged','No recalculation','No warning or revision','No Latch','None','Becomes relevant if a Policy later uses it','CS-FX-003','F33'],
+['BEH-FX-003','Used FX changes with Outstanding PDF','使用中FX於Outstanding PDF期間改變','Checkpoint finds Stored/Applied difference','Currency Policy count >0 and Outstanding PDF exists','Background compare; keep Frozen rate','Do not apply stored rate','Keep Frozen Total and Maximum','Group-wide warning','Set Group Latch and block every new PDF','Clear all Outstanding PDFs then review','Unused FX never latches','CS-FX-005','F33'],
+['BEH-PRE-001','Preview navigation','Preview導航','Open Preview and Sign or Continue Fill In','Applicable navigation available','Navigate only','Preserve all saved data','No refresh or recalculation','No new warning','No PDF generation','Press Start Signing for gates','Existing PDF remains immutable','CS-PDF-001 · CS-PDF-006','F40'],
+['BEH-SIGN-001','Start Signing gates','Start Signing Gates','Press Start Signing','No duplicate current-App PDF','Refresh/recalculate; check lock/warning, Option C, sections, validation, list and Max','Create PDF only after all pass','Latest official calculation','Matching block message on failure','PDF Not Generated on fail','Follow next action','No mandatory Current Policy inclusion gate under B','CS-PDF-002','F40'],
+['BEH-PDF-001','Reopen existing Current-App PDF','重新開啟Current App現有PDF','Re-enter Preview or press Start Signing','Current App has unsubmitted PDF','Open same PDF/signing state','Use immutable existing Snapshot','No new calculation','One signing item only','Never create second PDF','Continue or complete existing signing','Other Apps processed separately','CS-SIGN-002','F41'],
+['BEH-PDF-002','Generate immutable PDF','產生不可變PDF','All Start Signing gates pass','Current App has no unsubmitted PDF','Create owner PDF and one signing card','Freeze declaration, reasons, rows, Total, PT, five FX rates and time','Freeze generation calculation','Signing ready','First Group PDF establishes Frozen baseline','Sign, Void or continue form','Later changes cannot rewrite it','CS-PDF-003 · CS-PDF-004','F42'],
+['BEH-PDF-003','Signing Complete card','Signing Complete卡','Document signing action finishes','PDF exists','Set App Signing Complete; return Submit page','Keep PDF Snapshot','No recalculation','Hide Start/Continue Signing button entirely','PDF still Outstanding until Submit/Void/Delete','Submit or Void','Do not show disabled Signing complete button','CS-SIGN-001','F42'],
+['BEH-SUB-001','Submit Application','提交Application','Submit after Signing Complete','Current App ready','Submit Current App only and show permanent overlay','Keep terminal Application state','No rewrite of other Apps','No further edit/Void/Delete','Clears this Outstanding PDF; submitted Policy leaves active search for others','Process other Apps separately','Submission cannot be voided','CS-SUB-001 · CS-INV-007','F43'],
+['BEH-VOID-001','Void PDF','作廢PDF','Void before Submit','Target App has unsubmitted PDF','Clear only owner PDF/signing and return Concurrent','Remove target PDF Snapshot','No source Policy List change by Void itself','No warning unless pending change exists','Unlock only if last Outstanding clears','Review only when pending','Other Apps unaffected','CS-VOID-001','F43'],
+['BEH-DEL-001','Delete unsubmitted owner Application','刪除未提交Owner Application','Delete whole App','Application not Submitted','Cascade App, Policy, PDF and signing state','Remove App-owned states','Effective Policy removal appears at checkpoint','May create Policy List warning','May clear last Outstanding PDF','Continue in remaining App','Remove Quotation alone disabled when owner PDF exists','CS-APP-002','F43']
+].map(r=>({id:r[0],title:{en:r[1],zh:r[2]},trigger:r[3],pre:r[4],action:r[5],snapshot:r[6],calc:r[7],result:r[8],pdf:r[9],next:r[10],exception:r[11],rules:r[12],legacyFlow:r[13],flow:oldToNew[r[13]]||r[13]}));
+const behaviorById=Object.fromEntries(behaviors.map(x=>[x.id,x]));
+const tbcs=[
+ {id:'TBC-POL-001',flow:'F10',title:{en:'Ordering of Current Policy',zh:'Current Policy排序'},question:{en:'Must the Current Application Policy always appear first when the effective list is rebuilt?',zh:'重建Effective Policy List時，Current Application Policy是否必須永遠排在第一位？'},known:{en:'The Current Policy must be identifiable. Its fixed display order has not been formally confirmed.',zh:'系統必須能識別Current Policy，但固定顯示次序尚未正式確認。'},impact:{en:'UI ordering, comparison signature and screenshot-based tests.',zh:'影響UI排序、比較signature及截圖類測試。'},status:'Open'},
+ {id:'TBC-POL-002',flow:'F10',title:{en:'Quotation ID change classification',zh:'Quotation ID變更分類'},question:{en:'Is every Quotation ID change a material Content Change, even when all business values remain equal?',zh:'即使所有業務資料相同，Quotation ID改變是否仍一律屬於Material Content Change？'},known:{en:'A changed Quotation revision is reviewable; the exact identity-versus-content comparison rule needs confirmation.',zh:'Quotation revision改變需要review，但Identity與Content的確切比較規則仍待確認。'},impact:{en:'Warning classification, Snapshot signature and Group Latch.',zh:'影響警告分類、Snapshot signature及Group Latch。'},status:'Open'},
+ {id:'TBC-POL-004',flow:'F10',title:{en:'Remove and add-back identity boundary',zh:'Remove及Add-back的Identity界線'},question:{en:'Which identifiers must remain equal for an add-back to restore selection rather than create a new Policy?',zh:'Add-back時哪些Identifier必須相同，才可恢復selection而不是建立新Policy？'},known:{en:'A recreated Application receives new identities and must not inherit configuration. The exact stable-key composition requires confirmation.',zh:'重新建立的Application會取得新Identity且不可繼承設定；Stable Key的確切組成仍待確認。'},impact:{en:'Selection restoration, warning class and duplicate prevention.',zh:'影響Selection恢復、警告分類及防止重複。'},status:'Open'},
+ {id:'TBC-SIGN-001',flow:'F40',title:{en:'Start Signing block messages',zh:'Start Signing阻擋訊息'},question:{en:'What exact orange message and priority apply when more than one Start Signing gate fails?',zh:'當多個Start Signing Gate同時失敗時，應顯示哪一個橙色訊息及其優先次序？'},known:{en:'PDF generation must be blocked and the message must provide the matching next action.',zh:'必須阻止PDF產生，訊息亦必須提供相應下一步。'},impact:{en:'UI copy, error priority and SIT expected results.',zh:'影響UI wording、錯誤優先次序及SIT Expected Result。'},status:'Open'},
+ {id:'TBC-UI-001',flow:'F01',title:{en:'Reminder popup treatment',zh:'Reminder Popup處理'},question:{en:'Should any checkpoint result also display a popup, or is the tab warning plus inline next action sufficient?',zh:'Checkpoint結果是否還需要Popup，還是Tab警告加inline next action已足夠？'},known:{en:'The tab indicator and blocking result are defined; popup behavior is not.',zh:'Tab Indicator及Blocking Result已定義，但Popup行為未定義。'},impact:{en:'UI interaction, dismissal behavior and repeated-warning tests.',zh:'影響UI互動、關閉行為及重複警告測試。'},status:'Open'}
+];
+const flowSpecs={
+ F00:{purpose:{en:'Provides a vertical navigation-level view from Application entry to terminal submission. It shows where the seven detailed logic flows apply without duplicating their decision rules.',zh:'以直向導航方式展示由進入Application至完成Submit的端到端流程，並指出其餘七張詳細邏輯Flow的適用位置，不在Master重複所有Decision Rule。'},scope:{en:'Includes the three checkpoints, Concurrent review, Start Signing gate, immutable PDF and final resolution. Detailed eligibility, calculation and exception rules are intentionally owned by the linked flows.',zh:'包括三個Checkpoint、Concurrent Review、Start Signing Gate、Immutable PDF及最終處理；Eligibility、Calculation及Exception細節由相連Flow負責。'},when:[{en:'Use first when locating an end-to-end behavior or identifying the owning detailed flow.',zh:'用於先定位端到端行為及找出負責該邏輯的詳細Flow。'}],impacts:[{en:'No independent processing rule is owned by F00; it is a traceable navigation view.',zh:'F00本身不擁有獨立處理規則，只作可追蹤的導航View。'}]},
+ F01:{purpose:{en:'Defines when external or authoritative data is retrieved, how changes are classified, and how an unlocked Group reviews and acknowledges the latest Snapshot.',zh:'定義何時讀取外部或權威資料、如何分類Change，以及未鎖定Group如何Review並確認最新Snapshot。'},scope:{en:'Covers the three checkpoints, one-read-per-source rule, Policy/Content/FX comparison, warning timing, Back/OK acknowledgement and No Effective Change. Outstanding-PDF handling continues in F02.',zh:'涵蓋三個Checkpoint、每個Source只讀取一次、Policy／Content／FX比較、警告時間、Back／OK確認及No Effective Change；Outstanding PDF處理接續F02。'},when:[{en:'A source event is first kept Pending and does not immediately change the Concurrent indicator.',zh:'Source Event首先保持Pending，不會立即改變Concurrent Indicator。'},{en:'Formal retrieval and comparison occur only at Enter/Re-enter App, Enter/re-click Concurrent, or Start Signing.',zh:'正式讀取及比較只會在Enter／Re-enter App、進入／重新點擊Concurrent或Start Signing發生。'},{en:'Back and OK save the loaded local Concurrent Snapshot; neither action performs another external retrieval.',zh:'Back及OK保存已載入的本地Concurrent Snapshot；兩者均不會再次讀取外部資料。'}],impacts:[{en:'Unlocked relevant change: apply latest data, recalculate and show Group Change warning.',zh:'未鎖定而有Relevant Change：套用最新資料、重算及顯示Group Change警告。'},{en:'Acknowledgement clears only the Change warning for that Snapshot; an unresolved validation warning may remain.',zh:'確認只會清除該Snapshot的Change Warning；未解決的Validation Warning可以繼續保留。'},{en:'No Effective Change produces no warning, recalculation or Latch.',zh:'No Effective Change不會產生警告、重算或Latch。'}]},
+ F02:{purpose:{en:'Defines the shared frozen cycle after any Application owns an Outstanding PDF and the rules for detecting changes without rewriting immutable work.',zh:'定義任何Application擁有Outstanding PDF後的Shared Frozen Cycle，以及在不改寫Immutable內容下偵測Change的規則。'},scope:{en:'Covers Frozen Snapshot, original Group membership, read-only display, background comparison, irreversible cycle Latch and unlock after the last Outstanding PDF is resolved.',zh:'涵蓋Frozen Snapshot、原Group Membership、Read-only顯示、Background Compare、該Cycle不可逆的Latch及最後一份Outstanding PDF處理後的Unlock。'},when:[{en:'Applies while at least one PDF is Generated, Signing or Signing Complete but not yet Submitted/Void/Deleted.',zh:'只要至少一份PDF處於Generated、Signing或Signing Complete但尚未Submit／Void／Delete便適用。'}],impacts:[{en:'No relevant change: keep Frozen tick; only an original Frozen Group Member may generate its own PDF from the same baseline.',zh:'沒有Relevant Change：保持Frozen Tick；只有原Frozen Group Member可由同一Baseline產生自己的PDF。'},{en:'Relevant change: background compare only, keep all Frozen values, set Group Change Latch, warn all unsubmitted Apps and block every new PDF.',zh:'有Relevant Change：只作Background Compare、保持全部Frozen Value、設定Group Change Latch、所有未提交App顯示警告並阻止所有新PDF。'},{en:'Resolving the last PDF releases the hard lock. A pending relevant difference remains warned until the next checkpoint loads and reviews it.',zh:'處理最後一份PDF後解除Hard Lock；如仍有Pending Relevant Difference，警告會保留至下一Checkpoint載入並Review。'}]},
+ F10:{purpose:{en:'Defines which auto-searched Policies exist in the Effective Policy List and how stable identities control comparison, search scope and selection restoration.',zh:'定義哪些Auto-searched Policy會出現在Effective Policy List，以及Stable Identity如何控制比較、Search Scope及Selection Restore。'},scope:{en:'Covers active Application eligibility, Quotation/SI lifecycle, P/LP identity and role changes, Auto Client Search, Policy identity, Quotation revision and selection memory.',zh:'涵蓋Active Application Eligibility、Quotation／SI Lifecycle、P／LP Identity及Role Change、Auto Client Search、Policy Identity、Quotation Revision及Selection Memory。'},when:[{en:'Eligibility and search scope are rebuilt at a checkpoint from authoritative Application, Quotation, SI and stable Party identifiers.',zh:'Eligibility及Search Scope會在Checkpoint根據權威Application、Quotation、SI及Stable Party Identifier重建。'}],impacts:[{en:'Eligible auto Policies enter the list and create Candidate Maximums; zero eligible Policies does not prevent Concurrent from opening.',zh:'Eligible Auto Policy會加入List及建立Candidate Maximum；零張Eligible Policy不會阻止Concurrent開啟。'},{en:'Temporary ineligibility retains selection by stable Policy ID; deleting and recreating the whole App creates new identities and clears inherited selection.',zh:'暫時不合資格會按Stable Policy ID保留Selection；刪除並重建整個App會建立新Identity及清除繼承Selection。'},{en:'Removing an already-expired Quotation is No Effective Change because the Policy was already excluded.',zh:'移除原本已Expired Quotation屬No Effective Change，因該Policy早已被排除。'}]},
+ F20:{purpose:{en:'Defines the shared Concurrent declaration, applicable reason groups and Manual Policy lifecycle used to form an approvable Included List.',zh:'定義Shared Concurrent Declaration、適用Reason Group及Manual Policy Lifecycle，以建立可確認的Included List。'},scope:{en:'Covers Options A/B/C, first-time B selection, Current Policy optionality, AC11, AC7.2, Manual Regular/Single fields, incomplete rows and Back/OK saving.',zh:'涵蓋Options A／B／C、首次B Selection、Current Policy Optional、AC11、AC7.2、Manual Regular／Single欄位、Incomplete Row及Back／OK保存。'},when:[{en:'The declaration is editable only while the Group is unlocked. Manual Policy controls are shown only in unlocked Option B Edit Mode.',zh:'Declaration只可在Group未鎖定時編輯；Manual Policy控制只在未鎖定的Option B Edit Mode顯示。'}],impacts:[{en:'Option A includes only the eligible Current Policy and keeps Manual data inactive and hidden.',zh:'Option A只包括Eligible Current Policy，Manual資料保留但Inactive及隱藏。'},{en:'Option B uses selected auto Policies plus every Complete Manual Policy; the Current Policy is optional but the Included List cannot be empty.',zh:'Option B使用已選Auto Policy加所有Complete Manual Policy；Current Policy可不選，但Included List不可為空。'},{en:'Option C retains data and shows a deferred tick but always blocks Start Signing until changed to A or B.',zh:'Option C保留資料及顯示Deferred Tick，但在改為A或B前一律阻止Start Signing。'},{en:'Incomplete Manual data is saved but excluded from Situation, Total, calculation and PDF; validation remains warned only under Option B.',zh:'Incomplete Manual資料會保存，但不計入Situation、Total、Calculation及PDF；Validation Warning只在Option B保留。'}]},
+ F30:{purpose:{en:'Defines the authoritative affordability calculation from Policy sets through Case/PT, Candidate Maximum, Stored FX and the final strict comparison.',zh:'定義由Policy Set、Case／PT、Candidate Maximum、Stored FX至最終Strict Comparison的權威Affordability計算。'},scope:{en:'Covers Affordability Basis versus Included List, Manual impact boundaries, PT rules, D5/D6 cap, Limiting Policy, Aggregate Premium and five Stored FX currencies.',zh:'涵蓋Affordability Basis與Included List、Manual影響界線、PT規則、D5／D6 Cap、Limiting Policy、Aggregate Premium及五種Stored FX。'},when:[{en:'Official results recalculate only at an unlocked checkpoint or when Back/OK saves local Concurrent content that directly affects calculation.',zh:'Official Result只會在未鎖定Checkpoint，或Back／OK保存直接影響計算的本地Concurrent內容時重算。'}],impacts:[{en:'All eligible auto Policies form the Maximum Basis regardless of selection; only Included Policies drive Aggregate and PDF rows.',zh:'所有Eligible Auto Policy不論是否選取均構成Maximum Basis；只有Included Policy影響Aggregate及PDF Row。'},{en:'Single PT is 1, normal Regular uses Pay Term, Medical Regular uses D3, and D5/D6 applied percentage is the lower of selected value and 30%.',zh:'Single PT為1、一般Regular使用Pay Term、Medical Regular使用D3；D5／D6 Applied Percentage取Selected Value與30%中較低者。'},{en:'Applicable Maximum is the minimum auto-Policy Candidate. Manual Policies never create a Candidate or become Limiting Policy.',zh:'Applicable Maximum為最小的Auto-policy Candidate；Manual Policy不會建立Candidate或成為Limiting Policy。'},{en:'Pass condition is Aggregate strictly below Applicable Maximum. Equality fails; a zero Total is allowed.',zh:'Pass條件為Aggregate嚴格低於Applicable Maximum；相等亦Fail，而Total為零可以通過。'},{en:'Unused FX remains Pending with no warning. Used FX is applied only when unlocked; during an Outstanding PDF cycle it remains Frozen and sets the Latch.',zh:'未使用FX保持Pending且不顯示警告；使用中FX只在未鎖定時套用，在Outstanding PDF Cycle則保持Frozen並設定Latch。'}]},
+ F40:{purpose:{en:'Defines the complete Current-Application document lifecycle from Preview navigation through latest gates, PDF generation, signing and terminal resolution.',zh:'定義Current Application由Preview導航、Latest Gate、PDF產生、Signing至Terminal Resolution的完整Document Lifecycle。'},scope:{en:'Covers Preview, Start Signing Checkpoint 3, duplicate-PDF prevention, immutable Snapshot content, signing card, Continue Fill In, Finish Signing, Submit, Void and Delete.',zh:'涵蓋Preview、Start Signing Checkpoint 3、防止Duplicate PDF、Immutable Snapshot內容、Signing Card、Continue Fill In、Finish Signing、Submit、Void及Delete。'},when:[{en:'Preview navigation alone performs no retrieval or generation. The complete latest gate sequence runs only when Start Signing is pressed for an App without an existing PDF.',zh:'單純Preview導航不會讀取資料或產生PDF；只有沒有現有PDF的App按Start Signing時才會執行完整Latest Gate。'}],impacts:[{en:'An existing unsubmitted Current-App PDF is reopened with the same signing state; no second PDF or signing card is created.',zh:'如Current App已有未提交PDF，系統重新開啟同一PDF及Signing State，不會建立第二份PDF或Signing Card。'},{en:'A new PDF freezes declaration, reasons, Included rows, Total, PT, calculation result and all five Applied FX rates at generation time.',zh:'新PDF會凍結產生當刻的Declaration、Reason、Included Row、Total、PT、Calculation Result及五種Applied FX Rate。'},{en:'Finish Signing sets Signing Complete but does not submit. Start/Continue Signing controls are then hidden.',zh:'Finish Signing只設定Signing Complete而不會自動Submit；之後Start／Continue Signing控制會完全隱藏。'},{en:'Submit is Application-level and terminal. Void clears only that App PDF. Deleting an unsubmitted owner App cascades its App, Policy, PDF and signing state.',zh:'Submit屬Application-level並為Terminal；Void只清除該App PDF；刪除未提交Owner App會Cascade其App、Policy、PDF及Signing State。'}]},
+ S01:{purpose:{en:'Shows the coordinated Application, Concurrent indicator and PDF/signing states without implying that they are a single state machine.',zh:'展示Application、Concurrent Indicator及PDF／Signing三組互相關聯的State，同時避免誤解為單一State Machine。'},scope:{en:'Covers Draft/Active/Submitted/Deleted, validation/change/frozen/latch/deferred indicators and NoPDF/Generated/Signing/SigningComplete/Submitted.',zh:'涵蓋Draft／Active／Submitted／Deleted、Validation／Change／Frozen／Latch／Deferred Indicator，以及NoPDF／Generated／Signing／SigningComplete／Submitted。'},when:[{en:'Use when a behavior depends on the combination of Application state, Concurrent state and PDF state rather than one field alone.',zh:'當行為取決於Application State、Concurrent State及PDF State的組合，而非單一欄位時使用。'}],impacts:[{en:'Application submission is terminal, while PDF Void before Submit returns only the PDF track to NoPDF.',zh:'Application Submit為Terminal；Submit前Void PDF只會令PDF Track返回NoPDF。'},{en:'A Frozen tick can become a Group Latch warning only when a checkpoint detects a relevant difference.',zh:'Frozen Tick只會在Checkpoint偵測到Relevant Difference時變成Group Latch Warning。'}]}
+};
+const confirmedRules={
+ F01:{warning:[
+  {id:'WARN-01',text:{en:'A relevant difference detected at a checkpoint raises the Change warning. Once raised, restoring the earlier value never clears it automatically.',zh:'Checkpoint偵測到Relevant Difference後會產生Change Warning；Warning一旦出現，即使資料其後回復原值亦不會自行清除。'}},
+  {id:'WARN-02',text:{en:'The warning remains pending until the user reviews the latest Concurrent data and clicks Confirm.',zh:'Warning會一直保持Pending，直至用戶Review最新Concurrent資料並按Confirm。'}}
+ ],noWarning:[
+  {id:'WARN-03',text:{en:'Changes completed and fully restored before any checkpoint are evaluated only by the final Snapshot; no net material difference means no warning.',zh:'如果Change及回復原狀均在任何Checkpoint前完成，系統只比較最終Snapshot；沒有Net Material Difference便不顯示Warning。'}}
+ ],processing:[
+  {id:'WARN-04',text:{en:'A checkpoint records the latest detected comparison Snapshot even while its Change warning is still awaiting acknowledgement.',zh:'即使Change Warning仍等待確認，Checkpoint仍會記錄最新偵測到的Comparison Snapshot。'}}
+ ],clear:[
+  {id:'WARN-05',text:{en:'Confirm with validation passed saves the latest acknowledged Snapshot and clears the Change warning.',zh:'Validation Pass時按Confirm會保存最新Acknowledged Snapshot並清除Change Warning。'}},
+  {id:'WARN-06',text:{en:'If validation still fails after Confirm, the Change warning is cleared but the Concurrent tab continues to show the warning indicator for validation.',zh:'如Confirm後Validation仍Fail，Change Warning會清除，但Concurrent Tab仍會因Validation顯示警告。'}},
+  {id:'WARN-07',text:{en:'An Outstanding-PDF Group Latch cannot be cleared by Confirm or by restoring the previous data.',zh:'Outstanding PDF的Group Latch不能透過Confirm或把資料回復原值解除。'}}
+ ]},
+ F10:{warning:[
+  {id:'QUO-01',text:{en:'Starting from three Policies, remove one eligible Quotation and then reach a checkpoint: three versus two is a Policy List Change and the Concurrent tab shows the warning.',zh:'原有三條Policy，Remove一張有效Quotation後進入Checkpoint：三條與兩條不同，屬Policy List Change，Concurrent Tab顯示警告。'}},
+  {id:'QUO-02',text:{en:'If the removal checkpoint has already raised the warning, reattaching the same Quotation ID does not clear that warning.',zh:'如果Remove後已經過Checkpoint並產生Warning，重新Attach同一Quotation ID不會清除該Warning。'}},
+  {id:'QUO-03',text:{en:'At the next checkpoint after reattachment, the latest three-Policy Snapshot is compared with the preceding detected two-Policy Snapshot, so the result is still different.',zh:'Reattach後的下一Checkpoint會以最新三條Policy Snapshot與之前偵測到的兩條Policy Snapshot比較，因此結果仍然不同。'}}
+ ],noWarning:[
+  {id:'QUO-04',text:{en:'If removal and reattachment both occur before any checkpoint, no intermediate two-Policy comparison Snapshot is created.',zh:'如果Remove及Reattach均在任何Checkpoint前發生，系統不會建立中間的兩條Policy Comparison Snapshot。'}},
+  {id:'QUO-05',text:{en:'At that checkpoint, previous three versus final three is No Effective Change when the Quotation ID and Material Content are unchanged; no warning is shown.',zh:'到Checkpoint時只比較原本三條與最終三條；如Quotation ID及Material Content均沒有改變，屬No Effective Change，不顯示Warning。'}}
+ ],processing:[
+  {id:'QUO-06',text:{en:'After the removal checkpoint, the detected two-Policy state becomes the latest comparison Snapshot even though the warning is still unconfirmed.',zh:'Remove後經過Checkpoint，偵測到的兩條Policy狀態會成為最新Comparison Snapshot，即使Warning尚未Confirm。'}}
+ ],clear:[
+  {id:'QUO-07',text:{en:'Even when the reattached three Policies exactly match the earliest three, an existing warning never clears itself; the user must review Concurrent and click Confirm.',zh:'即使Reattach後的三條Policy與最早三條完全相同，已存在的Warning亦不會自行解除；用戶必須進入Concurrent Review並按Confirm。'}}
+ ],exceptions:[
+  {id:'QUO-08',text:{en:'A different Quotation ID or changed Material Content follows the applicable Policy List or Content Change rule.',zh:'如Quotation ID不同或Material Content有改變，則按相應Policy List Change或Content Change規則處理。'}}
+ ]}
+};
+const matrices={warning:{title:{en:'Warning Event Matrix',zh:'警告事件矩陣'},headers:['Event','Class','Checkpoint','No Outstanding PDF','Outstanding PDF','No-op exception'],rows:[
+['Eligible Policy added/removed','Policy List','Any of 3','Apply, recalculate, Group ⚠','Background compare, Frozen, Latch','Blank App add/delete'],
+['Detach eligible Quotation; checkpoint occurs before reattach','Policy List','Removal checkpoint','Show ⚠; comparison Snapshot becomes two Policies','Frozen; set/keep Latch','Warning never auto-clears after it appears'],
+['Detach and reattach same ID/content before any checkpoint','No Effective Change','Next checkpoint sees final state only','Three vs final three; no ⚠','No Latch from this event','Different ID/content follows change rule'],
+['Reattach same ID after removal warning already appeared','Policy List / unacknowledged change','Next checkpoint','Two vs latest three; keep ⚠ until Confirm','Keep existing Latch','Matching earliest state does not clear warning'],
+['SI ≤30 → another ≤30','Content','Any of 3','Recalculate, Group ⚠','Frozen, Latch','>30 → another >30'],
+['Remove already-expired Quotation','No Effective Change','None','No ⚠','No Latch','Policy already excluded'],
+['P/LP stable identity or role changes','Content / search scope','Any of 3','Re-search, recalculate, Group ⚠','Frozen, Latch','Display name only; same ID'],
+['Manual saved in Concurrent Edit','Local saved Snapshot','Back / OK save','Recalculate; no Change ⚠','Edit unavailable while locked','Incomplete keeps validation ⚠'],
+['Used Stored FX differs','FX','Any of 3','Apply and recalculate; Group ⚠','Keep Frozen rate; Latch','Same to 6 decimals'],
+['Unused Stored FX differs','No Effective Change','Any of 3','Keep Pending; no ⚠','No Latch','Becomes relevant when later used']
+]},validation:{title:{en:'Declaration Validation Matrix',zh:'聲明驗證矩陣'},headers:['Option','Included List','Manual','Reasons','Concurrent indicator','Start Signing'],rows:[
+['A','Eligible Current Policy only','Retained inactive','AC7.2 if another known Policy','✓ when applicable validation passes','Allowed only after all latest gates'],
+['B','Selected auto Policies + every Complete Manual','Complete auto-included; Incomplete blocks','AC11 / AC7.2 independently when applicable','⚠ if empty/incomplete; otherwise ✓','Blocked if list empty or validation fails'],
+['C','Retained, not approved for signing','Retained inactive','Mandatory validation suspended','Deferred ✓','Always blocked until A/B']
+]},calculation:{title:{en:'Calculation Impact Matrix',zh:'計算影響矩陣'},headers:['Source / field','Case','PT','Aggregate','Candidate Maximum','Validation / warning'],rows:[
+['Eligible auto-searched Policy','Yes','Yes','Only when Included','Yes','Checkpoint change'],
+['Complete Manual under Option B','Yes','Regular entered / Single 1','Always Included','No','No Change ⚠ for local save'],
+['Premium / type / frequency','May change','May change','Yes','Yes','Material change at checkpoint'],
+['D3','May change','Medical PT','Indirect','Yes','Material change'],
+['D5 / D6','No','No','No','Yes; cap=min(selected,30%)','Material change'],
+['Customer / FNA inputs','Yes','May change','No','Yes','Material change'],
+['Used FX','No','No','HKD equivalent','Comparison only; not HKD input formula','Relevant only at checkpoint'],
+['Unused FX','No','No','No','No','Pending; no ⚠']
+]},actions:{title:{en:'Lifecycle Action Matrix',zh:'生命週期Action矩陣'},headers:['State','Edit Concurrent','Remove Quotation','Delete App','Start / Continue Signing','Void PDF','Submit'],rows:[
+['No PDF / unlocked','Yes','Yes','Yes','Start after gates','N/A','No'],
+['Outstanding PDF / no change','No; Frozen ✓','Owner: No','Yes if unsubmitted','Original member may generate/reopen','Yes','After Signing Complete'],
+['Outstanding PDF + Group Latch','No; Frozen ⚠','No','Yes if unsubmitted','Existing PDF only; no new PDF','Yes','After Signing Complete'],
+['Signing Complete / unsubmitted','No while Outstanding','No','Yes','Button hidden','Yes','Yes'],
+['Submitted','No','No','No','No','No','Terminal']
+]}};
+const scenarios=[
+ {id:'used-fx',label:'Used FX changes',events:['Used USD rate changed','Used AUD rate changed'],run:(v)=>v.pdf==='yes'?['Stored FX Pending',v.checkpoint,'Currency Used','Background compare','Keep Frozen rate','Set Group Latch','Group-wide ⚠','Block new PDF']:['Stored FX Pending',v.checkpoint,'Currency Used','Apply rate','Recalculate Aggregate','Group ⚠','Review Snapshot'],behavior:'BEH-FX-003'},
+ {id:'quotation-reattach',label:'Detach and reattach same Quotation ID',events:['Detach → checkpoint warning → reattach','Detach and reattach before any checkpoint'],run:(v)=>v.event.includes('before any checkpoint')?['Original Snapshot: 3 Policies','Detach: Pending only','Reattach same ID/content: Pending only','Next checkpoint compares final 3 vs previous 3','No Effective Change','No ⚠']:['Original Snapshot: 3 Policies','Detach','Checkpoint compares 3 vs 2','Show ⚠; latest comparison Snapshot = 2','Reattach same ID','Next checkpoint compares 2 vs 3','Keep ⚠ until Concurrent Confirm'],behavior:'BEH-QUO-003'},
+ {id:'expired-remove',label:'Remove expired Quotation',events:['Remove already-expired Quotation'],run:()=>['Quotation already excluded','Remove Quotation','No Effective List change','No recalculation','No ⚠','No Latch'],behavior:'BEH-POL-004'},
+ {id:'manual-incomplete',label:'Incomplete Manual Policy',events:['Regular Manual: Amount entered, PT blank','Single Manual: Amount blank'],run:()=>['Auto-save row','Back or OK','Saved Incomplete','Exclude from Total and PDF','Validation ⚠ remains','Start Signing blocked'],behavior:'BEH-MAN-002'},
+ {id:'pl-change',label:'P / LP change',events:['Replace Life Proposed','Change P = LP to P ≠ LP'],run:(v)=>['Identity source revision','No immediate ⚠',v.checkpoint,'Re-search by stable Party ID',v.pdf==='yes'?'Keep Frozen + Latch':'Apply latest list + Group ⚠'],behavior:'BEH-ID-001'},
+ {id:'existing-pdf',label:'Current App already has PDF',events:['Press Start Signing again'],run:()=>['Current App PDF exists','Reopen same PDF','Keep same signing state','No second PDF','One signing card'],behavior:'BEH-PDF-001'}
+];
+function renderNav(){document.getElementById('flowCount').textContent=flows.length+' flows';document.getElementById('nav').innerHTML=groups.map(g=>`<div class="nav-group"><h3>${L(g.name)}</h3>${g.ids.map(id=>{let x=byId[id];return `<button class="nav-btn ${selectedFlow===id&&currentView==='flow'?'active':''}" onclick="openFlow('${id}')"><span class="code">${id}</span><span>${L(x.title)}</span></button>`}).join('')}</div>`).join('')}
+function renderFlow(){currentView='flow';let x=byId[selectedFlow];sourceMode=false;document.getElementById('workspace').innerHTML=`<div class="flow-head"><div><div class="eyebrow">${x.id} · Flow-oriented behavioral specification</div><h1>${L(x.title)}</h1><p>${L(x.summary)}</p></div><div class="flow-actions"><button class="tool-btn" onclick="setZoom(-.1)" aria-label="Zoom out">−</button><span class="tool-btn zoom-readout" id="zoomValue">100%</span><button class="tool-btn" onclick="setZoom(.1)" aria-label="Zoom in">＋</button><button class="tool-btn" onclick="readableDiagram()">Readable · 10px</button><button class="tool-btn" onclick="fitDiagram()">Fit All</button><button class="tool-btn" id="sourceToggle" onclick="toggleSource()">Mermaid source</button><button class="tool-btn active" onclick="inspectFlowOverview(selectedFlow)">Developer Rules</button></div></div><div class="canvas-card"><div class="canvas-meta"><div class="legend"><span><i style="background:#e8f2f8;border:1px solid #2276a5"></i>User/System action</span><span><i style="background:#f0ebfa;border:1px solid #7459a6"></i>Checkpoint</span><span><i style="background:#fff3d7;border:1px solid #d88900"></i>Decision/Warning</span><span><i style="background:#fdecef;border:1px solid #c53b52"></i>Block</span><span><i style="background:#e7f5ed;border:1px solid #25845d"></i>Pass/Saved</span></div><span class="status-pill" id="rendererStatus">Loading Mermaid…</span></div><div class="canvas" id="canvas"><div class="diagram-stage" id="stage"><div class="mermaid-host" id="mermaidHost"></div><div class="fallback" id="fallback"></div><pre class="source-box" id="sourceBox"></pre></div></div></div>`;document.getElementById('sourceBox').textContent=x.m;renderFallback(x);renderMermaid(x);renderNav();}
+function renderFallback(x){let seen=new Set(),nodes=[],re=/\b([A-Za-z]\w*)\s*(?:\[([^\]]+)\]|\{([^}]+)\})\s*:::(\w+)/g;x.m.split('\n').forEach(line=>{let m;while((m=re.exec(line))){if(!seen.has(m[1])){seen.add(m[1]);nodes.push({id:m[1],label:(m[2]||m[3]).replaceAll('<br/>',' · '),type:m[4]})}}re.lastIndex=0});if(!nodes.length){x.m.split('\n').forEach(line=>{let m=line.match(/^\s*([A-Za-z]\w*)\s*--?>\s*([A-Za-z]\w*)/);if(m){[m[1],m[2]].forEach(id=>{if(!seen.has(id)){seen.add(id);nodes.push({id,label:id,type:'action'})}})}})}document.getElementById('fallback').innerHTML=nodes.map((n,i)=>`<button class="fallback-node ${n.type}" onclick="inspectFlowNode('${x.id}','${n.id}',this.firstChild.textContent.trim(),${i})">${n.label}<small>${x.id} · ${n.id}</small></button>`).join('')}
+async function renderMermaid(x){let host=document.getElementById('mermaidHost'),fallback=document.getElementById('fallback'),status=document.getElementById('rendererStatus');try{if(!window.__mermaid){let mod=await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');window.__mermaid=mod.default;window.__mermaid.initialize({startOnLoad:false,securityLevel:'loose',theme:'base',flowchart:{curve:'linear',htmlLabels:true,nodeSpacing:34,rankSpacing:48},themeVariables:{fontFamily:'Inter,Segoe UI,Arial',fontSize:'10px',lineColor:'#8da5a9',primaryTextColor:'#183239'}})}let r=await window.__mermaid.render('mmd-'+x.id+'-'+Date.now(),x.m);host.innerHTML=r.svg;normalizeMermaidSvg(host);fallback.style.display='none';status.textContent='Mermaid · 10px text';status.style.color='#25845d';bindMermaidInspector(host,x)}catch(e){host.style.display='none';fallback.style.display='grid';status.textContent='Offline interactive fallback';status.title='Mermaid unavailable; specification, search and flow cards remain functional.'}requestAnimationFrame(readableDiagram)}
+function openFlow(id){if(!byId[id])return;selectedFlow=id;renderFlow();inspectFlowOverview(id)}
+window.openFlow=openFlow;window.inspectBehavior=inspectBehavior;
+function getMermaidNodeId(el){let m=(el.id||'').match(/-flowchart-([A-Za-z0-9_]+)-\d+$/);return m?.[1]||''}
+function getExplicitNodeAction(x,nodeId){let safe=nodeId.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),m=x.m.match(new RegExp(`click\\s+${safe}\\s+call\\s+(inspectBehavior|openFlow)\\(['\"]([^'\"]+)['\"]\\)`));return m?{type:m[1],target:m[2]}:null}
+function behaviorForNode(x,label,index){let ids=x.nodes||[],tokens=(label.toLowerCase().match(/[a-z0-9]+/g)||[]).filter(t=>t.length>3&&!['with','this','that','only','same','current','latest'].includes(t)),best=null,bestScore=0;ids.forEach(id=>{let b=behaviorById[id];if(!b)return;let corpus=[L(b.title),b.title.en,b.title.zh,b.action,b.result,b.pdf].join(' ').toLowerCase(),score=tokens.reduce((n,t)=>n+(corpus.includes(t)?1:0),0);if(score>bestScore){bestScore=score;best=id}});return bestScore>=2?best:(ids.length===1?ids[0]:null)}
+function bulletList(items){return `<ul>${(items||[]).map(x=>`<li>${L(x)}</li>`).join('')}</ul>`}
+function confirmedRuleBullets(items=[]){return items.map(r=>`<div class="rule-bullet" id="rule-${r.id}"><span class="rule-code">${r.id}</span><div>${L(r.text)}</div></div>`).join('')}
+function behaviorRuleBullets(ids,focusId=''){return ids.map(id=>behaviorById[id]).filter(Boolean).map(b=>`<div class="rule-bullet behavior-rule ${focusId===b.id?'focused':''}" id="rule-${b.id}"><div class="rule-heading"><span class="rule-code">${b.id}</span><strong>${L(b.title)}</strong></div><div><b>Condition:</b> ${b.trigger}; ${b.pre}</div><div><b>→ System:</b> ${b.action}</div><div><b>→ Result:</b> ${b.result}</div><div><b>Snapshot:</b> ${b.snapshot} · <b>Calculation:</b> ${b.calc}</div><div><b>PDF／Lock:</b> ${b.pdf} · <b>Next:</b> ${b.next}</div><div class="rule-exception"><b>Exception:</b> ${b.exception}</div><div class="rule-links">${b.rules} · Legacy ${b.legacyFlow}</div></div>`).join('')}
+function tbcCards(flowId){let list=tbcs.filter(t=>t.flow===flowId);if(!list.length)return `<div class="coverage-ok">No open TBC currently recorded for this flow.</div>`;return list.map(t=>`<div class="tbc-card"><strong>${t.id} · ${L(t.title)}</strong><b>Question:</b> ${L(t.question)}<br><b>Known:</b> ${L(t.known)}<br><b>Impact:</b> ${L(t.impact)}<br><b>Status:</b> ${t.status}</div>`).join('')}
+function renderDeveloperSpec(flowId,focusId=''){let x=byId[flowId],s=flowSpecs[flowId]||{},ids=(x.nodes||[]).filter(id=>behaviorById[id]),legacy=Object.entries(oldToNew).filter(([,v])=>v===flowId).map(([k])=>k),c=confirmedRules[flowId]||{};let section=(title,content)=>content?`<section class="spec-section"><h3>${title}</h3><div class="spec-content">${content}</div></section>`:'';return `<div class="inspect-body"><div class="inspect-top"><strong>Developer Rules</strong><span class="inspect-id">${flowId}</span></div><h2 class="inspect-title">${L(x.title)}</h2><p class="inspect-summary">${L(s.purpose)||L(x.summary)}</p><div class="chips"><span class="chip">${ids.length} behaviors</span><span class="chip">${legacy.length} legacy flows mapped</span><span class="chip">All rules expanded</span></div>${section('1 · When does the warning appear?',confirmedRuleBullets(c.warning))}${section('2 · When does it not appear?',confirmedRuleBullets(c.noWarning))}${section('3 · System processing and results',confirmedRuleBullets(c.processing)+behaviorRuleBullets(ids,focusId))}${section('4 · How is the warning cleared?',confirmedRuleBullets(c.clear))}${section('5 · Exceptions and TBC',confirmedRuleBullets(c.exceptions)+tbcCards(flowId))}<section class="spec-section"><h3>Traceability</h3><div class="spec-content"><div class="rule-row"><span class="rule-code">Legacy</span><span>${legacy.join(' · ')||'None'}</span></div><div class="spec-actions"><button onclick="showMatrix('warning')">Decision Matrices</button><button onclick="showTBCRegister()">TBC Register</button><button onclick="showCoverage()">Coverage</button></div></div></section></div>`}
+function renderTestSpec(flowId){let x=byId[flowId],ids=(x.nodes||[]).map(id=>behaviorById[id]).filter(Boolean);return `<div class="inspect-body"><div class="inspect-top"><strong>Test Coverage View</strong><span class="inspect-id">${flowId}</span></div><h2 class="inspect-title">${L(x.title)}</h2><div class="mode-note">Test content is separated from Developer Rules. v1.1 uses the same Behavior IDs as coverage anchors; detailed SIT data and final test-case IDs will be added after the Developer rules are confirmed.</div><section class="spec-section"><h3>Coverage Basis</h3><div class="spec-content">${ids.map(b=>`<div class="rule-row"><span class="rule-code">${b.id}</span><button class="tool-btn" onclick="inspectBehavior('${b.id}')">${L(b.title)}</button></div>`).join('')}</div></section><section class="spec-section"><h3>Open Test Blockers</h3><div class="spec-content">${tbcCards(flowId)}</div></section></div>`}
+function inspectFlowOverview(flowId,nodeId='',label=''){let x=byId[flowId];if(!x)return;selectedBehaviorId='';document.getElementById('inspector').innerHTML=mode==='dev'?renderDeveloperSpec(flowId):renderTestSpec(flowId);document.getElementById('inspector').classList.add('open')}
+function inspectFlowNode(flowId,nodeId,label,index){let x=byId[flowId];if(!x)return;inspectFlowOverview(flowId,nodeId,label);let action=getExplicitNodeAction(x,nodeId);if(action?.type==='inspectBehavior')return inspectBehavior(action.target);if(action?.type==='openFlow')return openFlow(action.target);let behaviorId=behaviorForNode(x,label,index);if(behaviorId)inspectBehavior(behaviorId)}
+function bindMermaidInspector(host,x){let nodes=[...host.querySelectorAll('.node')];nodes.forEach((el,index)=>{let nodeId=getMermaidNodeId(el),label=(el.textContent||nodeId).trim();el.tabIndex=0;el.setAttribute('role','button');el.setAttribute('aria-label',`${label} · open details`);el.addEventListener('click',e=>{e.stopImmediatePropagation();inspectFlowNode(x.id,nodeId,label,index)},true);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.dispatchEvent(new MouseEvent('click',{bubbles:true}))}})})}
+function inspectFromFlow(flowId,index){let x=byId[flowId],id=x?.nodes?.[index]||x?.nodes?.[0];if(id)inspectBehavior(id);else inspectFlowOverview(flowId)}
+function inspectBehavior(id){let b=behaviorById[id];if(!b)return;selectedBehaviorId=id;if(b.flow!==selectedFlow){selectedFlow=b.flow;renderFlow()}if(mode==='dev'){document.getElementById('inspector').innerHTML=renderDeveloperSpec(b.flow,id);document.getElementById('inspector').classList.add('open');requestAnimationFrame(()=>document.getElementById('rule-'+id)?.scrollIntoView({block:'center',behavior:'smooth'}));return}let testRows=[['pre','Test prerequisite'],['trigger','Test action / event'],['action','Expected system behavior'],['result','Expected UI / tab result'],['pdf','Expected PDF / lock result'],['exception','Negative / exception case']];let rows=testRows.map(([k,label])=>`<div class="detail-row"><label>${label}</label><div>${b[k]}</div></div>`).join('');document.getElementById('inspector').innerHTML=`<div class="inspect-body"><div class="inspect-top"><strong>Expected Behavior</strong><span class="inspect-id">${b.id}</span></div><h2 class="inspect-title">${L(b.title)}</h2><div class="mode-note">This Test view describes how to verify the selected behavior and remains separate from Developer Rules.</div><div class="detail-list">${rows}</div><div class="related"><button onclick="openFlow('${b.flow}')">Open ${b.flow}</button><button onclick="showMatrix('warning')">Decision Matrix</button><button onclick="openScenario('${b.id}')">Scenario</button></div></div>`;document.getElementById('inspector').classList.add('open')}
+function toggleSource(){sourceMode=!sourceMode;document.querySelector('.canvas-card').classList.toggle('source-mode',sourceMode);document.getElementById('sourceToggle').classList.toggle('active',sourceMode)}
+function normalizeMermaidSvg(host){let svg=host?.querySelector('svg'),vb=svg?.viewBox?.baseVal;if(!svg||!vb||!vb.width||!vb.height)return;svg.style.width=vb.width+'px';svg.style.height=vb.height+'px';svg.style.maxWidth='none';svg.style.flex='0 0 auto';svg.dataset.naturalWidth=String(vb.width);svg.dataset.naturalHeight=String(vb.height);alignDiagramHost()}
+function diagramNaturalSize(){let svg=document.querySelector('#mermaidHost svg'),fallback=document.getElementById('fallback');if(svg){let vb=svg.viewBox?.baseVal,w=vb?.width||svg.getBoundingClientRect().width/Math.max(zoom,.01),h=vb?.height||svg.getBoundingClientRect().height/Math.max(zoom,.01);return{w:w+52,h:h+52}}return{w:(fallback?.scrollWidth||1080)+52,h:(fallback?.scrollHeight||510)+52}}
+function diagramBaseFontPx(){let el=document.querySelector('#mermaidHost .node foreignObject div,#mermaidHost .node text,#mermaidHost text,#fallback .fallback-node');if(!el)return 12;let px=parseFloat(getComputedStyle(el).fontSize);return Number.isFinite(px)&&px>0?px:12}
+function resetDiagramMeasure(){let stage=document.getElementById('stage');if(!stage)return;stage.style.transform='none';stage.style.width='100%';stage.style.minHeight='510px'}
+function updateZoomReadout(){let value=document.getElementById('zoomValue');if(value)value.textContent=Math.round(zoom*100)+'%'}
+function alignDiagramHost(){let host=document.getElementById('mermaidHost'),canvas=document.getElementById('canvas'),svg=host?.querySelector('svg');if(!host||!canvas||!svg)return;let natural=Number(svg.dataset.naturalWidth)||svg.viewBox?.baseVal?.width||0,available=Math.max(240,canvas.clientWidth-52);host.style.justifyContent=natural*zoom<=available?'center':'flex-start'}
+function focusDiagramStart(){let canvas=document.getElementById('canvas'),target=document.querySelector('#mermaidHost .node')||document.querySelector('#fallback .fallback-node');if(!canvas)return;if(!target){canvas.scrollTo({left:0,top:0});return}let cr=canvas.getBoundingClientRect(),tr=target.getBoundingClientRect();canvas.scrollTo({left:Math.max(0,canvas.scrollLeft+tr.left-cr.left-28),top:Math.max(0,canvas.scrollTop+tr.top-cr.top-28)})}
+function applyZoom(){let stage=document.getElementById('stage');if(!stage)return;let size=diagramNaturalSize();stage.style.transform=`scale(${zoom})`;stage.style.width=(100/zoom)+'%';stage.style.minHeight=Math.max(510/zoom,size.h)+'px';alignDiagramHost();updateZoomReadout()}
+function readableDiagram(){let canvas=document.getElementById('canvas');if(!canvas)return;resetDiagramMeasure();zoom=1;applyZoom();canvas.scrollTo({left:0,top:0});requestAnimationFrame(focusDiagramStart)}
+function actualSize(){readableDiagram()}
+function fitDiagram(){let canvas=document.getElementById('canvas');if(!canvas)return;resetDiagramMeasure();let size=diagramNaturalSize(),availableW=Math.max(240,canvas.clientWidth-24),availableH=Math.max(240,canvas.clientHeight-24);zoom=Math.min(1,availableW/size.w,availableH/size.h);zoom=Math.max(.2,Math.min(2,zoom));applyZoom();canvas.scrollTo({left:0,top:0});requestAnimationFrame(focusDiagramStart)}
+function setZoom(delta){zoom=Math.max(.2,Math.min(2,zoom+delta));applyZoom()}
+function showMatrix(key='warning'){currentView='matrix';let m=matrices[key];document.getElementById('workspace').innerHTML=`<div class="flow-head"><div><div class="eyebrow">Decision Matrix</div><h1>${L(m.title)}</h1><p>Use matrices for exhaustive combinations; click a row to inspect related behavior through search.</p></div><div class="flow-actions">${Object.keys(matrices).map(k=>`<button class="tool-btn ${k===key?'active':''}" onclick="showMatrix('${k}')">${L(matrices[k].title).replace(' Matrix','')}</button>`).join('')}</div></div><div class="matrix-wrap"><table><thead><tr>${m.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${m.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;renderNav()}
+function showScenario(){currentView='scenario';document.getElementById('workspace').innerHTML=`<div class="flow-head"><div><div class="eyebrow">Interactive behavior trace</div><h1>Scenario Simulator</h1><p>Select context to produce the expected path, warning, calculation and PDF result.</p></div></div><div class="scenario-grid"><section class="scenario-panel"><div class="field"><label>Behavior</label><select id="scType" onchange="syncScenarioEvents()">${scenarios.map(s=>`<option value="${s.id}">${s.label}</option>`).join('')}</select></div><div class="field"><label>Event</label><select id="scEvent"></select></div><div class="field"><label>Checkpoint</label><select id="scCheckpoint"><option>Enter / Re-enter App</option><option>Concurrent Entry</option><option>Start Signing</option></select></div><div class="field"><label>Outstanding PDF</label><select id="scPdf"><option value="no">No</option><option value="yes">Yes</option></select></div><button class="run-btn" onclick="runScenario()">Run expected behavior</button></section><section class="scenario-result" id="scenarioResult"><div class="callout">Choose a behavior and context, then run the trace.</div></section></div>`;syncScenarioEvents();renderNav()}
+function syncScenarioEvents(){let s=scenarios.find(x=>x.id===document.getElementById('scType').value);document.getElementById('scEvent').innerHTML=s.events.map(e=>`<option>${e}</option>`).join('')}
+function runScenario(){let s=scenarios.find(x=>x.id===document.getElementById('scType').value),v={event:document.getElementById('scEvent').value,checkpoint:document.getElementById('scCheckpoint').value,pdf:document.getElementById('scPdf').value},path=s.run(v);document.getElementById('scenarioResult').innerHTML=`<div class="eyebrow">Expected path</div><h2 style="margin:6px 0 4px;font-size:18px">${v.event}</h2><p style="font-size:10px;color:var(--muted)">${v.checkpoint} · Outstanding PDF: ${v.pdf==='yes'?'Yes':'No'}</p><div class="path">${path.map((p,i)=>`${i?'<b>→</b>':''}<span>${p}</span>`).join('')}</div><div class="outcome"><b>Behavior reference:</b> ${s.behavior}<br>${behaviorById[s.behavior]?.action||''}</div><div style="margin-top:12px"><button class="tool-btn" onclick="inspectBehavior('${s.behavior}')">Open Developer Rule</button><button class="tool-btn" onclick="openFlow('${behaviorById[s.behavior]?.flow||'F00'}')">Open related flow</button></div>`}
+function openScenario(id){let s=scenarios.find(x=>x.behavior===id);showScenario();if(s){document.getElementById('scType').value=s.id;syncScenarioEvents()}}
+function showCoverage(){currentView='coverage';let mapped=behaviors.filter(b=>byId[b.flow]).length,legacyMapped=legacyFlows.filter(x=>oldToNew[x.id]&&byId[oldToNew[x.id]]).length;document.getElementById('workspace').innerHTML=`<div class="flow-head"><div><div class="eyebrow">Traceability and gaps</div><h1>Coverage Dashboard</h1><p>v1.1 consolidates the original flows without deleting their Behavior, Rule, Matrix, Scenario, exception or TBC content.</p></div></div><div class="coverage-grid"><div class="metric"><strong>${flows.length}</strong><span>Consolidated flows / state model</span><div class="bar"><i style="width:100%"></i></div></div><div class="metric"><strong>${legacyMapped}/${legacyFlows.length}</strong><span>Original flows mapped to v1.1</span><div class="bar"><i style="width:${legacyMapped/legacyFlows.length*100}%"></i></div></div><div class="metric"><strong>${mapped}/${behaviors.length}</strong><span>Behaviors mapped to v1.1 flows</span><div class="bar"><i style="width:${mapped/behaviors.length*100}%"></i></div></div><div class="metric"><strong>${tbcs.length}</strong><span>Explicit open TBC items</span><div class="bar"><i style="width:100%;background:#d88900"></i></div></div></div><div class="coverage-list"><div class="coverage-item"><span>Original Flow → Behavior → Rule → v1.1 Flow mapping</span><b>Covered</b></div><div class="coverage-item"><span>Three authoritative checkpoints and warning classes</span><b>Covered</b></div><div class="coverage-item"><span>No Effective Change and exception handling</span><b>Covered</b></div><div class="coverage-item"><span>Policy identity, Quotation/SI and selection memory</span><b>Covered</b></div><div class="coverage-item"><span>Declaration A/B/C, reasons and Manual Policy</span><b>Covered</b></div><div class="coverage-item"><span>Basis, Included List, PT, Total, Maximum and FX</span><b>Covered</b></div><div class="coverage-item"><span>Outstanding PDF, Frozen Snapshot and Group Latch</span><b>Covered</b></div><div class="coverage-item"><span>Signing, Submit, Void, Delete and coordinated states</span><b>Covered</b></div><div class="coverage-item"><span>Final SIT IDs and complete test data</span><strong class="coverage-tbc">Test phase pending</strong></div></div>`;renderNav()}
+function showTBCRegister(){currentView='tbc';document.getElementById('workspace').innerHTML=`<div class="flow-head"><div><div class="eyebrow">Open decisions</div><h1>TBC Register</h1><p>Unknown behavior is recorded explicitly. It must not be implemented or tested as an assumed rule.</p></div></div><div class="coverage-list">${tbcs.map(t=>`<div class="tbc-card"><strong>${t.id} · ${L(t.title)}</strong><b>Flow:</b> <button class="tool-btn" onclick="openFlow('${t.flow}')">${t.flow}</button><br><b>Question:</b> ${L(t.question)}<br><b>Known:</b> ${L(t.known)}<br><b>Impact:</b> ${L(t.impact)}<br><b>Status:</b> ${t.status}</div>`).join('')}</div>`;renderNav()}
+function openConfirmedRule(flowId,ruleId){selectedFlow=flowId;selectedBehaviorId='';renderFlow();document.getElementById('inspector').innerHTML=renderDeveloperSpec(flowId);document.getElementById('inspector').classList.add('open');requestAnimationFrame(()=>{let el=document.getElementById('rule-'+ruleId);el?.classList.add('focused');el?.scrollIntoView({block:'center',behavior:'smooth'})})}
+function doSearch(q){q=q.trim().toLowerCase();let box=document.getElementById('searchResults');if(!q){box.classList.remove('open');document.getElementById('searchCount').textContent='⌘K';return}let fr=flows.filter(x=>(x.id+' '+x.title.en+' '+x.title.zh+' '+x.summary.en+' '+JSON.stringify(flowSpecs[x.id]||{})).toLowerCase().includes(q)).map(x=>({type:'Flow',id:x.id,title:L(x.title),sub:L(x.summary),go:()=>openFlow(x.id)}));let br=behaviors.filter(x=>Object.values(x).join(' ').toLowerCase().includes(q)).slice(0,30).map(x=>({type:'Behavior',id:x.id,title:L(x.title),sub:x.action,go:()=>inspectBehavior(x.id)}));let rr=Object.entries(confirmedRules).flatMap(([flowId,groups])=>Object.values(groups).flat().filter(x=>JSON.stringify(x).toLowerCase().includes(q)).map(x=>({type:'Rule',id:x.id,title:x.id,sub:L(x.text),go:()=>openConfirmedRule(flowId,x.id)})));let tr=tbcs.filter(x=>JSON.stringify(x).toLowerCase().includes(q)).map(x=>({type:'TBC',id:x.id,title:L(x.title),sub:L(x.question),go:()=>{openFlow(x.flow);showTBCRegister()}}));let all=[...fr,...br,...rr,...tr];document.getElementById('searchCount').textContent=all.length+' found';box.innerHTML=all.length?all.map((r,i)=>`<button class="result" data-ri="${i}"><span class="result-code">${r.type}<br>${r.id}</span><span><strong>${r.title}</strong><span>${r.sub}</span></span></button>`).join(''):'<div class="empty-inspect">No matching defined behavior. Treat it as a specification gap and create a TBC instead of assuming a result.</div>';box.classList.add('open');box.querySelectorAll('.result').forEach((el,i)=>el.onclick=()=>{all[i].go();box.classList.remove('open')})}
+document.getElementById('globalSearch').addEventListener('input',e=>doSearch(e.target.value));document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('globalSearch').focus()}if(e.key==='Escape')document.getElementById('searchResults').classList.remove('open')});
+document.getElementById('modeSeg').onclick=e=>{if(!e.target.dataset.mode)return;mode=e.target.dataset.mode;document.body.dataset.mode=mode;document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));if(selectedBehaviorId)inspectBehavior(selectedBehaviorId);else inspectFlowOverview(selectedFlow)};document.getElementById('langSeg').onclick=e=>{if(!e.target.dataset.lang)return;lang=e.target.dataset.lang;document.documentElement.lang=lang;document.querySelectorAll('#langSeg button').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));renderNav();if(currentView==='flow'){renderFlow();inspectFlowOverview(selectedFlow)}else if(currentView==='matrix')showMatrix();else if(currentView==='tbc')showTBCRegister();};document.querySelector('.side-tools').onclick=e=>{if(e.target.dataset.view==='matrix')showMatrix();if(e.target.dataset.view==='scenario')showScenario();if(e.target.dataset.view==='coverage')showCoverage();if(e.target.dataset.view==='tbc')showTBCRegister()};document.getElementById('mobileNav').onclick=()=>alert('Use search to open any Flow, Behavior, Rule ID or TBC.');
+renderNav();renderFlow();inspectFlowOverview('F00');
+</script>
+</body>
+</html>
